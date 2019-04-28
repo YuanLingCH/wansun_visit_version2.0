@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="colorblack">#0a0a0a</color>
+    <color name="login_normal">#FF08E9CE</color>
+    <color name="login_pressed">#303F9F</color>
+    <color name="white">#FFFEFF</color>
+    <color name="jiemian">#F6F6FC</color>
+
+    <color name="preview_mock">#9a000000</color>
+    <color name="black">#000</color>
+    <color name="red">#d14000</color>
+    <color name="green">#03fa34</color>
+    <color name="blue">#032cfa</color>
+    <color name="gray">#afafaf</color>
+    <color name="text_gray">#d6d6d6</color>
+    <!-- 标题蓝色背景 -->
+    <color name="title_blue">#14B3F3</color>
+    <color name="yishengxiao">#F14448 </color>
+    <color name="weishengxiao">#C0C0C0 </color>
+    <color name="yiguoqi">#0098EF </color>
+    <color name="weishengxiao_">#EC8325</color>
+
+    <color name="dialog">#F8F8F8</color>
+   <color name="wansun">#E2711D</color>
+
+    <color name="backgroundjiemian">#EFEFEF</color>
+    <color name="backgroundtoolbar">#F4F4F4</color>
+    <color name="medium_blue">#0000cd</color>
+    <color name="midnight_blue">#191970</color>
+    <color name="dark_blue">#00008B</color>
+    <color name="steel_blue">#4682b4</color>
+    <color name="navy">#000080</color>
+    <color name="dark_gray">#A9A9A9</color>
+    <color name="dim_gray">#696969</color>
+    <color name="smoke_white">#F5F5F5</color>
+    <color name="photopicker_background">#181819</color>
+    <color name="colorBlue2">#2988CC</color>
+    <color name="colorGray">#6c6c6c</color>
+    <color name="touming">@android:color/transparent</color>
+</resources>

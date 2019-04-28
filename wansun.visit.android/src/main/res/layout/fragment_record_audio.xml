@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/record_audio_cv"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@color/gray"
+    android:transitionName="open_mediaplayer"
+    android:layout_alignParentTop="true"
+    android:layout_centerHorizontal="true"
+    >
+        <ImageView
+            android:layout_gravity="center"
+            android:layout_marginLeft="@dimen/dimen_10"
+            android:id="@+id/record_audio_iv_close"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_close"
+            />
+
+        <Chronometer
+            android:layout_marginLeft="@dimen/dimen_10"
+         android:layout_gravity="center"
+            android:layout_marginBottom="@dimen/dimen_5"
+            android:id="@+id/record_audio_chronometer_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-light"
+            android:textSize="16sp"
+            android:gravity="center"
+            />
+
+    <com.melnykov.fab.FloatingActionButton
+        android:layout_marginTop="@dimen/dimen_3"
+        android:layout_marginBottom="@dimen/dimen_3"
+        android:layout_marginRight="@dimen/dimen_3"
+        android:layout_marginLeft="@dimen/dimen_10"
+        android:id="@+id/record_audio_fab_record"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:src="@drawable/ic_mic_white_36dp"
+
+        />
+</LinearLayout>
