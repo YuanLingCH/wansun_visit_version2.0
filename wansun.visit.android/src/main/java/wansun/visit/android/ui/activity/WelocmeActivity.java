@@ -105,10 +105,11 @@ public class WelocmeActivity extends BaseActivity {
                         timer.schedule(new TimerTask() {
                             @Override
                             public void run() {
-                                Intent intent=new Intent(WelocmeActivity.this,LoginActiovity.class);
+                               // Intent intent=new Intent(WelocmeActivity.this,LoginActiovity.class);
+                                Intent intent=new Intent(WelocmeActivity.this,RegisterAndRecognizeActivity.class);
                        startActivity(intent);
                             }
-                        },1000);
+                        },500);
 
                     }else {
                         tv_check_state.setText(R.string.check_imei_state);
