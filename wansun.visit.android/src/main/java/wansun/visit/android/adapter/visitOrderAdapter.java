@@ -29,11 +29,14 @@ public class visitOrderAdapter extends BaseAdapter {
         this.data = data;
         inflater=LayoutInflater.from(mconext);
         this.flag=flag;
+
     }
 
     @Override
     public int getCount() {
+
         return data.size();
+
     }
 
     @Override
@@ -51,6 +54,7 @@ public class visitOrderAdapter extends BaseAdapter {
         ViewHolder holder;
         if (convertView==null){
             holder=new ViewHolder();
+
             convertView= inflater.inflate(R.layout.visit_order_item,parent,false);
             holder.tv_visit_apply_debtor_name= (TextView) convertView.findViewById(R.id.tv_visit_apply_debtor_name);
             holder.tv_visit_apply_gender_text= (TextView) convertView.findViewById(R.id.tv_visit_apply_gender_text);
@@ -126,7 +130,7 @@ public class visitOrderAdapter extends BaseAdapter {
     /**
      * 添加列表项
      */
-    public  void  addItem( visitItemBean.DataBean bean){
+   public  void  addItem( visitItemBean.DataBean bean){
         data.add(bean);
     }
 

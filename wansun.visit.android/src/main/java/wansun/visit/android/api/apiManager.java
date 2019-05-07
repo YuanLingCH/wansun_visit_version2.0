@@ -19,10 +19,13 @@ import retrofit2.http.Query;
 
 public interface apiManager {
 
- //String baseUrl="http://192.168.166.133:8082";  //测试环境
+// String baseUrl="http://192.168.166.133:8082";  //测试环境
     //  19.168.166.133：8082
 
 String baseUrl="http://122.13.149.162";  // 线上环境
+
+
+
 
     //登陆接口
     @FormUrlEncoded

@@ -897,7 +897,7 @@ public void getSearch(String city,String address){
             waifangApplication.getmSpeechSynthesizer().speak(s);
         }
     }
-List dataAddress=new ArrayList();
+    List dataAddress=new ArrayList();
     OnGetSuggestionResultListener listener = new OnGetSuggestionResultListener() {
         @Override
         public void onGetSuggestionResult(SuggestionResult suggestionResult) {

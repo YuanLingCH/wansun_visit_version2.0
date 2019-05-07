@@ -28,7 +28,6 @@ import android.widget.Switch;
 import android.widget.Toast;
 
 import com.arcsoft.arcfacedemo.R;
-import com.arcsoft.arcfacedemo.common.Constants;
 import com.arcsoft.arcfacedemo.faceserver.CompareResult;
 import com.arcsoft.arcfacedemo.faceserver.FaceServer;
 import com.arcsoft.arcfacedemo.model.DrawInfo;
@@ -66,6 +65,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import wansun.visit.android.utils.SharedUtils;
+import wansun.visit.android.utils.logUtils;
 
 import static com.arcsoft.arcfacedemo.R.id.switch_liveness_detect;
 
@@ -92,7 +92,6 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
      * 活体检测的开关
      */
     private boolean livenessDetect = true;
-
     /**
      * 注册人脸状态码，准备注册
      */
@@ -137,6 +136,7 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_register_and_recognize);
         //保持亮屏
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -146,7 +146,7 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
             attributes.systemUiVisibility = View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
             getWindow().setAttributes(attributes);
         }
-     initView();
+
         // Activity启动后就锁定为启动时的方向
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
         //本地人脸库初始化
@@ -155,6 +155,8 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
         previewView = findViewById(R.id.texture_preview);
         //在布局结束后才做初始化操作
         previewView.getViewTreeObserver().addOnGlobalLayoutListener(this);
+
+        initView();
         register= (Button) findViewById(R.id.register);
 
         faceRectView = (FaceRectView) findViewById(R.id.face_rect_view);
@@ -177,8 +179,7 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
         adapter.setFaceCallBack(new ShowFaceInfoAdapter.faceRecognitionListerner() {
             @Override
             public void listernerCallBack() {
-                loginUser();
-
+             loginUser();
             }
         });
         String faceId = SharedUtils.getString("faceId");
@@ -190,6 +191,7 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
             register.setVisibility(View.VISIBLE);
             switchLivenessDetect.setVisibility(View.VISIBLE);
         }
+
     }
 
     private void loginUser() {
@@ -201,22 +203,22 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
             startActivity(new Intent(RegisterAndRecognizeActivity.this,MainActivity.class));
             finish();
             unInitEngine();
-
         }else {
             startActivity(new Intent(RegisterAndRecognizeActivity.this,LoginActiovity.class));
             finish();
             unInitEngine();
-
+           // overridePendingTransition(R.anim.in_from_right,R.anim.out_to_left);
         }
-
-
     }
 
     private void initView() {
         ConfigUtil.setFtOrient(RegisterAndRecognizeActivity.this, FaceEngine.ASF_OP_0_ONLY); //激活SDK的引擎
         ConfigUtil.setFtOrient(RegisterAndRecognizeActivity.this, FaceEngine.ASF_OP_270_ONLY);
-        activeEngine(null);
+        initEngine();
+
     }
+
+
 
     /**
      * 初始化引擎
@@ -228,9 +230,10 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
         VersionInfo versionInfo = new VersionInfo();
         faceEngine.getVersion(versionInfo);
         Log.i(TAG, "initEngine:  init: " + afCode + "  version:" + versionInfo);
-
-        if (afCode != ErrorInfo.MOK) {
+        logUtils.d("初始化引擎走了"+afCode);
+        if (afCode != ErrorInfo.MOK) {   //mok ==0
             Toast.makeText(this, getString(R.string.init_failed, afCode), Toast.LENGTH_SHORT).show();
+            logUtils.d("初始化引擎失败"+afCode);
         }
     }
 
@@ -392,9 +395,11 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
                                 public void onNext(Boolean success) {
                                     String result = success ? "register success!" : "register failed!";
                                     Toast.makeText(RegisterAndRecognizeActivity.this, result, Toast.LENGTH_SHORT).show();
-                                    SharedUtils.putString("faceId","1");
-                                    register.setVisibility(View.GONE);
-                                    switchLivenessDetect.setVisibility(View.GONE);
+                                    if (result.equals("register success!")){
+                                        SharedUtils.putString("faceId","1");
+                                        register.setVisibility(View.GONE);
+                                        switchLivenessDetect.setVisibility(View.GONE);
+                                    }
                                             registerStatus = REGISTER_STATUS_DONE;
                                 }
 
@@ -462,6 +467,8 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
         cameraHelper.init();
     }
 
+
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -471,7 +478,7 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
                 isAllGranted &= (grantResult == PackageManager.PERMISSION_GRANTED);
             }
             if (isAllGranted) {
-                activeEngine(null);
+
                 initEngine();
                 initCamera();
                 if (cameraHelper != null) {
@@ -604,6 +611,7 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
      * @param view 注册按钮
      */
     public void register(View view) {
+
         if (registerStatus == REGISTER_STATUS_DONE) {
             registerStatus = REGISTER_STATUS_READY;
         }
@@ -617,77 +625,16 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
         if (!checkPermissions(NEEDED_PERMISSIONS)) {
             ActivityCompat.requestPermissions(this, NEEDED_PERMISSIONS, ACTION_REQUEST_PERMISSIONS);
         } else {
+            logUtils.d("第一次测试");
+
             initEngine();
             initCamera();
+
+
         }
     }
 
 
 
-    /**
-     * 激活引擎
-     *
-     * @param view
-     */
-    public void activeEngine(final View view) {
-        if (!checkPermissions(NEEDED_PERMISSIONS)) {
-            ActivityCompat.requestPermissions(this, NEEDED_PERMISSIONS, ACTION_REQUEST_PERMISSIONS);
-            return;
-        }
-        if (view != null) {
-            view.setClickable(false);
-        }
-        Observable.create(new ObservableOnSubscribe<Integer>() {
-            @Override
-            public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
-                FaceEngine faceEngine = new FaceEngine();
-                int activeCode = faceEngine.active(RegisterAndRecognizeActivity.this, Constants.APP_ID, Constants.SDK_KEY);
-                emitter.onNext(activeCode);
-            }
-        })
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<Integer>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
 
-                    }
-
-                    @Override
-                    public void onNext(Integer activeCode) {
-                        if (activeCode == ErrorInfo.MOK) {
-                            showToast(getString(R.string.active_success));
-                        } else if (activeCode == ErrorInfo.MERR_ASF_ALREADY_ACTIVATED) {
-                            showToast(getString(R.string.already_activated));
-                        } else {
-                            showToast(getString(R.string.active_failed, activeCode));
-                        }
-
-                        if (view != null) {
-                            view.setClickable(true);
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-
-                    }
-
-                    @Override
-                    public void onComplete() {
-
-                    }
-                });
-
-    }
-
-    private void showToast(String s) {
-        if (toast == null) {
-            toast = Toast.makeText(this, s, Toast.LENGTH_SHORT);
-            toast.show();
-        } else {
-            toast.setText(s);
-            toast.show();
-        }
-    }
 }

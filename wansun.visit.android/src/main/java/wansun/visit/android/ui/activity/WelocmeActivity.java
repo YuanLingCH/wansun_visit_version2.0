@@ -9,12 +9,16 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.arcsoft.arcfacedemo.common.Constants;
+import com.arcsoft.face.ErrorInfo;
+import com.arcsoft.face.FaceEngine;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -23,6 +27,13 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -44,6 +55,7 @@ public class WelocmeActivity extends BaseActivity {
     TextView tv_imie,tv_check_state,tv_link_devices;
     private static final int REQUEST_TAKE_PHOTO_PERMISSION = 1;
     Button but_imei;
+    private Toast toast = null;
     @Override
     protected int getLayoutId() {
         return R.layout.activity_welcome;
@@ -106,8 +118,8 @@ public class WelocmeActivity extends BaseActivity {
                             @Override
                             public void run() {
                                // Intent intent=new Intent(WelocmeActivity.this,LoginActiovity.class);
-                                Intent intent=new Intent(WelocmeActivity.this,RegisterAndRecognizeActivity.class);
-                       startActivity(intent);
+                              Intent intent=new Intent(WelocmeActivity.this,RegisterAndRecognizeActivity.class);
+                     startActivity(intent);
                             }
                         },500);
 
@@ -149,6 +161,7 @@ public class WelocmeActivity extends BaseActivity {
         } else {
             //  Toast.makeText(this, "权限都授权了",Toast.LENGTH_SHORT).show();
             getData();
+            activeEngine();
         }
     }
 
@@ -165,6 +178,7 @@ public class WelocmeActivity extends BaseActivity {
                             return;
                         }
                         getData();
+                        activeEngine();
                     }
                 }
                 break;
@@ -175,4 +189,73 @@ public class WelocmeActivity extends BaseActivity {
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
+
+
+
+
+    /**
+     * 激活引擎
+     *
+     *
+     */
+    public void activeEngine() {
+        Log.d("TAG","点击了激活");
+
+        Observable.create(new ObservableOnSubscribe<Integer>() {
+            @Override
+            public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
+                FaceEngine faceEngine = new FaceEngine();
+                int activeCode = faceEngine.active(WelocmeActivity.this, Constants.APP_ID, Constants.SDK_KEY);
+                emitter.onNext(activeCode);
+            }
+        })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Integer>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(Integer activeCode) {
+                        if (activeCode == ErrorInfo.MOK) {
+                            showToast(getString(R.string.active_success));
+                        } else if (activeCode == ErrorInfo.MERR_ASF_ALREADY_ACTIVATED) {
+                            showToast(getString(R.string.already_activated));
+                        } else {
+                            showToast(getString(R.string.active_failed, activeCode));
+                        }
+
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+
+    }
+
+
+
+
+    private void showToast(String s) {
+        if (toast == null) {
+            toast = Toast.makeText(this, s, Toast.LENGTH_SHORT);
+            toast.show();
+        } else {
+            toast.setText(s);
+            toast.show();
+        }
+    }
+
+
+
 }

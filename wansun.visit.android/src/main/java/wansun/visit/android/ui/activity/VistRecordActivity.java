@@ -1,7 +1,6 @@
 package wansun.visit.android.ui.activity;
 
 import android.content.Intent;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
@@ -53,7 +52,7 @@ public class VistRecordActivity extends BaseActivity implements loadMoreListView
     TextView total,current_total;
     int currentNumbler=0;
     int counts;// 加载数据的总条数
-    SwipeRefreshLayout srf;//下拉刷新控件
+ //   SwipeRefreshLayout srf;//下拉刷新控件
   //
 
     @Override
@@ -66,11 +65,11 @@ public class VistRecordActivity extends BaseActivity implements loadMoreListView
         tv_visit_tobar= (TextView) findViewById(R.id.tv_visit_tobar);
         tv_visit_tobar.setText("历史外访单");
         iv_visit_back= (ImageView) findViewById(R.id.iv_visit_back_one);
-  lv_visit_order= (loadMoreListView) findViewById(R.id.lv_visit_order);
+        lv_visit_order= (loadMoreListView) findViewById(R.id.lv_visit_order);
         empty_layout= (EmptyLayout) findViewById(R.id.empty_layout);
         total= (TextView) findViewById(R.id.total);
         current_total= (TextView) findViewById(R.id.current_total);
-      srf= (SwipeRefreshLayout) findViewById(R.id.srf);
+      //  srf= (SwipeRefreshLayout) findViewById(R.id.srf);
         isFirst=true;  //第一次加载数据*/
 
         getIntentData();
@@ -80,10 +79,11 @@ public class VistRecordActivity extends BaseActivity implements loadMoreListView
     }
 
     private void updataUI() {
+        logUtils.d("updataUI");
         adapter=new visitOrderAdapter(this,visitData,true); //true 为完成
         lv_visit_order.setAdapter(adapter);
 
-      //  adapter.notifyDataSetChanged();
+
     }
 
     @Override
@@ -132,12 +132,13 @@ public class VistRecordActivity extends BaseActivity implements loadMoreListView
         lv_visit_order.setLoadMoreListnner(this);
 
 
-    srf.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+ /*  srf.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                loadData(pageNo+"");
+                isFirst=true;
+                loadData(1+"");
             }
-        });
+        });*/
 
     }
 
@@ -175,32 +176,34 @@ public class VistRecordActivity extends BaseActivity implements loadMoreListView
                         total.setText("总条数："+ counts);
                         if (data.size()>0){
                             Iterator<visitItemBean.DataBean> iterator = data.iterator();
-
+                            logUtils.d("加载数据ui：1");
                             while (iterator.hasNext()){
                                 visitItemBean.DataBean next = iterator.next();
                                 if (isFirst){
+                                    logUtils.d("加载数据ui：2");
                                     visitData.add(next);
-                                    isFirst=false;
-                                    updataUI();
+
                                 }else {
+                                    logUtils.d("加载数据ui：3");
                                     adapter.addItem(next);
+                                    ++currentNumbler;
                                     adapter.notifyDataSetChanged();
                                     lv_visit_order.loadFinsh();
                                 }
-
                                 String name = next.getName();
                                 logUtils.d("债务人名字："+name);
-                                ++currentNumbler;
-                                srf.setRefreshing(false);
                             }
 
+                        //    srf.setRefreshing(false);
+                            isFirst=false;
+                            updataUI();
                         }else {
                             ToastUtil.showToast(VistRecordActivity.this,"没有数据...");
                             logUtils.d("没有数据activity");
                             empty_layout.setVisibility(View.VISIBLE);
                             empty_layout.setErrorType(EmptyLayout.NODATA);
                         }
-                        srf.setRefreshing(false);
+                    //  srf.setRefreshing(false);
                         current_total.setText("当前条数："+currentNumbler);
                     }
                 }
@@ -209,7 +212,8 @@ public class VistRecordActivity extends BaseActivity implements loadMoreListView
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-                srf.setRefreshing(false);
+             //  srf.setRefreshing(false);
+                logUtils.d("请求数据失败"+t.toString());
             }
         });
         }else {
