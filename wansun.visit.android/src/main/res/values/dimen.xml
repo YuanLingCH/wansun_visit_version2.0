@@ -21,9 +21,6 @@
     <dimen name="text_16">16sp</dimen>
     <dimen name="text_18">18sp</dimen>
     <dimen name="text_13">13sp</dimen>
-
-
-
     <dimen name="during_setting_btn_height">30dp</dimen>
     <dimen name="during_setting_btn_bottom_line_margin">17dp</dimen>
     <dimen name="during_setting_btn_title_bottom_margin">16dp</dimen>

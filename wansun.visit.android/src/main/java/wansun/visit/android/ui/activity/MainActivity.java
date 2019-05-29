@@ -986,10 +986,7 @@ public void getSearch(String city,String address){
                             .fromResource(R.mipmap.location);  //自定义的点
 
                     //构建MarkerOption，用于在地图上添加Marker
-
                 }
-
-
             OverlayOptions option = new MarkerOptions()
                     .position(point)
                     .title("测试数据")
@@ -1158,6 +1155,9 @@ public void getSearch(String city,String address){
                                         tv_bottom_destination_location.setText(et_modify.getText().toString().trim());
                                         butGPS();
                                         ToastUtil.showToast(MainActivity.this,data.getData());
+                                        //TODO 修改后要重新请求服务器  同步数据
+                                        getData();
+                                        et_address.setText(et_modify.getText().toString().trim());
                                     }else {
                                         ToastUtil.showToast(MainActivity.this,data.getData());
                                     }

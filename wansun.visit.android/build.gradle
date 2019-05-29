@@ -9,7 +9,7 @@ android {
         targetSdkVersion 23
         versionCode 3
         versionName "1.3.0"
-            multiDexEnabled true
+        multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk {
             abiFilters "armeabi"
@@ -21,7 +21,6 @@ android {
             shrinkResources false //开启无用资源的检测
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-
     }
     //  加载百度地图
     sourceSets{
@@ -47,7 +46,6 @@ android {
         checkReleaseBuilds false
         abortOnError false
     }
-
     greendao {
         /**
          * 版本号
@@ -93,9 +91,10 @@ dependencies {
     compile 'com.leon:lfilepickerlibrary:1.8.0'
     compile 'org.greenrobot:greendao:3.0.1'
     compile 'com.github.bumptech.glide:glide:3.7.0'
-    compile 'com.tencent.bugly:crashreport:latest.release'
+    compile 'com.tencent.bugly:crashreport:latest.release' //崩溃日志上传
     //其中latest.release指代最新Bugly SDK版本号，也可以指定明确的版本号
-    compile project(':ArcfaceLibary')
+    compile project(':ArcfaceLibary')  //人脸识别库
+
 }
 
 

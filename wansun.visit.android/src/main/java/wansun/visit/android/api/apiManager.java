@@ -19,22 +19,22 @@ import retrofit2.http.Query;
 
 public interface apiManager {
 
-// String baseUrl="http://192.168.166.133:8082";  //测试环境
+ //String baseUrl="http://192.168.166.133:8082";  //测试环境
     //  19.168.166.133：8082
 
-String baseUrl="http://122.13.149.162";  // 线上环境
+//String baseUrl="http://122.13.149.162";  // 线上环境
 
-
-
+//  visit-api.cnwansun.com
+  String baseUrl="http://visit-api.cnwansun.com/visit/";
 
     //登陆接口
     @FormUrlEncoded
     @POST(baseUrl+"/user/login?")
     Call<String> login(@Field("userName") String username,@Field("passWord") String password);
     //外访列表
- @Headers({"Content-Type: application/json","Accept: application/json"})
-@POST(baseUrl+"/case/findVisit")
- Call<String> visitListFormeService(@Body RequestBody  body);
+      @Headers({"Content-Type: application/json","Accept: application/json"})
+      @POST(baseUrl+"/case/findVisit")
+      Call<String> visitListFormeService(@Body RequestBody  body);
 
     //外访案件详情
     @Headers({"Content-Type: application/json","Accept: application/json"})

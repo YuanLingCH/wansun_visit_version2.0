@@ -37,9 +37,7 @@ public class MapUtil {
      */
 
     public static boolean isGdMapInstalled(){
-
         return isInstallPackage(PN_GAODE_MAP);
-
     }
 
 
@@ -115,26 +113,16 @@ public class MapUtil {
      */
 
     private static double[] gaoDeToBaidu(double gd_lon, double gd_lat) {
-
         double[] bd_lat_lon = new double[2];
-
         double PI = 3.14159265358979324 * 3000.0 / 180.0;
-
         double x = gd_lon, y = gd_lat;
-
         double z = Math.sqrt(x * x + y * y) + 0.00002 * Math.sin(y * PI);
-
         double theta = Math.atan2(y, x) + 0.000003 * Math.cos(x * PI);
-
         bd_lat_lon[0] = z * Math.cos(theta) + 0.0065;
-
         bd_lat_lon[1] = z * Math.sin(theta) + 0.006;
-
         return bd_lat_lon;
 
     }
-
-
 
     /**
 
@@ -413,13 +401,8 @@ public class MapUtil {
 
 
             double[] origin = gaoDeToBaidu(slat, slon);
-
             slat = origin[0];
-
             slon = origin[1];
-
-
-
             builder.append("origin=latlng:")
 
                     .append(slat)

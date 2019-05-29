@@ -1,6 +1,5 @@
 package wansun.visit.android.utils;
 import android.util.Log;
-
 /**
  *
  * log日志的封装
@@ -41,7 +40,3 @@ public class logUtils {
             }
         }
     }
-
-
-
-

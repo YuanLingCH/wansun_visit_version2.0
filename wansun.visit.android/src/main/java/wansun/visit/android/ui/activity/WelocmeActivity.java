@@ -15,18 +15,15 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.arcsoft.arcfacedemo.common.Constants;
 import com.arcsoft.face.ErrorInfo;
 import com.arcsoft.face.FaceEngine;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
@@ -44,6 +41,7 @@ import wansun.visit.android.api.apiManager;
 import wansun.visit.android.bean.stateMessageBean;
 import wansun.visit.android.global.AppConfig;
 import wansun.visit.android.net.requestBodyUtils;
+import wansun.visit.android.utils.ToastUtil;
 import wansun.visit.android.utils.logUtils;
 import wansun.visit.android.utils.netUtils;
 
@@ -80,10 +78,6 @@ public class WelocmeActivity extends BaseActivity {
                 if (count[0]==5){  //点击5次就发动服务器
 
                 }
-
-
-
-
             }
         });
     }
@@ -135,6 +129,7 @@ public class WelocmeActivity extends BaseActivity {
             @Override
             public void onFailure(Call<String> call, Throwable t) {
                 logUtils.d("手机串号下载失败"+t.toString());
+                ToastUtil.showToast(WelocmeActivity.this,t.toString());
             }
         });
 
@@ -255,7 +250,5 @@ public class WelocmeActivity extends BaseActivity {
             toast.show();
         }
     }
-
-
 
 }

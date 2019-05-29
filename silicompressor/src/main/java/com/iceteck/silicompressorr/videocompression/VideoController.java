@@ -26,10 +26,8 @@ public class VideoController {
     public static final int COMPRESS_QUALITY_HIGH = 1;
     public static final int COMPRESS_QUALITY_MEDIUM = 2;
     public static final int COMPRESS_QUALITY_LOW = 3;
-
     public static File cachedFile;
     public String path;
-
     public final static String MIME_TYPE = "video/avc";
     private final static int PROCESSOR_TYPE_OTHER = 0;
     private final static int PROCESSOR_TYPE_QCOM = 1;
