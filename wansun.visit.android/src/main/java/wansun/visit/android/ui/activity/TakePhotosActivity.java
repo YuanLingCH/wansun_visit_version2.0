@@ -76,8 +76,8 @@ public class TakePhotosActivity extends BaseActivity {
     String fullPath;//图片路径
     dialogUtils utils;
     String destPath;//图片压缩后的路径
-        public  final static  int SUCCESS=0x01;
-    public  final static  int fAIL=0x01;
+    public  final static  int SUCCESS=0x01;
+    public  final static  int fAIL=0x02;
     boolean isPictures=false;   //视频录制标记
     private String outputDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
     Handler mHandler=new Handler(){
@@ -85,10 +85,13 @@ public class TakePhotosActivity extends BaseActivity {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             utils.cancleDialog();
-            if (msg.what==SUCCESS){
-                ToastUtil.showToast(TakePhotosActivity.this,"图片上传完成");
-            }else {
-                ToastUtil.showToast(TakePhotosActivity.this,"图片上传失败");
+            switch (msg.what){
+                case SUCCESS:
+                    ToastUtil.showToast(TakePhotosActivity.this,"图片上传完成");
+                    break;
+                case fAIL:
+                    ToastUtil.showToast(TakePhotosActivity.this,"图片上传失败");
+                    break;
             }
 
         }
@@ -142,9 +145,6 @@ public class TakePhotosActivity extends BaseActivity {
         });
 
     }
-
-
-
 
     /**
      * 上传到服务器
