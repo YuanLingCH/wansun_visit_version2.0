@@ -60,7 +60,6 @@ public class waifangApplication extends Application {
 
 
     }
-
     private void initDatabass() {
         //这里之后会修改，关于升级数据库
         dbHelper = new DaoMaster.DevOpenHelper(this, "visit-db", null);
@@ -68,7 +67,6 @@ public class waifangApplication extends Application {
         mDaoMaster = new DaoMaster(db);
         mDaoSession = mDaoMaster.newSession();
     }
-
 
     public DaoSession getSession(){
         return mDaoSession;
@@ -140,7 +138,6 @@ public class waifangApplication extends Application {
             activity.finish();//销毁当前Activity
         }
     }
-
     /**
      * 销毁所有的Activity
      */
