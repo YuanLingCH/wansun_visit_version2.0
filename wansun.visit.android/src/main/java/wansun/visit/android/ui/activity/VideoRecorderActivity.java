@@ -108,7 +108,6 @@ public class VideoRecorderActivity extends BaseActivity {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-
             ToastUtil.showToast(VideoRecorderActivity.this,"图片上传完成");
             int what = msg.what;
             if (what==0){
@@ -234,7 +233,6 @@ public class VideoRecorderActivity extends BaseActivity {
                         setTime(startTime,"开始时间");
 
                     }
-
                     @Override
                     public void onSuccess() {
                         endTime = System.currentTimeMillis();
@@ -243,9 +241,7 @@ public class VideoRecorderActivity extends BaseActivity {
                      //   openFile(new File(destPath));
                         logUtils.d("压缩后路径 "+destPath);
                         mHandler.sendEmptyMessage(2);
-
                     }
-
                     @Override
                     public void onFail() {
                         endTime = System.currentTimeMillis();
@@ -294,10 +290,6 @@ public class VideoRecorderActivity extends BaseActivity {
         } else {
             //  Toast.makeText(this, "权限都授权了",Toast.LENGTH_SHORT).show();
            // myVideoInputActivity.startActivityForResult(VideoRecorderActivity.this, REQUEST_CODE_FOR_RECORD_VIDEO,myVideoInputActivity.Q720);
-
-
-
-
 
         }
     }
@@ -476,7 +468,7 @@ public class VideoRecorderActivity extends BaseActivity {
                 ToastUtil.showToast(this,"请手动开启悬浮窗允许");
             }
         } else if (requestCode == 12) {
-            if (Build.VERSION.SDK_INT >= 23) {
+            if (Build.VERSION.SDK_INT >= 23) {      //android 6.0 动态权限的申请
                 if (!Settings.canDrawOverlays(VideoRecorderActivity.this)) {
                     ToastUtil.showToast(this,"权限授予失败,无法开启悬浮窗");
                 } else {

@@ -90,7 +90,7 @@
         <activity android:name=".ui.activity.VersionsActivity"/>
         <activity android:name=".ui.activity.OperationActivity"/>
         <activity android:name="soundrecorderutils.RecordActivity"
-            android:launchMode="singleTask" />
+        android:launchMode="singleTask" />
         <activity android:name=".ui.activity.PictureSelectActivity"/>
         <activity android:name=".ui.activity.VideoRecorderActivity"/>
         <activity android:name=".ui.activity.FileUploadActivity"/>

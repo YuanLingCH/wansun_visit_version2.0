@@ -49,6 +49,7 @@ public class waifangApplication extends Application {
         oList = new ArrayList<Activity>();
         initDatabass();
         /*
+
         * 第三个参数为SDK调试模式开关，调试模式的行为特性如下：
         输出详细的Bugly SDK的Log；
         每一条Crash都会被立即上报；
