@@ -175,10 +175,12 @@ public class AddAdressFragment extends BaseFragment{
         String remark = ed_remark.getText().toString().trim();
         if (!TextUtils.isEmpty(name)&&!TextUtils.isEmpty(remark)){
             String caseCode = SharedUtils.getString("caseCode");
+            String account = SharedUtils.getString("account");
+            long time = System.currentTimeMillis();
             Retrofit retrofit = netUtils.getRetrofit();
             apiManager manager= retrofit.create(apiManager.class);
 
-            RequestBody requestBody = requestBodyUtils.visitCaseAddAdressMessageToService(caseCode,relationId+"",name,addressType,address,addressStatus,remark,relationText,unit,addressTypeText,addressStateText);
+            RequestBody requestBody = requestBodyUtils.visitCaseAddAdressMessageToService(caseCode,relationId+"",name,addressType,address,addressStatus,remark,relationText,unit,addressTypeText,addressStateText,account,time );
             Call<String> call = manager.visitCaseAddAddddressMessage(requestBody);
             call.enqueue(new Callback<String>() {
                 @Override
@@ -194,12 +196,14 @@ public class AddAdressFragment extends BaseFragment{
                         }else {
                             ToastUtil.showToast(getActivity(), "添加地址失败");
                         }
+                    }else {
+                        ToastUtil.showToast(getActivity(), "添加地址失败");
                     }
                 }
 
                 @Override
                 public void onFailure(Call<String> call, Throwable t) {
-
+                    ToastUtil.showToast(getActivity(), "添加地址失败"+t.toString());
                 }
             });
         }

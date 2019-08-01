@@ -57,28 +57,34 @@ public class AddVisitUrgeFragment extends BaseFragment {
             ToastUtil.showToast(getActivity(),"请输入内容");
             return;
         }
-                Retrofit retrofit = netUtils.getRetrofit();
+        long time = System.currentTimeMillis();
+        Retrofit retrofit = netUtils.getRetrofit();
                 apiManager manager= retrofit.create(apiManager.class);
                 Integer it = Integer.valueOf(id);
-                RequestBody requestBody = requestBodyUtils.visitAddVisitUrgeToService(caseCode,visitGuid,account,it ,trim);
+                RequestBody requestBody = requestBodyUtils.visitAddVisitUrgeToService(caseCode,visitGuid,account,it ,trim,time);
                 Call<String> call = manager.visitCaseAddVisitUrge(requestBody);
                 call.enqueue(new Callback<String>() {
                     @Override
                     public void onResponse(Call<String> call, Response<String> response) {
                         String body = response.body();
+                        logUtils.d("添加外访："+body);
                         if (!TextUtils.isEmpty(body)){
                             Gson gson=new Gson();
                             caseVistAddVisitUrgeBean data = gson.fromJson(body, new TypeToken<caseVistAddVisitUrgeBean>() {}.getType());
                             String statusID = data.getStatusID();
                             if (AppConfig.SUCCESS.equals(statusID)){
                                 ToastUtil.showToast(getActivity(), "添加外访成功");
+                            }else {
+                                ToastUtil.showToast(getActivity(), "添加外访失败");
                             }
+                        }else {
+                            ToastUtil.showToast(getActivity(), "添加外访失败");
                         }
                     }
 
                     @Override
                     public void onFailure(Call<String> call, Throwable t) {
-
+                        ToastUtil.showToast(getActivity(), "添加外访失败"+t.toString());
                     }
                 });
 

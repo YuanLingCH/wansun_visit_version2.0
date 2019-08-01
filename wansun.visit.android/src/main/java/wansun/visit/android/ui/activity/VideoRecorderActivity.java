@@ -37,6 +37,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 import com.iceteck.silicompressorr.VideoCompress;
 
 import java.io.File;
@@ -56,9 +59,9 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
 import wansun.visit.android.R;
 import wansun.visit.android.api.apiManager;
+import wansun.visit.android.bean.uploadFileBean;
 import wansun.visit.android.db.fileInfo;
 import wansun.visit.android.global.waifangApplication;
 import wansun.visit.android.greendao.gen.fileInfoDao;
@@ -369,11 +372,21 @@ public class VideoRecorderActivity extends BaseActivity {
 
                                 @Override
                                 public void onResponse(Call call, Response response) throws IOException {
-                                    ResponseBody body = response.body();
-
-                                    logUtils.d("视频上传"+body.string());
-                                        mHandler.sendEmptyMessage(1);
-
+                                    String body = response.body().string();
+                                    Gson gson=new Gson();
+                                    try {
+                                        uploadFileBean bean= gson.fromJson(body , new TypeToken<uploadFileBean>() {}.getType());
+                                        String statusID = bean.getStatusID();
+                                        if (statusID.equals("200")){
+                                            logUtils.d("视频上传" + body );
+                                            mHandler.sendEmptyMessage(1);
+                                        }else {
+                                            mHandler.sendEmptyMessage(0);
+                                        }
+                                    } catch (JsonSyntaxException e) {
+                                        e.printStackTrace();
+                                        mHandler.sendEmptyMessage(0);
+                                    }
 
                                 }
                             });

@@ -29,6 +29,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okio.BufferedSource;
 import wansun.visit.android.R;
+import wansun.visit.android.utils.ToastUtil;
 
 ;
 
@@ -169,7 +170,7 @@ public class VersionUpdatedialog extends BaseDialog{
 
                 InputStream is = null;
                 BufferedSource source=null;
-                byte[] buf = new byte[10*1024];
+                byte[] buf = new byte[100*1024];
                 int len = 0;
                 FileOutputStream fos = null;
                 // 储存下载文件的目录
@@ -211,11 +212,11 @@ public class VersionUpdatedialog extends BaseDialog{
                     Looper.prepare();
                     installAPK(file);//安装
                     Looper.loop();
-
                 } catch (Exception e) {
                     e.printStackTrace();
                     Log.d("TAG","下载失败！"+e.getMessage());
                     Log.d("TAG","下载失败！"+e.getLocalizedMessage());
+                    ToastUtil.showToast(getContext(),"下载失败，请重新下载");
                 } finally {
                     try {
                         if (source != null)

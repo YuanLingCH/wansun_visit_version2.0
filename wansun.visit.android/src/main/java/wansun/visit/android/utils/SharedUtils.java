@@ -43,8 +43,8 @@ public class SharedUtils {
      * @param key
      */
     public static void clear(String key){
-        SharedPreferences shared = waifangApplication.getInstence().getSharedPreferences(key, Context.MODE_PRIVATE);
-        shared.edit().clear().commit();
+        SharedPreferences shared = waifangApplication.getInstence().getSharedPreferences("shared", Context.MODE_PRIVATE);
+        shared.edit().remove(key).commit();
     }
 
 }

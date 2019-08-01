@@ -177,8 +177,9 @@ public class AddPeopleFragment extends BaseFragment {
         String caseCode = SharedUtils.getString("caseCode");
         Retrofit retrofit = netUtils.getRetrofit();
         apiManager manager= retrofit.create(apiManager.class);
-
-        RequestBody requestBody = requestBodyUtils.visitCaseAddcontactsToService(caseCode,relationId,relationText,name,cardName,cidType,cidTypeText,gender,genderText,Integer.valueOf(age));
+        String account = SharedUtils.getString("account");
+        long time = System.currentTimeMillis();
+        RequestBody requestBody = requestBodyUtils.visitCaseAddcontactsToService(caseCode,relationId,relationText,name,cardName,cidType,cidTypeText,gender,genderText,Integer.valueOf(age),account,time );
         Call<String> call = manager.visitCaseAddAddcontacts(requestBody);
         call.enqueue(new Callback<String>() {
             @Override
@@ -191,13 +192,17 @@ public class AddPeopleFragment extends BaseFragment {
                     String statusID = data.getStatusID();
                     if (AppConfig.SUCCESS.equals(statusID)){
                         ToastUtil.showToast(getActivity(), "添加联系人成功");
+                    }else {
+                        ToastUtil.showToast(getActivity(), "添加地址联系人失败");
                     }
+                }else {
+                    ToastUtil.showToast(getActivity(), "添加地址联系人失败");
                 }
             }
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-
+                ToastUtil.showToast(getActivity(), "添加地址联系人失败"+t.toString());
             }
         });
 

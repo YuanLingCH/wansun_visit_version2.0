@@ -67,7 +67,7 @@ public class caseCardMessageBean {
 
         private String cardNo;
         private double caseAmount;
-        private int backAmount;
+        private float backAmount;
         private double arrears;
         private String overdueDays;
         private String overdueInstallment;
@@ -91,11 +91,11 @@ public class caseCardMessageBean {
             this.caseAmount = caseAmount;
         }
 
-        public int getBackAmount() {
+        public float getBackAmount() {
             return backAmount;
         }
 
-        public void setBackAmount(int backAmount) {
+        public void setBackAmount(float backAmount) {
             this.backAmount = backAmount;
         }
 

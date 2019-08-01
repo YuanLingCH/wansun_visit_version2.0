@@ -1,4 +1,5 @@
 package wansun.visit.android.ui.activity;
+
 import android.content.Intent;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -7,8 +8,10 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -68,7 +71,7 @@ public class LoginActiovity extends BaseActivity {
      */
     private void login() {
         final String acount = et_acount.getText().toString().trim();
-        String pasword = et_pasw.getText().toString().trim();
+        final String pasword = et_pasw.getText().toString().trim();
         if (TextUtils.isEmpty(acount)) {
             ToastUtil.showToast(waifangApplication.getContext(), R.string.login_acount);
             return;
@@ -120,7 +123,7 @@ public class LoginActiovity extends BaseActivity {
                             loginBean.DataBean data = bean.getData();
                             String id = data.getId()+"";
                             SharedUtils.putString("id",id);
-
+                            SharedUtils.putString("password",pasword);
                         }else {
                             ToastUtil.showToast(LoginActiovity.this,message);
                         }
@@ -151,4 +154,6 @@ public class LoginActiovity extends BaseActivity {
     protected void initLise() {
 
     }
+
+
 }

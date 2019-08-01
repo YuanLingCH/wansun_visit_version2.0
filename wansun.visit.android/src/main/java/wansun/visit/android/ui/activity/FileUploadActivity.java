@@ -77,6 +77,9 @@ public class FileUploadActivity extends BaseActivity {
             utils.cancleDialog();
             ToastUtil.showToast(FileUploadActivity.this,"文件上传成功");
             tv_path.setText("");
+            but_upload_batch.setText("文件上传完成...");
+
+
 
         }
     };
@@ -128,7 +131,12 @@ public class FileUploadActivity extends BaseActivity {
         but_upload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                doUpload();
+                if (sb.length()>0){
+                    doUpload();
+                }else {
+                    ToastUtil.showToast(FileUploadActivity.this,"请选择文件");
+                }
+
             }
         });
         /**
@@ -179,9 +187,12 @@ public class FileUploadActivity extends BaseActivity {
                         fileInfo next = iterator.next();
                         Long id = next.getId();
                         dao.deleteByKey(id);
+
                     }
-                    tvAttachmentInfoDesc.setVisibility(View.VISIBLE);
                     bottomAdapter.notifyDataSetChanged();
+                    tvAttachmentInfoDesc.setVisibility(View.VISIBLE);
+                    but_upload_batch.setText("文件上传完成...");
+                    but_upload_batch.setFocusable(false);
                 }
                 but_upload_batch.setVisibility(View.GONE);
             }
@@ -263,7 +274,6 @@ public class FileUploadActivity extends BaseActivity {
 
         if (resultCode == RESULT_OK) {
             if (requestCode == 100) {
-
               list = data.getStringArrayListExtra(Constant.RESULT_INFO);
                 for (String path:list){
                     logUtils.d("文件的路径"+path);

@@ -7,6 +7,8 @@ import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -14,6 +16,7 @@ import java.util.Date;
 import java.util.TimerTask;
 
 import wansun.visit.android.db.fileInfo;
+import wansun.visit.android.event.MessageEvent;
 import wansun.visit.android.global.waifangApplication;
 import wansun.visit.android.greendao.gen.fileInfoDao;
 import wansun.visit.android.utils.SharedUtils;
@@ -143,6 +146,7 @@ public class RecordingService extends Service {
         fileInfo info=new fileInfo(null,mFilePath,"4",System.currentTimeMillis(),visitGuid);  //4为录音
         dao.insert(info);
         mRecorder = null;
+        EventBus.getDefault().post(new MessageEvent(mFilePath));
     }
 
 }

@@ -56,7 +56,7 @@
     </View>
 
     <RelativeLayout
-        android:visibility="gone"
+
         android:id="@+id/rl_Address"
         android:layout_width="fill_parent"
         android:layout_height="50dp"
@@ -93,6 +93,126 @@
     </View>
 
     <RelativeLayout
+        android:id="@+id/rl_urge_return_message"
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/layout"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/tvItemReturnMessage"
+            style="@style/ModuleItem"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="@string/item_detail_return_message" />
+
+        <TextView
+            style="@style/ModuleItemTag"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_alignBaseline="@+id/tvItemReturnMessage"
+            android:layout_alignParentRight="true"
+            android:layout_toRightOf="@+id/tvItemReturnMessage"
+            android:text="@string/item_detail_tag" />
+    </RelativeLayout>
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:background="@color/midnight_blue" >
+    </View>
+
+
+    <RelativeLayout
+        android:id="@+id/rl_follow_message"
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/layout"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/tvItemfollow_message"
+            style="@style/ModuleItem"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="@string/item_detail_follow_message" />
+
+        <TextView
+            style="@style/ModuleItemTag"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_alignBaseline="@+id/tvItemfollow_message"
+            android:layout_alignParentRight="true"
+            android:layout_toRightOf="@+id/tvItemfollow_message"
+            android:text="@string/item_detail_tag" />
+    </RelativeLayout>
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:background="@color/midnight_blue" >
+    </View>
+
+
+    <RelativeLayout
+        android:id="@+id/rl_case_operator_record"
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/layout"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/tvItemcase_operator_record"
+            style="@style/ModuleItem"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="@string/item_detail_operator_record" />
+
+        <TextView
+            style="@style/ModuleItemTag"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_alignBaseline="@+id/tvItemcase_operator_record"
+            android:layout_alignParentRight="true"
+            android:layout_toRightOf="@+id/tvItemcase_operator_record"
+            android:text="@string/item_detail_tag" />
+    </RelativeLayout>
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:background="@color/midnight_blue" >
+    </View>
+    <RelativeLayout
+        android:visibility="gone"
+        android:id="@+id/rl_case_associated_data"
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/layout"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/tvItemcase_case_associated_data"
+            style="@style/ModuleItem"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="@string/item_detail_associated_data" />
+
+        <TextView
+            style="@style/ModuleItemTag"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_alignBaseline="@+id/tvItemcase_case_associated_data"
+            android:layout_alignParentRight="true"
+            android:layout_toRightOf="@+id/tvItemcase_case_associated_data"
+            android:text="@string/item_detail_tag" />
+    </RelativeLayout>
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:background="@color/midnight_blue" >
+    </View>
+
+    <RelativeLayout
         android:id="@+id/rl_urge_recode"
         android:layout_width="fill_parent"
         android:layout_height="50dp"
@@ -115,13 +235,11 @@
             android:layout_toRightOf="@+id/tvItemProgress"
             android:text="@string/item_detail_tag" />
     </RelativeLayout>
-
     <View
         android:layout_width="fill_parent"
         android:layout_height="1dp"
         android:background="@color/midnight_blue" >
     </View>
-
     <RelativeLayout
         android:id="@+id/rl_visit_record"
         android:layout_width="fill_parent"

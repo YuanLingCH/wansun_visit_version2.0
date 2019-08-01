@@ -78,8 +78,6 @@ public class PictureSelectActivity extends  BaseActivity {
             imagePaths.clear();
             imagePaths.add("paizhao");
             gridAdapter.notifyDataSetChanged();
-
-
         }
     };
 

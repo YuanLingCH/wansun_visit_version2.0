@@ -18,15 +18,14 @@ import retrofit2.http.Query;
  */
 
 public interface apiManager {
-
- //String baseUrl="http://192.168.166.133:8082";  //测试环境
+   //String baseUrl="http://192.168.166.133:8082";  //测试环境  http://visit-api.cnwansun.com/visit       datahouse-api
+  //  String baseUrl_datahouse_api="http://192.168.166.133:8080";
     //  19.168.166.133：8082
-
 //String baseUrl="http://122.13.149.162";  // 线上环境
 
-//  visit-api.cnwansun.com
-  String baseUrl="http://visit-api.cnwansun.com/visit/";
-
+//  visit-api.cnwansun.com        ws-api.cnwansun.com/visit         http://visit-api.cnwansun.com/visit/"  上一次的url  测试通过的
+ String baseUrl="http://ws-api.cnwansun.com/visit/";   // 7月1号上线环境    还没有测试
+  //String baseUrl="http://visit-api.cnwansun.com/visit/";   //测试环境
     //登陆接口
     @FormUrlEncoded
     @POST(baseUrl+"/user/login?")
@@ -67,7 +66,7 @@ public interface apiManager {
     @Headers({"Content-Type: application/json","Accept: application/json"})
     @POST(baseUrl+"/case/markAsCompleted")
     Call<String> visitLabCompleterState(@Body RequestBody  body);
-    //添加电话
+    //添加电话datahouse_api
     @Headers({"Content-Type: application/json","Accept: application/json"})
     @POST(baseUrl+"/case/addDebtorPhone")
     Call<String> visitCaseAddPhone(@Body RequestBody  body);
@@ -75,7 +74,7 @@ public interface apiManager {
     @Headers({"Content-Type: application/json","Accept: application/json"})
     @POST(baseUrl+"/case/visitRecord/addRecord")
     Call<String> visitCaseAddVisitUrge(@Body RequestBody  body);
-    //添加案件地址信息
+    //添加案件地址信息  datahouse_api
     @Headers({"Content-Type: application/json","Accept: application/json"})
     @POST(baseUrl+"/case/increaseAddress")
     Call<String> visitCaseAddAddddressMessage(@Body RequestBody  body);
@@ -104,12 +103,10 @@ public interface apiManager {
      @Headers({"Content-Type: application/json","Accept: application/json"})
     @POST(baseUrl+"/case/findDebtorVisitData")
     Call <String>queryFileFromeService(@Body RequestBody  body);
-
     // app升级
     @FormUrlEncoded
     @POST (baseUrl+"/version/checkUpdate")
-    Call <String>appUpdata(@Field("versionCode") String versionCod,@Field("versionName") String versionName);
-
+    Call <String>appUpdata(@Field("versionName") String versionName,@Field("versionCode") String versionCode);
 
     // 修改外访路径
     @Headers({"Content-Type: application/json","Accept: application/json"})
@@ -131,5 +128,16 @@ public interface apiManager {
     @Headers({"Content-Type: application/json","Accept: application/json"})
     @POST (baseUrl+"/case/position/addPoints")
     Call <String>uploadCommonLocationMessage(@Body RequestBody  body);
+
+    //绑定userID和IMEI
+    @FormUrlEncoded
+    @POST(baseUrl+"/auth/bindUser")
+    Call<String> bindUserAndImei(@Field("userId") int userId,@Field("imei") String imei);
+
+    //根据案件编号查询案件详情    以后界面卡顿  服务端要优化
+    @FormUrlEncoded
+    @POST(baseUrl+"/case/getByCaseCode")
+    Call<String> getByCaseCodeFromService(@Field("caseCode") String caseCode);
+
  }
 

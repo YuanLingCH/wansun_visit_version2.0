@@ -89,11 +89,9 @@ public class VersionsActivity extends BaseActivity {
     @Override
     protected void initData() {
         //TODO 自动检查版本号 连接服务器
-
         Retrofit retrofit = netUtils.getRetrofit();
         apiManager manager= retrofit.create(apiManager.class);
-
-        Call<String> call = manager.appUpdata("2",versionName);
+        Call<String> call = manager.appUpdata(versionName,"2");
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
@@ -107,10 +105,10 @@ public class VersionsActivity extends BaseActivity {
                         appUpdataBean.DataBean data1 = data.getData();
                         versionFileUrl = data1.getVersionFileUrl();
                         newVersionNum = data1.getVersionName();
-                        int version = data1.getVersionCode();
-                        if (version>versionCode){
+                        int version = data1.getVersionCode();   //服务器的版本
+                        if (version>versionCode){   // 服务器版本要高于本地的版本就升级
                             bt_version.setVisibility(View.VISIBLE);
-                            bt_version.setText("发现新版本："+newVersionNum);
+                            bt_version.setText("检查新版本："+newVersionNum);
                         }
 
                     }

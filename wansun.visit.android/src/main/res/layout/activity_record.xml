@@ -27,6 +27,7 @@
         />
 
     <Button
+        android:visibility="gone"
         android:textColor="@color/white"
         android:layout_marginBottom="@dimen/dimen_5"
         android:layout_marginRight="@dimen/dimen_5"
@@ -36,7 +37,7 @@
         android:layout_width="0dp"
         android:background="@drawable/border_red_roval_sign"
         android:layout_height="wrap_content"
-        android:text="播放录音"
+        android:text="选择录音文件"
         />
     <Button
         android:textColor="@color/white"
@@ -52,5 +53,18 @@
         />
 
   </LinearLayout>
+  <TextView
 
+      android:gravity="center"
+      android:visibility="gone"
+      android:textColor="@color/gray"
+      android:id="@+id/tv_record_flag"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content" />
+  <android.support.v7.widget.RecyclerView
+      android:layout_marginTop="@dimen/dimen_5"
+      android:layout_below="@+id/tv_path"
+      android:id="@+id/lv_other_file"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"/>
 </LinearLayout>

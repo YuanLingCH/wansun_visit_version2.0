@@ -51,6 +51,7 @@ public class VistRecordActivity extends BaseActivity implements loadMoreListView
     private  boolean isFirst=false;
     TextView total,current_total;
     int currentNumbler=0;
+    int currentNumblerFirst=0; //第一次加载的条数
     int counts;// 加载数据的总条数
  //   SwipeRefreshLayout srf;//下拉刷新控件
   //
@@ -82,7 +83,12 @@ public class VistRecordActivity extends BaseActivity implements loadMoreListView
         logUtils.d("updataUI");
         adapter=new visitOrderAdapter(this,visitData,true); //true 为完成
         lv_visit_order.setAdapter(adapter);
-
+        if (currentNumbler==0){
+            current_total.setText("当前条数："+currentNumblerFirst);
+        }else {
+            int i = currentNumbler + currentNumblerFirst;
+            current_total.setText("当前条数："+i);
+        }
 
     }
 
@@ -132,20 +138,13 @@ public class VistRecordActivity extends BaseActivity implements loadMoreListView
         lv_visit_order.setLoadMoreListnner(this);
 
 
- /*  srf.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                isFirst=true;
-                loadData(1+"");
-            }
-        });*/
 
     }
 
     @Override
     protected void initData() {
         //加载数据
-  loadData(pageNo+"");
+      loadData(pageNo+"");
     }
 
     private void loadData(String pageNo) {
@@ -176,17 +175,17 @@ public class VistRecordActivity extends BaseActivity implements loadMoreListView
                         total.setText("总条数："+ counts);
                         if (data.size()>0){
                             Iterator<visitItemBean.DataBean> iterator = data.iterator();
-                            logUtils.d("加载数据ui：1");
+
                             while (iterator.hasNext()){
                                 visitItemBean.DataBean next = iterator.next();
                                 if (isFirst){
-                                    logUtils.d("加载数据ui：2");
-                                    visitData.add(next);
 
+                                    visitData.add(next);
+                                    ++currentNumblerFirst;
                                 }else {
-                                    logUtils.d("加载数据ui：3");
                                     adapter.addItem(next);
                                     ++currentNumbler;
+                                    logUtils.d("加载数据ui：3" +currentNumbler);
                                     adapter.notifyDataSetChanged();
                                     lv_visit_order.loadFinsh();
                                 }
@@ -204,7 +203,7 @@ public class VistRecordActivity extends BaseActivity implements loadMoreListView
                             empty_layout.setErrorType(EmptyLayout.NODATA);
                         }
                     //  srf.setRefreshing(false);
-                        current_total.setText("当前条数："+currentNumbler);
+
                     }
                 }
 
@@ -232,7 +231,7 @@ public class VistRecordActivity extends BaseActivity implements loadMoreListView
         logUtils.d("上啦加载更多走了"+pageNo);
       int page=  ++pageNo;
         logUtils.d("上啦加载更多走了page"+page);
-     if (counts>pageSize*page){ //总条数 要大于已经加载的数据条数
+     if (counts>pageSize*page-pageSize){ //总条数 要大于已经加载的数据条数
             loadData(page+"");
             logUtils.d("上啦加载更多走了");
         }else {

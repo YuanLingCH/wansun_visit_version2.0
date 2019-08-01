@@ -1,31 +1,22 @@
 package wansun.visit.android.ui.activity;
 
-import android.text.TextUtils;
+import android.content.Intent;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import okhttp3.RequestBody;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
 import wansun.visit.android.R;
 import wansun.visit.android.adapter.caseVisitRecordAdapter;
-import wansun.visit.android.api.apiManager;
-import wansun.visit.android.bean.caseVistRecordBean;
-import wansun.visit.android.global.AppConfig;
-import wansun.visit.android.net.requestBodyUtils;
+import wansun.visit.android.bean.caseAllDetailBean;
+import wansun.visit.android.utils.ToastUtil;
 import wansun.visit.android.utils.logUtils;
-import wansun.visit.android.utils.netUtils;
 
 /**
  * Created by User on 2019/2/21.
@@ -33,10 +24,11 @@ import wansun.visit.android.utils.netUtils;
 
 public class CaseVisitRecordAcitvity extends BaseActivity {
     ImageView iv_visit_back;
-    TextView tv_visit_tobar;
+    TextView tv_visit_tobar,tv_ff;
     caseVisitRecordAdapter adapter;
-    List recordData;
+    List<caseAllDetailBean.DataBean.UrgeItemsBean.UrgeVisitItemsBean> recordData;
     ListView lv_case_urge_visit_record;
+
     @Override
     protected int getLayoutId() {
         return R.layout.activity_case_ugre_record;
@@ -48,52 +40,32 @@ public class CaseVisitRecordAcitvity extends BaseActivity {
         tv_visit_tobar= (TextView) findViewById(R.id.tv_visit_tobar);
         lv_case_urge_visit_record= (ListView) findViewById(R.id.lv_case_urge_visit_record);
         tv_visit_tobar.setText("外访记录");
-    getIntentData();
+        tv_ff= (TextView) findViewById(R.id.tv_ff);
+        tv_ff.setVisibility(View.VISIBLE);
+        getIntentData();
     }
 
    private void getIntentData() {
        recordData=new ArrayList();
-       String caseCode = getIntent().getStringExtra("caseCode");
-       String visitGuid = getIntent().getStringExtra("visitGuid");
-       Retrofit retrofit = netUtils.getRetrofit();
-       apiManager manager= retrofit.create(apiManager.class);
-       final RequestBody requestBody = requestBodyUtils.visitCaseDetailsRecordFromeService(caseCode,visitGuid);
-       Call<String> call = manager.visitCaseDetailsRecordFormeService(requestBody);
        recordData.clear();
-       call.enqueue(new Callback<String>() {
-           @Override
-           public void onResponse(Call<String> call, Response<String> response) {
-               String body = response.body();
-               if (!TextUtils.isEmpty(body)){
-                   Gson gson=new Gson();
-                   logUtils.d("案件外访下载数据"+body);
-                   caseVistRecordBean data = gson.fromJson(body, new TypeToken<caseVistRecordBean>() {}.getType());
-                   String statusID = data.getStatusID();
-                    if (AppConfig.SUCCESS.equals(statusID)){  //200
-                        List<caseVistRecordBean.DataBean> data1 = data.getData();
-                        Iterator<caseVistRecordBean.DataBean> iterator = data1.iterator();
-                        while (iterator.hasNext()){
-                            caseVistRecordBean.DataBean next = iterator.next();
-                            recordData.add(next);
-                        }
-                        updataUI();
-                    }
 
-               }
-           }
+       List<caseAllDetailBean.DataBean.UrgeItemsBean.UrgeVisitItemsBean> urgeVisitItems = (List) getIntent().getSerializableExtra("urgeVisitItems");
+       Iterator<caseAllDetailBean.DataBean.UrgeItemsBean.UrgeVisitItemsBean> iterator = urgeVisitItems.iterator();
+       while (iterator.hasNext()){
+           caseAllDetailBean.DataBean.UrgeItemsBean.UrgeVisitItemsBean next = iterator.next();
+           String applicantName = next.getApplicantName();
+           logUtils.d("外访记录"+applicantName);
+           recordData.add(next);
+       }
+       updataUI();
 
-           @Override
-           public void onFailure(Call<String> call, Throwable t) {
-
-           }
-       });
 
 
     }
 
     private void updataUI() {
-        adapter=new caseVisitRecordAdapter(CaseVisitRecordAcitvity.this,recordData);
-        lv_case_urge_visit_record.setAdapter(adapter);
+       adapter=new caseVisitRecordAdapter(CaseVisitRecordAcitvity.this,recordData);
+      lv_case_urge_visit_record.setAdapter(adapter);
 
 
 
@@ -108,7 +80,35 @@ public class CaseVisitRecordAcitvity extends BaseActivity {
                 overridePendingTransition(R.anim.in_from_left, R.anim.out_to_right);  //左边进去 右边出来
             }
         });
+        lv_case_urge_visit_record.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                caseAllDetailBean.DataBean.UrgeItemsBean.UrgeVisitItemsBean  bean = recordData.get(position);
+                String address = bean.getAddress();
+                logUtils.d("外访地址"+address);
+                List<caseAllDetailBean.DataBean.UrgeItemsBean.UrgeVisitItemsBean.VisitRecordItemsBean> visitRecordItems = bean.getVisitRecordItems();
+                try {
+                    if (visitRecordItems.size()>0&&visitRecordItems!=null) {
+                            Intent intent =new Intent(CaseVisitRecordAcitvity.this,VisitDetailRecordActivity.class);
+                        intent.putExtra("visitRecordItems", (Serializable) visitRecordItems);
+                        startActivity(intent);
+                        overridePendingTransition(R.anim.in_from_right,R.anim.out_to_left);
+                    }else {
+                        ToastUtil.showToast(CaseVisitRecordAcitvity.this,"暂无数据...");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    new Throwable("空数据");
+                }
 
+
+
+
+
+
+
+            }
+        });
     }
 
     @Override

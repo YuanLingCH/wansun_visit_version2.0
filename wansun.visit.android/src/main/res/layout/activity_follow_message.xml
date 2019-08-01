@@ -4,16 +4,10 @@
     android:background="@color/backgroundjiemian"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <include layout="@layout/tobar_layout"/>
-    <TextView
-        android:textColor="@color/gray"
-        android:gravity="center"
-        android:text="点击可以拨打相关人员电话"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+<include layout="@layout/tobar_layout"/>
+
     <ListView
-        android:divider="@null"
-        android:id="@+id/lv_case_phone_details"
+        android:id="@+id/lv_follow_message"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 </LinearLayout>

@@ -83,7 +83,7 @@ public class DrawHelper {
         rect.right *= horizontalRatio;
         rect.top *= verticalRatio;
         rect.bottom *= verticalRatio;
-        Rect newRect = new Rect();
+        Rect newRect = new Rect();  //矩形
         switch (cameraDisplayOrientation) {
             case 0:
                 if (cameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {

@@ -188,6 +188,15 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+        <TextView
+            android:id="@+id/tv_display_account"
+            android:textSize="@dimen/text_16"
+            android:textColor="@color/black"
+            android:text="当前登录账号"
+            android:layout_marginLeft="@dimen/dimen_10"
+            android:layout_marginTop="@dimen/dimen_20"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
         <LinearLayout
             android:visibility="gone"
             android:id="@+id/ll_one"
@@ -493,8 +502,9 @@
             </RelativeLayout>
 
         </LinearLayout>
+
         <LinearLayout
-            android:id="@+id/rl_versions"
+
             android:layout_marginLeft="@dimen/dimen_10"
             android:layout_marginRight="@dimen/dimen_10"
             android:layout_marginBottom="@dimen/dimen_20"
@@ -504,9 +514,26 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <TextView
+                android:gravity="center"
+                android:id="@+id/tv_modify_face_account"
                 android:layout_marginTop="@dimen/margin_10"
                 android:textColor="@color/colorblack"
-             android:layout_gravity="center"
+                android:layout_gravity="center"
+                android:layout_marginBottom="@dimen/margin_10"
+                android:textSize="@dimen/text_16"
+                android:text="@string/modify_account_face"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+            <View
+                android:background="#aaa"
+                android:layout_width="match_parent"
+                android:layout_height="0.2dp"/>
+            <TextView
+                android:gravity="center"
+                android:id="@+id/tv_versions"
+                android:layout_marginTop="@dimen/margin_10"
+                android:textColor="@color/colorblack"
+               android:layout_gravity="center"
                 android:layout_marginBottom="@dimen/margin_10"
                 android:textSize="@dimen/text_16"
                 android:text="@string/version"

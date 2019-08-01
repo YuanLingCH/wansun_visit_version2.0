@@ -45,7 +45,7 @@ public class FaceRectView extends View {
         postInvalidate();
     }
 
-    public void addFaceInfo(List<DrawInfo> faceInfoList) {
+    public void addFaceInfo(List<DrawInfo> faceInfoList) { //集合  人脸
         faceRectList.addAll(faceInfoList);
         postInvalidate();
     }

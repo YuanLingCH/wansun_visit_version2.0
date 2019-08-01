@@ -105,7 +105,6 @@ public class VisitOrderActivity extends BaseActivity {
     @Override
     protected void initData() {
 
-
     }
 
     @Override

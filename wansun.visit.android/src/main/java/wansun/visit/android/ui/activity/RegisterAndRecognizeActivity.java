@@ -104,9 +104,7 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
      * 注册人脸状态码，注册结束（无论成功失败）
      */
     private static final int REGISTER_STATUS_DONE = 2;
-
     private int registerStatus = REGISTER_STATUS_DONE;
-
     private int afCode = -1;
     private ConcurrentHashMap<Integer, Integer> requestFeatureStatusMap = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Integer, Integer> livenessMap = new ConcurrentHashMap<>();
@@ -132,21 +130,17 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
             Manifest.permission.CAMERA,
             Manifest.permission.READ_PHONE_STATE
     };
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_register_and_recognize);
         //保持亮屏
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             WindowManager.LayoutParams attributes = getWindow().getAttributes();
             attributes.systemUiVisibility = View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
             getWindow().setAttributes(attributes);
         }
-
         // Activity启动后就锁定为启动时的方向
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
         //本地人脸库初始化
@@ -155,10 +149,8 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
         previewView = findViewById(R.id.texture_preview);
         //在布局结束后才做初始化操作
         previewView.getViewTreeObserver().addOnGlobalLayoutListener(this);
-
         initView();
         register= (Button) findViewById(R.id.register);
-
         faceRectView = (FaceRectView) findViewById(R.id.face_rect_view);
         switchLivenessDetect = (Switch) findViewById(switch_liveness_detect);
         switchLivenessDetect.setChecked(livenessDetect);
@@ -183,42 +175,38 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
             }
         });
         String faceId = SharedUtils.getString("faceId");
+        logUtils.d("faceId "+faceId );
         if (faceId.equals("1")){  // 1表示注册成功
             register.setVisibility(View.GONE);
             switchLivenessDetect.setVisibility(View.GONE);
-
         }else {
             register.setVisibility(View.VISIBLE);
             switchLivenessDetect.setVisibility(View.VISIBLE);
         }
-
     }
 
     private void loginUser() {
-
         String account = SharedUtils.getString("account");
         Toast.makeText(RegisterAndRecognizeActivity.this,"人脸识别成功回调接口"+account,Toast.LENGTH_SHORT).show();
         if (!TextUtils.isEmpty(account)){
-            new Intent(RegisterAndRecognizeActivity.this,MainActivity.class);
+           // new Intent(RegisterAndRecognizeActivity.this,MainActivity.class);
             startActivity(new Intent(RegisterAndRecognizeActivity.this,MainActivity.class));
             finish();
             unInitEngine();
         }else {
+
             startActivity(new Intent(RegisterAndRecognizeActivity.this,LoginActiovity.class));
             finish();
-            unInitEngine();
+            unInitEngine();     //销毁引擎
            // overridePendingTransition(R.anim.in_from_right,R.anim.out_to_left);
         }
     }
-
     private void initView() {
         ConfigUtil.setFtOrient(RegisterAndRecognizeActivity.this, FaceEngine.ASF_OP_0_ONLY); //激活SDK的引擎
         ConfigUtil.setFtOrient(RegisterAndRecognizeActivity.this, FaceEngine.ASF_OP_270_ONLY);
         initEngine();
 
     }
-
-
 
     /**
      * 初始化引擎
@@ -247,7 +235,6 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
             Log.i(TAG, "unInitEngine: " + afCode);
         }
     }
-
 
     @Override
     protected void onDestroy() {
@@ -285,12 +272,6 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
         }
         return allGranted;
     }
-
-
-
-
-
-
 
     private void initCamera() {
         DisplayMetrics metrics = new DisplayMetrics();
@@ -340,7 +321,6 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
             }
 
         };
-
 
         CameraListener cameraListener = new CameraListener() {
             @Override
@@ -455,7 +435,6 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
                 Log.i(TAG, "onCameraConfigurationChanged: " + cameraID + "  " + displayOrientation);
             }
         };
-
         cameraHelper = new CameraHelper.Builder()
                 .previewViewSize(new Point(previewView.getMeasuredWidth(),previewView.getMeasuredHeight()))
                 .rotation(getWindowManager().getDefaultDisplay().getRotation())
@@ -466,8 +445,6 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
                 .build();
         cameraHelper.init();
     }
-
-
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -510,7 +487,6 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
             livenessMap.clear();
             return;
         }
-
         for (Integer integer : keySet) {
             boolean contained = false;
             for (FacePreviewInfo facePreviewInfo : facePreviewInfoList) {
@@ -524,7 +500,6 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
                 livenessMap.remove(integer);
             }
         }
-
     }
 
     private void searchFace(final FaceFeature frFace, final Integer requestId) {
@@ -549,7 +524,6 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
                     public void onSubscribe(Disposable d) {
 
                     }
-
                     @Override
                     public void onNext(CompareResult compareResult) {
                         if (compareResult == null || compareResult.getUserName() == null) {
@@ -604,15 +578,15 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
                 });
     }
 
-
     /**
      * 将准备注册的状态置为{@link #REGISTER_STATUS_READY}
      *
      * @param view 注册按钮
      */
     public void register(View view) {
-
+        logUtils.d("点击了注册按钮");
         if (registerStatus == REGISTER_STATUS_DONE) {
+            logUtils.d("点击了注册按钮进入了方法");
             registerStatus = REGISTER_STATUS_READY;
         }
     }
@@ -626,15 +600,9 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
             ActivityCompat.requestPermissions(this, NEEDED_PERMISSIONS, ACTION_REQUEST_PERMISSIONS);
         } else {
             logUtils.d("第一次测试");
-
             initEngine();
             initCamera();
-
-
         }
     }
-
-
-
 
 }

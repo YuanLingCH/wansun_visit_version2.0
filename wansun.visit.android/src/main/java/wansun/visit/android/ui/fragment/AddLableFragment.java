@@ -84,7 +84,7 @@ public class AddLableFragment extends BaseFragment {
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-
+                ToastUtil.showToast(getActivity(), "添加地址标记失败"+t.toString());
             }
         });
     }
@@ -105,13 +105,17 @@ public class AddLableFragment extends BaseFragment {
                     String statusID = data.getStatusID();
                     if (AppConfig.SUCCESS.equals(statusID)){
                         ToastUtil.showToast(getActivity(), data.getData());
+                    }else {
+                        ToastUtil.showToast(getActivity(), "添加标记失败");
                     }
+                }else {
+                    ToastUtil.showToast(getActivity(), "添加标记失败");
                 }
             }
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-
+                ToastUtil.showToast(getActivity(), "添加标记失败"+t.toString());
             }
         });
     }

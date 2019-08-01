@@ -21,6 +21,7 @@
     <string name="out_bround_submit">外访提交</string>
     <string name="login_faile">登陆失败</string>
     <string name="app_exit">确定退出应用</string>
+    <string name="look_cardID">查看证件号码</string>
     <string name="modify_address">修改地址</string>
     <string name="confirm_delete">确定删除</string>
     <string name="out_visit">外访详情</string>
@@ -31,6 +32,10 @@
     <string name="item_detail_tag">&gt;</string>
     <string name="item_detail_address">案件地址</string>
     <string name="item_detail_progress">催收记录</string>
+    <string name="item_detail_return_message">回款信息</string>
+    <string name="item_detail_follow_message">跟进信息记录</string>
+    <string name="item_detail_operator_record">案件操作记录</string>
+    <string name="item_detail_associated_data">关联资料</string>
     <string name="item_detail_row_case">外访记录</string>
     <string name="item_card_details">卡信息</string>
     <string name="item_card_file">文件查询</string>
@@ -45,6 +50,7 @@
     <string name="cancel_update">取消更新</string>
     <string name="update_content">更新内容：</string>
     <string name="update_now">立即更新</string>
+    <string name="modify_account_face">切换人脸或者账号</string>
     <string name="later">以后再说</string>
     <string name="visit_operation">操作</string>
     <string name="default_file_name">My Recording</string>

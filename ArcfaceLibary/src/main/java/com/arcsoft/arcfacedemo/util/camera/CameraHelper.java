@@ -361,7 +361,8 @@ public class CameraHelper implements Camera.PreviewCallback {
                 previewDisplayView = val;
                 return this;
             } else {
-                throw new RuntimeException("you must preview on a textureView or a surfaceView");
+            throw new RuntimeException("you must preview on a textureView or a surfaceView");
+
             }
         }
 

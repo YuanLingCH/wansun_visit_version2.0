@@ -4,6 +4,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 <include layout="@layout/tobar_layout"/>
+    <TextView
+        android:id="@+id/tv_ff"
+        android:visibility="gone"
+        android:layout_marginTop="@dimen/dimen_3"
+        android:layout_marginBottom="@dimen/dimen_3"
+        android:gravity="center"
+        android:textColor="@color/gray"
+        android:text="点击查看详情"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
     <ListView
         android:divider="@null"
         android:id="@+id/lv_case_urge_visit_record"

@@ -34,4 +34,5 @@ public class MessageCode
 	
 	public static final int RECORD_TIMER = 30;
 
+	public static final String IMEI_SUCESS = "200";
 }

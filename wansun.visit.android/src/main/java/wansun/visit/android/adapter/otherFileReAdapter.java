@@ -131,7 +131,6 @@ public class otherFileReAdapter extends RecyclerView.Adapter<otherFileReAdapter.
         TextView tvAttachmentFullName,tvAttachmentType,tvAttachmentTakeOperateDate,tv_id;
         public ViewHolder(View itemView) {
             super(itemView);
-
            iv= (ImageView) itemView.findViewById(R.id.imgAttachment);
          tvAttachmentFullName= (TextView) itemView.findViewById(R.id.tvAttachmentFullName);
           tvAttachmentType= (TextView) itemView.findViewById(R.id.tvAttachmentType);

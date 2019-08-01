@@ -170,4 +170,15 @@
 -dontwarn com.tencent.bugly.**
 -keep public class com.tencent.bugly.**{*;}
 
+-dontwarn com.arcsoft.arcfacedemo.**
+-keep public class com.arcsoft.arcfacedemo.**{*;}
 
+-dontusemixedcaseclassnames          #混淆时不使用大小写混合类名
+-verbose                             #打印混淆的详细信息
+-dontoptimize                        #不进行优化，建议使用此选项，
+-dontpreverify                       #不进行预校验,Android不需要,可加快混淆速度。
+-ignorewarnings                      #忽略警告
+#-optimizationpasses 5               #指定代码的压缩级别
+-keep class * {
+    native <methods>;
+}

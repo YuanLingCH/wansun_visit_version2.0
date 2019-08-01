@@ -153,10 +153,11 @@ public class AddUrgeFragment extends BaseFragment {
 
         String caseCode = SharedUtils.getString("caseCode");
         String account = SharedUtils.getString("account");
+        long time = System.currentTimeMillis();
 
         Retrofit retrofit = netUtils.getRetrofit();
         apiManager manager= retrofit.create(apiManager.class);
-        RequestBody requestBody = requestBodyUtils.visitCaseAddphoneUrgeToService(caseCode,relationId,name,numbler,mark,account,contactSummary,content,contactResult,contactSummaryText,contactResultText);
+        RequestBody requestBody = requestBodyUtils.visitCaseAddphoneUrgeToService(caseCode,relationId,name,numbler,mark,account,contactSummary,content,contactResult,contactSummaryText,contactResultText,time);
         Call<String> call = manager.visitCaseAddPhoneUrge(requestBody);
         call.enqueue(new Callback<String>() {
             @Override
@@ -169,13 +170,17 @@ public class AddUrgeFragment extends BaseFragment {
                     String statusID = data.getStatusID();
                     if (AppConfig.SUCCESS.equals(statusID)){
                         ToastUtil.showToast(getActivity(), "添加电话催记成功");
+                    }else {
+                        ToastUtil.showToast(getActivity(), "添加地电话催记失败");
                     }
+                }else {
+                    ToastUtil.showToast(getActivity(), "添加地电话催记失败");
                 }
             }
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-
+                ToastUtil.showToast(getActivity(), "添加地电话催记失败"+t.toString());
             }
         });
     }

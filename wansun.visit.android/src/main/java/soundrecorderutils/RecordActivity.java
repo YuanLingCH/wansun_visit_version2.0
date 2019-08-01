@@ -2,7 +2,6 @@ package soundrecorderutils;
 
 import android.Manifest;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -12,6 +11,9 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
@@ -20,9 +22,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
+
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import okhttp3.Call;
@@ -33,10 +43,14 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
 import wansun.visit.android.R;
+import wansun.visit.android.adapter.otherFileReAdapter;
 import wansun.visit.android.api.apiManager;
+import wansun.visit.android.bean.uploadFileBean;
+import wansun.visit.android.db.fileInfo;
+import wansun.visit.android.event.MessageEvent;
 import wansun.visit.android.global.waifangApplication;
+import wansun.visit.android.greendao.gen.fileInfoDao;
 import wansun.visit.android.ui.activity.BaseActivity;
 import wansun.visit.android.utils.NetWorkTesting;
 import wansun.visit.android.utils.SharedUtils;
@@ -45,22 +59,39 @@ import wansun.visit.android.utils.WindowsUitlity;
 import wansun.visit.android.utils.dialogUtils;
 import wansun.visit.android.utils.logUtils;
 
+import static wansun.visit.android.R.id.lv_other_file;
 import static wansun.visit.android.utils.floatWindownUtils.isFloatWindowOpAllowed;
 
 public class RecordActivity extends BaseActivity {
-
+    private fileInfoDao dao;
     private static final int REQUEST_TAKE_PHOTO_PERMISSION = 1;
     private Button mBtnRecordAudio;
     private Button mBtnPlayAudio,btn_record_upload;
     ImageView iv_visit_back;
-    TextView tv_visit_tobar;
+    TextView tv_visit_tobar,tv_record_flag;
     dialogUtils utils;
+    String visitGuid;
+    List<fileInfo>  recordData; //录音文件地址
+    RecyclerView lv_record;
+    otherFileReAdapter bottomAdapter;
+    final int[] cont = {0};
     Handler mHandler=new Handler(){
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
+            switch (msg.what){
+                case 0:
+                    ToastUtil.showToast(RecordActivity.this,"录音文件上传失败");
+                    break;
+                case 1:
+                    ToastUtil.showToast(RecordActivity.this,"录音文件上传完成");
+                    recordData.clear();
+                    updataUI();
+                    tv_record_flag.setText("暂无录音文件");
+                    break;
+            }
             utils.cancleDialog();
-            ToastUtil.showToast(RecordActivity.this,"录音文件上传完成");
+
 
 
         }
@@ -71,6 +102,9 @@ public class RecordActivity extends BaseActivity {
         return R.layout.activity_record;
     }
     protected void initEvent() {
+
+        recordData=new ArrayList<>();
+        recordData.clear();
         //进行录音
         mBtnRecordAudio.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -79,37 +113,56 @@ public class RecordActivity extends BaseActivity {
 
             }
         });
-        mBtnPlayAudio.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                RecordingItem recordingItem = new RecordingItem();
-                SharedPreferences sharePreferences = getSharedPreferences("sp_name_audio", MODE_PRIVATE);
-                final String filePath = sharePreferences.getString("audio_path", "");
-                long elpased = sharePreferences.getLong("elpased", 0);
-                recordingItem.setFilePath(filePath);
-                recordingItem.setLength((int) elpased);
-                PlaybackDialogFragment fragmentPlay = PlaybackDialogFragment.newInstance(recordingItem);
-                fragmentPlay.show(getSupportFragmentManager(), PlaybackDialogFragment.class.getSimpleName());
-            }
-        });
+
         //上传录音文件到服务器
         btn_record_upload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                WindowManager manager = getWindowManager();
-                View view = LayoutInflater.from(waifangApplication.getContext()).inflate(R.layout.loading_layout, null);
-                utils = new dialogUtils(RecordActivity.this, manager, view);
-                TextView tv= (TextView) view.findViewById(R.id.tv_load);
-                tv.setText(R.string.upload_record);
-                utils.getDialog();
+                List<fileInfo> fileInfos = dao.loadAll();
+                try {
+                    if (fileInfos.size()>0&&fileInfos!=null){
+                    WindowManager manager = getWindowManager();
+                    View view = LayoutInflater.from(waifangApplication.getContext()).inflate(R.layout.loading_layout, null);
+                    utils = new dialogUtils(RecordActivity.this, manager, view);
+                    TextView tv= (TextView) view.findViewById(R.id.tv_load);
+                    tv.setText(R.string.upload_record);
+                    utils.getDialog();
+                    //TODO 上传到服务器
+               /*     SharedPreferences sharePreferences = getSharedPreferences("sp_name_audio", MODE_PRIVATE);
+                    String filePath = sharePreferences.getString("audio_path", "");
+                    logUtils.d("录音文件地址"+filePath);*/
+                    NetWorkTesting net=new NetWorkTesting(RecordActivity.this);
+                    if (net.isNetWorkAvailable()) {
 
-                //TODO 上传到服务器
-                SharedPreferences sharePreferences = getSharedPreferences("sp_name_audio", MODE_PRIVATE);
-                String filePath = sharePreferences.getString("audio_path", "");
-                logUtils.d("录音文件地址"+filePath);
-                NetWorkTesting net=new NetWorkTesting(RecordActivity.this);
-                if (net.isNetWorkAvailable()) {
-                    doUpLoad(filePath);
+                        if (fileInfos.size()>0){
+                            Iterator<fileInfo> iterator = fileInfos.iterator();
+                            try {
+                                while (iterator.hasNext()){    //  遍历数据
+                                    fileInfo next = iterator.next();
+                                    logUtils.d("测试数据"+next.path+"ID:"+next.getId());
+                                    String batch = next.getBatch();
+                                    String  path = next.getPath();
+                                    if (batch.equals(visitGuid)&&path.endsWith(".mp3")){
+                                        logUtils.d("录音地址"+path);
+                                        doUpLoad(path);
+                                        dao.deleteByKey(next.getId());  //删除数据库
+                                    }
+                                }
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                logUtils.d("录音地址为空");
+                                new Throwable("录音地址为空");
+                            }
+                        }
+
+                    }
+
+                    }else {
+                        ToastUtil.showToast(RecordActivity.this,"暂时无录音文件");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
 
             }
@@ -122,6 +175,78 @@ public class RecordActivity extends BaseActivity {
             }
         });
     }
+
+    private void displayRecord() {
+        List<fileInfo> fileInfos = dao.loadAll();
+        if (fileInfos.size()>0){
+            Iterator<fileInfo> iterator = fileInfos.iterator();
+            try {
+                while (iterator.hasNext()){    //  遍历数据
+                    fileInfo next = iterator.next();
+                    logUtils.d("测试数据"+next.path+"ID:"+next.getId());
+                    String batch = next.getBatch();
+                  String  path = next.getPath();
+                    if (batch.equals(visitGuid)&&path.endsWith(".mp3")){
+                        recordData.add(next);
+                        logUtils.d("录音地址"+path);
+                    }
+                }
+                updataUI();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                logUtils.d("录音地址为空");
+                new Throwable("录音地址为空");
+            }
+        }
+    }
+
+    /**
+     * 更新UI
+     */
+    private void updataUI() {
+        bottomAdapter=new otherFileReAdapter(RecordActivity.this,recordData,false);
+        LinearLayoutManager lin=new LinearLayoutManager(RecordActivity.this);
+        lv_record.setLayoutManager(lin);
+        lv_record.setAdapter(bottomAdapter);
+        lv_record.setAdapter(bottomAdapter);
+        bottomAdapter.setItemClickListener(new otherFileReAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(long id,int postion) {
+                logUtils.d("测试数据"+id+":"+postion);
+                delete(id, postion);
+            }
+        });
+    }
+    private void delete(final long id, final int postion) {
+        View view = getLayoutInflater().inflate(R.layout.custom_diaglog_layut_exit_app, null);
+        final TextView tv = (TextView) view.findViewById(R.id.tv);
+        TextView tv_cancle= (TextView) view.findViewById(R.id.add_cancle);
+        tv.setText(R.string.confirm_delete);
+        tv.setTextSize(16);
+        tv.setGravity(Gravity.CENTER);
+        TextView tv_submit= (TextView) view.findViewById(R.id.add_submit);
+        WindowManager manager=getWindowManager();
+        final dialogUtils utils=new dialogUtils(RecordActivity.this,manager,view );
+        utils.getDialog();
+        tv_cancle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                utils.cancleDialog();
+
+            }
+        });
+        tv_submit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                utils.cancleDialog();
+                dao.deleteByKey(id);
+                recordData.remove(postion);
+                bottomAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+
 
 
     private void permission() {
@@ -186,7 +311,7 @@ public class RecordActivity extends BaseActivity {
     private void doUpLoad(String filePath) {
         File file = new File(filePath);
         String caseCode = SharedUtils.getString("caseCode");
-        String visitGuid = SharedUtils.getString("visitGuid");
+
         final String account = SharedUtils.getString("account");
         logUtils.d("account"+account);
         String id = SharedUtils.getString("id");
@@ -211,13 +336,30 @@ public class RecordActivity extends BaseActivity {
                     @Override
                     public void onFailure(Call call, IOException e) {
                         logUtils.d("上传录音"+e.toString());
+                        mHandler.sendEmptyMessage(0);
                     }
 
                     @Override
                     public void onResponse(Call call, Response response) throws IOException {
-                        ResponseBody body = response.body();
-                        logUtils.d("上传录音"+body.string());
-                        mHandler.sendEmptyMessage(0);
+                        String body = response.body().string();
+                        Gson gson=new Gson();
+                        try {
+                            uploadFileBean bean= gson.fromJson(body , new TypeToken<uploadFileBean>() {}.getType());
+                            String statusID = bean.getStatusID();
+                            if (statusID.equals("200")){
+                                logUtils.d("上传录音"+body);
+                                cont[0]++;
+                                if (cont[0]==recordData.size()){
+                                    mHandler.sendEmptyMessage(1);
+                                }
+
+                            }else {
+                                mHandler.sendEmptyMessage(0);
+                            }
+                        } catch (JsonSyntaxException e) {
+                            e.printStackTrace();
+                            mHandler.sendEmptyMessage(0);
+                        }
                     }
                 });
             }
@@ -240,12 +382,22 @@ public class RecordActivity extends BaseActivity {
 
     @Override
     protected void initData() {
+        displayRecord();    //显示录音列表
+        tv_record_flag.setVisibility(View.VISIBLE);
+        if (recordData.size()>0){
+            tv_record_flag.setText("点击条目可以删除,点击左边图片进行播放录音...");
+        }else {
+            tv_record_flag.setText("暂无录音文件");
+        }
 
     }
 
     @Override
     protected void initLise() {
-
+       // EventBus.getDefault().register(RecordActivity.this);
+        visitGuid = SharedUtils.getString("visitGuid");
+        dao= waifangApplication.getInstence().getSession().getFileInfoDao();
+        org.greenrobot.eventbus.EventBus.getDefault().register(RecordActivity.this);
     }
 
     protected void initView() {
@@ -255,6 +407,8 @@ public class RecordActivity extends BaseActivity {
         iv_visit_back= (ImageView) findViewById(R.id.iv_visit_back);
         tv_visit_tobar= (TextView) findViewById(R.id.tv_visit_tobar);
         tv_visit_tobar.setText("录音");
+        lv_record= (RecyclerView ) findViewById(lv_other_file);
+        tv_record_flag= (TextView) findViewById(R.id.tv_record_flag);
     }
         ////////////////////////////////判断悬浮窗///////////////////////////////////////////////////////////////////
     /**
@@ -272,26 +426,8 @@ public class RecordActivity extends BaseActivity {
      * 打开权限设置界面
      */
     public void openSetting() {
-      //  try {
-
            startActivityForResult(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName())), 11);
 
-
-
-/*            Intent localIntent = new Intent(
-                    "miui.intent.action.APP_PERM_EDITOR");
-            localIntent.setClassName("com.miui.securitycenter",
-                    "com.miui.permcenter.permissions.AppPermissionsEditorActivity");
-            localIntent.putExtra("extra_pkgname", getPackageName());
-            startActivityForResult(localIntent, 11);
-            logUtils .e("启动小米悬浮窗设置界面");
-        } catch (ActivityNotFoundException localActivityNotFoundException) {
-            Intent intent1 = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-            Uri uri = Uri.fromParts("package", getPackageName(), null);
-            intent1.setData(uri);
-            startActivityForResult(intent1, 11);
-            logUtils .e("启动悬浮窗界面");
-        }*/
     }
 
     @Override
@@ -338,5 +474,21 @@ public class RecordActivity extends BaseActivity {
             }
         }
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        org.greenrobot.eventbus.EventBus.getDefault().unregister(RecordActivity.this);
+    }
+
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(MessageEvent event) {
+        logUtils.d("收到事件消息"+event.getFilePath());
+        recordData.clear();
+        displayRecord();
+        tv_record_flag.setText("点击条目可以删除,点击左边图片进行播放录音...");
+    };
+
 
 }

@@ -177,13 +177,14 @@ public class AddPhoneFragment extends BaseFragment {
         if (!TextUtils.isEmpty(person)&&!TextUtils.isEmpty(phone)){
         String caseCode = SharedUtils.getString("caseCode");
         String account = SharedUtils.getString("account");
+            long time = System.currentTimeMillis();
             String remark = ed_remark.getText().toString().trim();
             String unit = ed_unit.getText().toString().trim();
             Retrofit retrofit = netUtils.getRetrofit();
         apiManager manager= retrofit.create(apiManager.class);
-    RequestBody requestBody = requestBodyUtils.visitCaseAddPhoneToService(caseCode,relationId,person,phone,phoneStatus,
-           unit,remark,relationText,phoneType,phoneTypeText,phoneStatusText);
-  Call<String> call = manager.visitCaseAddPhone(requestBody);
+       RequestBody requestBody = requestBodyUtils.visitCaseAddPhoneToService(caseCode,relationId,person,phone,phoneStatus,
+           unit,remark,relationText,phoneType,phoneTypeText,phoneStatusText,account,time );
+       Call<String> call = manager.visitCaseAddPhone(requestBody);
     call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
@@ -195,13 +196,17 @@ public class AddPhoneFragment extends BaseFragment {
                     String statusID = data.getStatusID();
                     if (AppConfig.SUCCESS.equals(statusID)){
                         ToastUtil.showToast(getActivity(), "添加电话成功");
+                    }else {
+                        ToastUtil.showToast(getActivity(), "添加电话失败");
                     }
+                }else {
+                    ToastUtil.showToast(getActivity(), "添加电话失败");
                 }
             }
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-
+                ToastUtil.showToast(getActivity(), "添加地电话失败"+t.toString());
             }
         });
         }

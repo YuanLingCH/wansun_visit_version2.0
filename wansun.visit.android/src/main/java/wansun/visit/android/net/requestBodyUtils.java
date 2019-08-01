@@ -115,7 +115,7 @@ public class requestBodyUtils {
     }
     //添加外访单添加联系电话
     public static  RequestBody visitCaseAddPhoneToService(String caseCode,Integer relationId,String name, String phoneNumber,
-            Integer phoneStatus,String company,String remark,String relationText,Integer phoneType,String phoneTypeText,String phoneStatusText){
+            Integer phoneStatus,String company,String remark,String relationText,Integer phoneType,String phoneTypeText,String phoneStatusText,String Creator,Long CreatDate ){
         Map map=new HashMap<>();
         map.put("caseCode",caseCode);  //必须填
         map.put("relationId",relationId);
@@ -129,13 +129,15 @@ public class requestBodyUtils {
         map.put("phoneType",phoneType);
         map.put("phoneStatusText",phoneStatusText);
         map.put("companyGuId","");
+        map.put("Creator",Creator);
+        map.put("CreatDate ",CreatDate );
         Gson gson=new Gson();
         String json = gson.toJson(map);
         logUtils.d("传参"+json );
         return RequestBody.create(MediaType.parse("application/json; charset=utf-8"),json);
     }
     //案件添加上门外访催记
-    public static  RequestBody visitAddVisitUrgeToService(String caseCode,String visitGuid,String operatorName ,Integer operateId,String operateContent){
+    public static  RequestBody visitAddVisitUrgeToService(String caseCode,String visitGuid,String operatorName ,Integer operateId,String operateContent,long CreatDate ){
         Map<String ,Object> map=new HashMap<>();
         map.put("caseCode",caseCode);
         map.put("visitGuid",visitGuid);
@@ -143,6 +145,8 @@ public class requestBodyUtils {
         map.put("operateId",operateId);
         map.put("operateContent",operateContent);
         map.put("operateTypeText","");
+        map.put("Creator",operatorName);
+        map.put("CreatDate ",CreatDate );
         Gson gson=new Gson();
         String json = gson.toJson(map);
         logUtils.d("传参"+json );
@@ -150,7 +154,7 @@ public class requestBodyUtils {
     }
     //添加案件地址信息
     public static  RequestBody visitCaseAddAdressMessageToService(String caseCode,String relationId,String name, Integer addressType,
-                   String address,Integer addressStatus,String remark,String relationText,String companyName,String addressTypeText,String addressStateText){
+                   String address,Integer addressStatus,String remark,String relationText,String companyName,String addressTypeText,String addressStateText,String Creator,Long CreatDate){
         Map map=new HashMap<>();
         map.put("caseCode",caseCode);  //必须填
         map.put("relationId",relationId);
@@ -165,6 +169,8 @@ public class requestBodyUtils {
         map.put("addressStatusText",addressStateText);
         map.put("addressTypeText",addressTypeText);
         map.put("postcode","");
+        map.put("Creator",Creator);
+        map.put("CreatDate ",CreatDate );
         Gson gson=new Gson();
         String json = gson.toJson(map);
         logUtils.d("传参"+json );
@@ -172,7 +178,7 @@ public class requestBodyUtils {
     }
     //添加案件联系人
     public static  RequestBody visitCaseAddcontactsToService(String caseCode,Integer relation,String relationText,String name,String cidNo,
-                          Integer cidType,String cidTypeText,Integer gender,String genderText,Integer age ){
+                          Integer cidType,String cidTypeText,Integer gender,String genderText,Integer age,String Creator,Long CreatDate ){
         Map map=new HashMap<>();
         map.put("caseCode",caseCode);  //必须填
         map.put("relation",relation);
@@ -187,6 +193,8 @@ public class requestBodyUtils {
         map.put("im","");
         map.put("debtorNo","");
         map.put("socialNo","");
+        map.put("Creator",Creator);
+        map.put("CreatDate ",CreatDate );
         Gson gson=new Gson();
         String json = gson.toJson(map);
         logUtils.d("传参"+json );
@@ -194,7 +202,7 @@ public class requestBodyUtils {
     }
     //添加案件电话催收
     public static  RequestBody visitCaseAddphoneUrgeToService(String caseCode,Integer relation,String name,String phone,String remark,String creator,
-                                                             Integer contactSummary,String callRecords,Integer contactResult,String contactSummaryText,String contactResultText ){
+                                                             Integer contactSummary,String callRecords,Integer contactResult,String contactSummaryText,String contactResultText ,long CreatDate ){
         Map map=new HashMap<>();
         map.put("caseCode",caseCode);  //必须填
         map.put("relation",relation);
@@ -207,6 +215,7 @@ public class requestBodyUtils {
         map.put("contactResultText",contactResultText);
         map.put("remark",remark);
         map.put("creator",creator);
+        map.put("CreatDate ",CreatDate );
         Gson gson=new Gson();
         String json = gson.toJson(map);
         logUtils.d("传参"+json );

@@ -108,6 +108,11 @@
         <activity
             android:name=".ui.activity.RegisterAndRecognizeActivity"
             android:launchMode="singleTop" />
+        <activity android:name=".ui.activity.FollowMessageActivity"/>
+        <activity android:name=".ui.activity.ReturnMessageActivity"/>
+        <activity android:name=".ui.activity.CaseAddressActivity"/>
+        <activity android:name=".ui.activity.OperaterRecordActivity"/>
+        <activity android:name=".ui.activity.VisitDetailRecordActivity"/>
 
         <provider
             android:name="android.support.v4.content.FileProvider"

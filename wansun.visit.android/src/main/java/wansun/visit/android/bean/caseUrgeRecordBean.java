@@ -8,16 +8,19 @@ import java.util.List;
 
 public class caseUrgeRecordBean {
 
+
     /**
      * statusID : 200
      * message : ok
      * dataType : application/json
-     * data : [{"promiseAmount":100,"promiseDate":0,"operateTypeDecoration":"电催","operateObjectContent":"13655977703","measure":"无","operateDate":1547609877475,"operator":"qzws136"},{"promiseAmount":100,"promiseDate":0,"operateTypeDecoration":"电催","operateObjectContent":"13655977703","measure":"无","operateDate":1548143562480,"operator":"qzws136"},{"promiseAmount":100,"promiseDate":0,"operateTypeDecoration":"电催","operateObjectContent":"13655977703","measure":"无","operateDate":1548143562480,"operator":"qzws136"},{"promiseAmount":100,"promiseDate":0,"operateTypeDecoration":"电催","operateObjectContent":"5655654","measure":"无","operateDate":1551342704771,"operator":"qzws136"},{"promiseAmount":100,"promiseDate":0,"operateTypeDecoration":"电催","operateObjectContent":"541471745875","measure":"无","operateDate":1551410899403,"operator":"qzws136"},{"promiseAmount":100,"promiseDate":0,"operateTypeDecoration":"电催","operateObjectContent":"541471745875","measure":"无","operateDate":1551410899403,"operator":"qzws136"},{"promiseAmount":100,"promiseDate":1551410963923,"operateTypeDecoration":"电催","operateObjectContent":"541471745875","measure":"无","operateDate":1551410963922,"operator":"qzws136"},{"promiseAmount":100,"promiseDate":1551410963923,"operateTypeDecoration":"电催","operateObjectContent":"541471745875","measure":"无","operateDate":1551410963922,"operator":"qzws136"}]
+     * data : [{"promiseAmount":null,"promiseDate":null,"operateTypeDecoration":"电催","operateObjectContent":"13577728179","measure":"无","operateDate":1562645201733,"operator":"kmws273"},{"promiseAmount":null,"promiseDate":null,"operateTypeDecoration":"电催","operateObjectContent":"13208778822","measure":"无","operateDate":1562638603015,"operator":"kmws273"},{"promiseAmount":null,"promiseDate":null,"operateTypeDecoration":"电催","operateObjectContent":"13208778822","measure":"无","operateDate":1562636915405,"operator":"kmws273"},{"promiseAmount":null,"promiseDate":null,"operateTypeDecoration":"电催","operateObjectContent":"13628777614","measure":"无","operateDate":1562636726561,"operator":"kmws273"},{"promiseAmount":null,"promiseDate":null,"operateTypeDecoration":"电催","operateObjectContent":"13577728179","measure":"无","operateDate":1562144011324,"operator":"kmws273"},{"promiseAmount":null,"promiseDate":null,"operateTypeDecoration":"电催","operateObjectContent":"13577749992","measure":"无","operateDate":1562142866237,"operator":"kmws273"},{"promiseAmount":null,"promiseDate":null,"operateTypeDecoration":"电催","operateObjectContent":"13577728179","measure":"无","operateDate":1562140483035,"operator":"kmws273"},{"promiseAmount":null,"promiseDate":null,"operateTypeDecoration":"电催","operateObjectContent":"13577749992","measure":"通话中","operateDate":1562051929095,"operator":"kmws273"},{"promiseAmount":null,"promiseDate":null,"operateTypeDecoration":"电催","operateObjectContent":"13577728179","measure":"关机","operateDate":1562051818189,"operator":"kmws273"},{"promiseAmount":null,"promiseDate":null,"operateTypeDecoration":"电催","operateObjectContent":"0877-4963327","measure":"无法接通","operateDate":1562051665308,"operator":"kmws273"}]
+     * page : {"counts":10,"pageNum":1,"pageSize":20}
      */
 
     private String statusID;
     private String message;
     private String dataType;
+    private PageBean page;
     private List<DataBean> data;
 
     public String getStatusID() {
@@ -44,6 +47,14 @@ public class caseUrgeRecordBean {
         this.dataType = dataType;
     }
 
+    public PageBean getPage() {
+        return page;
+    }
+
+    public void setPage(PageBean page) {
+        this.page = page;
+    }
+
     public List<DataBean> getData() {
         return data;
     }
@@ -52,18 +63,54 @@ public class caseUrgeRecordBean {
         this.data = data;
     }
 
-    public static class DataBean {
+    public static class PageBean {
         /**
-         * promiseAmount : 100
-         * promiseDate : 0
-         * operateTypeDecoration : 电催
-         * operateObjectContent : 13655977703
-         * measure : 无
-         * operateDate : 1547609877475
-         * operator : qzws136
+         * counts : 10
+         * pageNum : 1
+         * pageSize : 20
          */
 
-        private int promiseAmount;
+        private int counts;
+        private int pageNum;
+        private int pageSize;
+
+        public int getCounts() {
+            return counts;
+        }
+
+        public void setCounts(int counts) {
+            this.counts = counts;
+        }
+
+        public int getPageNum() {
+            return pageNum;
+        }
+
+        public void setPageNum(int pageNum) {
+            this.pageNum = pageNum;
+        }
+
+        public int getPageSize() {
+            return pageSize;
+        }
+
+        public void setPageSize(int pageSize) {
+            this.pageSize = pageSize;
+        }
+    }
+
+    public static class DataBean {
+        /**
+         * promiseAmount : null
+         * promiseDate : null
+         * operateTypeDecoration : 电催
+         * operateObjectContent : 13577728179
+         * measure : 无
+         * operateDate : 1562645201733
+         * operator : kmws273
+         */
+
+        private Object promiseAmount;
         private long promiseDate;
         private String operateTypeDecoration;
         private String operateObjectContent;
@@ -71,11 +118,11 @@ public class caseUrgeRecordBean {
         private long operateDate;
         private String operator;
 
-        public int getPromiseAmount() {
+        public Object getPromiseAmount() {
             return promiseAmount;
         }
 
-        public void setPromiseAmount(int promiseAmount) {
+        public void setPromiseAmount(Object promiseAmount) {
             this.promiseAmount = promiseAmount;
         }
 

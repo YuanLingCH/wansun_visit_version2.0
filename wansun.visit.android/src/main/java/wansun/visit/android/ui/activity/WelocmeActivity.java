@@ -10,20 +10,22 @@ import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.arcsoft.arcfacedemo.common.Constants;
 import com.arcsoft.face.ErrorInfo;
 import com.arcsoft.face.FaceEngine;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
@@ -41,11 +43,13 @@ import wansun.visit.android.api.apiManager;
 import wansun.visit.android.bean.stateMessageBean;
 import wansun.visit.android.global.AppConfig;
 import wansun.visit.android.net.requestBodyUtils;
+import wansun.visit.android.utils.SharedUtils;
 import wansun.visit.android.utils.ToastUtil;
 import wansun.visit.android.utils.logUtils;
 import wansun.visit.android.utils.netUtils;
 
 /**
+ * 首页
  * Created by User on 2019/3/26.
  */
 
@@ -58,7 +62,6 @@ public class WelocmeActivity extends BaseActivity {
     protected int getLayoutId() {
         return R.layout.activity_welcome;
     }
-
     @Override
     protected void initView() {
         tv_imie= (TextView) findViewById(R.id.tv_imie);
@@ -69,17 +72,6 @@ public class WelocmeActivity extends BaseActivity {
 
     @Override
     protected void initEvent() {
-        final int[] count = {0};
-        but_imei.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                 count[0]++;
-                logUtils.d("手机"+count[0]);
-                if (count[0]==5){  //点击5次就发动服务器
-
-                }
-            }
-        });
     }
 
     @Override
@@ -91,6 +83,7 @@ public class WelocmeActivity extends BaseActivity {
     private void getData() {
         TelephonyManager telephonyManager=(TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
         final String imei=telephonyManager.getDeviceId();
+        SharedUtils.putString("imei",imei);
         logUtils.d("手机串号"+imei);
         tv_link_devices.setText(R.string.link_devices);
         Retrofit retrofit = netUtils.getRetrofit();
@@ -113,15 +106,19 @@ public class WelocmeActivity extends BaseActivity {
                             public void run() {
                                // Intent intent=new Intent(WelocmeActivity.this,LoginActiovity.class);
                               Intent intent=new Intent(WelocmeActivity.this,RegisterAndRecognizeActivity.class);
-                     startActivity(intent);
+                                 startActivity(intent);
+
                             }
                         },500);
-
                     }else {
                         tv_check_state.setText(R.string.check_imei_state);
                         tv_imie.setText("设备IMEI:"+imei.toString().trim());
                         tv_imie.setTextSize(18);
                         tv_link_devices.setText("设备连接失败...");
+                        String imeiSucess = SharedUtils.getString("imeiSucess");
+                        if (!TextUtils.isEmpty(imeiSucess)){
+                            SharedUtils.clear("imeiSucess");
+                        }
                     }
                 }
             }
@@ -134,14 +131,10 @@ public class WelocmeActivity extends BaseActivity {
         });
 
     }
-
     @Override
     protected void initLise() {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,  WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
-
     }
-
 
     private void permission() {
         List<String> permissionLists = new ArrayList<>();
@@ -184,9 +177,6 @@ public class WelocmeActivity extends BaseActivity {
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
-
-
-
 
     /**
      * 激活引擎

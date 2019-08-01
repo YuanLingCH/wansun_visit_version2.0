@@ -28,6 +28,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -47,6 +51,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import wansun.visit.android.R;
 import wansun.visit.android.api.apiManager;
+import wansun.visit.android.bean.uploadFileBean;
 import wansun.visit.android.config.AppConfig;
 import wansun.visit.android.db.fileInfo;
 import wansun.visit.android.global.waifangApplication;
@@ -195,11 +200,22 @@ public class TakePhotosActivity extends BaseActivity {
                                 @Override
                                 public void onResponse(Call call, Response response) throws IOException {
                                     ResponseBody body = response.body();
+                                    String s = body.string();   //数据类型
+                                        Gson gson=new Gson();
+                                    try {
+                                        uploadFileBean bean= gson.fromJson(s, new TypeToken<uploadFileBean>() {}.getType());
+                                        String statusID = bean.getStatusID();
+                                        if (statusID.equals("200")){
+                                            logUtils.d("图片上传" + s);
 
-                                    logUtils.d("图片上传" + body.string());
-
-                                        mHandler.sendEmptyMessage(SUCCESS);
-
+                                            mHandler.sendEmptyMessage(SUCCESS);
+                                        }else {
+                                            mHandler.sendEmptyMessage(fAIL);
+                                        }
+                                    } catch (JsonSyntaxException e) {
+                                        e.printStackTrace();
+                                        mHandler.sendEmptyMessage(fAIL);
+                                    }
 
                                 }
                             });
