@@ -56,7 +56,6 @@ public class vedioWindowsUtils {
         // 如果设置了WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE，弹出的View收不到Back键的事件
 
         params.flags = flags;
-
         // 不设置这个弹出框的透明遮罩显示为黑色
          params.format = PixelFormat.TRANSLUCENT;
         // FLAG_NOT_TOUCH_MODAL不阻塞事件传递到后面的窗口
