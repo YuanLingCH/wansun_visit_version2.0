@@ -49,12 +49,6 @@ public class vedioWindowsUtils {
         params.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT |
 
                 WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;
-
-
-
-
-
-
         // 设置flag
         int flags = canTouchFlags;
         // | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
