@@ -50,6 +50,11 @@ public class vedioWindowsUtils {
 
                 WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;
 
+
+
+
+
+
         // 设置flag
         int flags = canTouchFlags;
         // | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
