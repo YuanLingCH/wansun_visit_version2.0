@@ -69,15 +69,24 @@ public class FileUploadActivity extends BaseActivity {
     private BroadcastReceiver receiver = null;
     String caseCode;
     String visitGuid;
-
+    int cont = 0;
     Handler mHandler=new Handler(){
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            utils.cancleDialog();
-            ToastUtil.showToast(FileUploadActivity.this,"文件上传成功");
-            tv_path.setText("");
-            but_upload_batch.setText("文件上传完成...");
+          switch (msg.what){
+              case 0:
+                  utils.cancleDialog();
+                  ToastUtil.showToast(FileUploadActivity.this,"文件上传成功");
+                  tv_path.setText("");
+                  but_upload_batch.setText("文件上传完成...");
+                  break;
+              case 1:
+                  utils.cancleDialog();
+                  ToastUtil.showToast(FileUploadActivity.this,"文件上传失败，请重新上传");
+                  break;
+          }
+
 
 
 
@@ -215,14 +224,14 @@ public class FileUploadActivity extends BaseActivity {
             View view = LayoutInflater.from(waifangApplication.getContext()).inflate(R.layout.loading_layout, null);
             utils = new dialogUtils(FileUploadActivity.this, manager, view);
             TextView tv= (TextView) view.findViewById(R.id.tv_load);
-            tv.setText(R.string.upload_pictureing);
+            tv.setText(R.string.upload_fieling);
             utils.getDialog();
             String visitGuid = SharedUtils.getString("visitGuid");
             final String account = SharedUtils.getString("account");
             logUtils.d("account"+account);
             String id = SharedUtils.getString("id");
             final OkHttpClient okHttpClient = new OkHttpClient();
-            final int[] cont = {0};
+
             for (int i = 0; i <list.size(); i++) {
                 File file = new File(list.get(i));
                 MultipartBody.Builder builder = new MultipartBody.Builder()
@@ -245,14 +254,16 @@ public class FileUploadActivity extends BaseActivity {
                             @Override
                             public void onFailure(Call call, IOException e) {
                                 logUtils.d("图片上传错误"+e.toString());
+                                mHandler.sendEmptyMessage(1);
                             }
 
                             @Override
                             public void onResponse(Call call, Response response) throws IOException {
                                 ResponseBody body = response.body();
-                                logUtils.d("文件上传"+body.string());
-                                cont[0]++;
-                                if (cont[0]==list.size()){
+                                cont++;
+                                logUtils.d("文件上传"+body.string()+"cont"+cont+"list.size"+list.size());
+                                logUtils.d("cont"+cont+"list.size"+list.size());
+                                if (cont==list.size()){
                                     mHandler.sendEmptyMessage(0);
 
                                 }
@@ -331,9 +342,14 @@ public class FileUploadActivity extends BaseActivity {
                             fileInfo next = iterator.next();
                             logUtils.d("测试数据"+next.path+"ID:"+next.getId());
                             String batch = next.getBatch();
+
                             if (batch.equals(visitGuid)){
-                                bottomData.add(next);
-                                bottomPath.add(next.getPath());
+                                String path = next.getPath();
+                                if (!path.endsWith("test.mp3")){
+                                    bottomData.add(next);
+                                    bottomPath.add(path);
+                                }
+
                             }
                         }
                         logUtils.d("测试数据bottomData.size()"+bottomData.size());

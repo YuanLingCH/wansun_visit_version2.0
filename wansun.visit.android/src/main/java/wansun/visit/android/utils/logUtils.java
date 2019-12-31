@@ -7,9 +7,9 @@ import android.util.Log;
  * Created by User on 2019/2/12.
  */
 public class logUtils {
- public static boolean isShow = false; // false 表示上线模式
- // public static boolean isShow = true;  // true 表示开发模式
-          public  static  String tag= "TAG";
+public static boolean isShow = false; // false 表示上线模式
+//public static boolean isShow = true;  // true 表示开发模式
+   public  static  String tag= "TAGVISIT";
         //对应级别为verbose
         public static void v( String msg) {
             if (isShow == true) {

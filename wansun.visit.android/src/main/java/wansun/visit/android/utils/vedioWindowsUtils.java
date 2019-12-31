@@ -45,7 +45,11 @@ public class vedioWindowsUtils {
         windowManager= (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         params= new WindowManager.LayoutParams();
         mView = setUpView(context, "");
-        params.type=WindowManager.LayoutParams.TYPE_SYSTEM_ALERT | WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;
+        //  WindowManager.LayoutParams.TYPE_SYSTEM_ALERT | WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY
+        params.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT |
+
+                WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;
+
         // 设置flag
         int flags = canTouchFlags;
         // | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
@@ -69,6 +73,7 @@ public class vedioWindowsUtils {
      //   params.gravity = Gravity.TOP|Gravity.RIGHT;
         params.gravity = Gravity.TOP;
         windowManager.addView(mView, params);
+
     }
     ;
     private View setUpView(Context context, String s) {

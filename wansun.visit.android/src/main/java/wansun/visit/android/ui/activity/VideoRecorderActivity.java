@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -111,7 +112,7 @@ public class VideoRecorderActivity extends BaseActivity {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            ToastUtil.showToast(VideoRecorderActivity.this,"图片上传完成");
+           // ToastUtil.showToast(VideoRecorderActivity.this,"图片上传完成");
             int what = msg.what;
             if (what==0){
                 utils.cancleDialog();
@@ -119,6 +120,7 @@ public class VideoRecorderActivity extends BaseActivity {
             }else if (what==1){
                 utils.cancleDialog();
                 ToastUtil.showToast(VideoRecorderActivity.this,"上传视频成功");
+                deleteVideoFiles();
             }else if (what==2){
                 utils.cancleDialog();
                 getFileSize(destPath);
@@ -134,10 +136,32 @@ public class VideoRecorderActivity extends BaseActivity {
                 String visitGuid = SharedUtils.getString("visitGuid");
                 fileInfo info=new fileInfo(null,url_file,"1",System.currentTimeMillis(),visitGuid);  //1为视频
                 dao.insert(info);
+                ToastUtil.showToast(VideoRecorderActivity.this,"视频录制完成");
             }
 
         }
     };
+
+    /**
+     * 上传成功后要删除数据库的数据
+     */
+    private void deleteVideoFiles() {
+        List<fileInfo> fileInfos = dao.loadAll();
+        if (!fileInfos.isEmpty()&&fileInfos.size()>0) {
+            Iterator<fileInfo> iterator = fileInfos.iterator();
+            String visitGuid = SharedUtils.getString("visitGuid");
+            while (iterator.hasNext()) {    //  遍历数据
+                fileInfo next = iterator.next();
+                String batch = next.getBatch();
+                if (batch.equals(visitGuid) && next.getType().equals("1")) {  //1为录制视频文件
+                    Long id = next.getId();
+                    dao.deleteByKey(id);
+
+                }
+            }
+        }
+    }
+
     @Override
     protected int getLayoutId() {
         return R.layout.activity_video_record;

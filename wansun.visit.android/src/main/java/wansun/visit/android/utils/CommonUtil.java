@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.media.ThumbnailUtils;
+import android.os.Build;
 import android.provider.MediaStore;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -201,6 +202,7 @@ public class CommonUtil {
          * @return 尺寸变化
          */
         public static Bitmap getBitmap(Bitmap bitmap, int sampleSize) {
+
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inSampleSize = sampleSize;
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -212,4 +214,34 @@ public class CommonUtil {
 
 
     }
+
+    /**
+     * 使用手机主板+系统定制商+cup指令集+设备参数+显示屏参数+修订版列表等数据生成IMEI号
+     *  Pseudo-Unique ID, 这个在任何Android手机中都有效 解决手机中IMEI获取不到情况，兼容所有手机
+     * @param context
+     * @return
+     */
+
+    public static String getIMEINew(Context context) {
+        //we make this look like a valid IMEI
+        String m_szDevIDShort = "35" +
+                Build.BOARD.length()%10 +
+                Build.BRAND.length()%10 +
+                Build.CPU_ABI.length()%10 +
+                Build.DEVICE.length()%10 +
+                Build.DISPLAY.length()%10 +
+                Build.HOST.length()%10 +
+                Build.ID.length()%10 +
+                Build.MANUFACTURER.length()%10 +
+                Build.MODEL.length()%10 +
+                Build.PRODUCT.length()%10 +
+                Build.TAGS.length()%10 +
+                Build.TYPE.length()%10 +
+                Build.USER.length()%10 ; //13 digits
+        return m_szDevIDShort;
+    }
+
+
+
+
 }

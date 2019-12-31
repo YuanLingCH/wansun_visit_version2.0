@@ -27,22 +27,30 @@ public class dialogUtils {
     }
 
     public  void getDialog(){
-        dialog = new AlertDialog.Builder(mContext)
-                .setView(view)
-                .setCancelable(false)
-                .create();
-        dialog.setCanceledOnTouchOutside(false);
-        Window window = dialog.getWindow();
-        window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        dialog.show();
-        Display defaultDisplay = manager.getDefaultDisplay();
-        android.view.WindowManager.LayoutParams p = dialog.getWindow().getAttributes();  //获取对话框当前的参数值
-        p.width = (int) (defaultDisplay.getWidth() * 0.8);
-        dialog.getWindow().setAttributes(p);     //设置生效
-    }
 
+                dialog = new AlertDialog.Builder(mContext)
+                        .setView(view)
+                        .setCancelable(false)
+                        .create();
+                dialog.setCanceledOnTouchOutside(false);
+
+                Window window = dialog.getWindow();
+                window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                dialog.show();
+                Display defaultDisplay = manager.getDefaultDisplay();
+                android.view.WindowManager.LayoutParams p = dialog.getWindow().getAttributes();  //获取对话框当前的参数值
+                p.width = (int) (defaultDisplay.getWidth() * 0.8);
+                dialog.getWindow().setAttributes(p);     //设置生效
+
+
+
+
+    }
         public  void cancleDialog(){
-            dialog.cancel();
+            if (dialog!=null){
+                dialog.cancel();
+            }
+
 
         }
 

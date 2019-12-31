@@ -8,7 +8,8 @@
     <color name="login_pressed">#303F9F</color>
     <color name="white">#FFFEFF</color>
     <color name="jiemian">#F6F6FC</color>
-
+    <color name="text1">#EC8325</color>
+    <color name="text2">#333333</color>
     <color name="preview_mock">#9a000000</color>
     <color name="black">#000</color>
     <color name="red">#d14000</color>
@@ -22,10 +23,10 @@
     <color name="weishengxiao">#C0C0C0 </color>
     <color name="yiguoqi">#0098EF </color>
     <color name="weishengxiao_">#EC8325</color>
-
+    <color name="background">#FFFFFF</color>
     <color name="dialog">#F8F8F8</color>
    <color name="wansun">#E2711D</color>
-
+    <color name="split_line">#11112233</color>
     <color name="backgroundjiemian">#EFEFEF</color>
     <color name="backgroundtoolbar">#F4F4F4</color>
     <color name="medium_blue">#0000cd</color>

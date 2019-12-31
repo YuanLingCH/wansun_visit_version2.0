@@ -1,19 +1,12 @@
 package wansun.visit.android.utils;
 
 import android.content.Context;
-
 import android.content.Intent;
-
 import android.net.Uri;
-
-
 
 import com.baidu.mapapi.model.LatLng;
 
-
-
 import java.io.File;
-
 
 
 public class MapUtil {
@@ -440,5 +433,10 @@ public class MapUtil {
         context.startActivity(intent);
 
     }
+
+
+
+
+
 
 }

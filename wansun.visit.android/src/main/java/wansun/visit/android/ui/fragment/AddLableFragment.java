@@ -5,6 +5,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import okhttp3.RequestBody;
@@ -50,13 +51,18 @@ public class AddLableFragment extends BaseFragment {
         but_lab_complete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                but_lab_complete.setFocusable(false);
+                but_lab_complete.setText(R.string.submit_data_ing);
                     doComplete();
+
             }
         });
         //标记为外访
         but_lab_visit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                but_lab_visit.setFocusable(false);
+                but_lab_visit.setText(R.string.submit_data_ing);
                     doVisit();
             }
         });
@@ -70,21 +76,30 @@ public class AddLableFragment extends BaseFragment {
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
-                String body = response.body();
-                logUtils.d("提交数据"+body);
-                if (!TextUtils.isEmpty(body)){
-                    Gson gson=new Gson();
-                    stateMessageBean data = gson.fromJson(body, new TypeToken<stateMessageBean>() {}.getType());
-                    String statusID = data.getStatusID();
-                    if (AppConfig.SUCCESS.equals(statusID)){
-                        ToastUtil.showToast(getActivity(), data.getData());
+                try {
+                    String body = response.body();
+                    logUtils.d("提交数据"+body);
+                    if (!TextUtils.isEmpty(body)){
+                        Gson gson=new Gson();
+                        stateMessageBean data = gson.fromJson(body, new TypeToken<stateMessageBean>() {}.getType());
+                        String statusID = data.getStatusID();
+                        if (AppConfig.SUCCESS.equals(statusID)){
+                            ToastUtil.showToast(getActivity(), data.getData()+"");
+                        }
                     }
+                } catch (JsonSyntaxException e) {
+                    e.printStackTrace();
+                } finally {
+                    but_lab_visit.setFocusable(true);
+                    but_lab_visit.setText(R.string.submit_data_complete);
                 }
             }
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
                 ToastUtil.showToast(getActivity(), "添加地址标记失败"+t.toString());
+                but_lab_visit.setFocusable(true);
+                but_lab_visit.setText(R.string.submit_data_complete);
             }
         });
     }
@@ -97,25 +112,34 @@ public class AddLableFragment extends BaseFragment {
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
-                String body = response.body();
-                logUtils.d("提交数据"+body);
-                if (!TextUtils.isEmpty(body)){
-                    Gson gson=new Gson();
-                    stateMessageBean data = gson.fromJson(body, new TypeToken<stateMessageBean>() {}.getType());
-                    String statusID = data.getStatusID();
-                    if (AppConfig.SUCCESS.equals(statusID)){
-                        ToastUtil.showToast(getActivity(), data.getData());
+                try {
+                    String body = response.body();
+                    logUtils.d("提交数据"+body);
+                    if (!TextUtils.isEmpty(body)){
+                        Gson gson=new Gson();
+                        stateMessageBean data = gson.fromJson(body, new TypeToken<stateMessageBean>() {}.getType());
+                        String statusID = data.getStatusID();
+                        if (AppConfig.SUCCESS.equals(statusID)){
+                            ToastUtil.showToast(getActivity(), data.getData()+"");
+                        }else {
+                            ToastUtil.showToast(getActivity(), "添加标记失败");
+                        }
                     }else {
                         ToastUtil.showToast(getActivity(), "添加标记失败");
                     }
-                }else {
-                    ToastUtil.showToast(getActivity(), "添加标记失败");
+                } catch (JsonSyntaxException e) {
+                    e.printStackTrace();
+                } finally {
+                    but_lab_complete.setFocusable(true);
+                    but_lab_complete.setText(R.string.submit_data_complete);
                 }
             }
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
                 ToastUtil.showToast(getActivity(), "添加标记失败"+t.toString());
+                but_lab_complete.setFocusable(true);
+                but_lab_complete.setText(R.string.submit_data_complete);
             }
         });
     }

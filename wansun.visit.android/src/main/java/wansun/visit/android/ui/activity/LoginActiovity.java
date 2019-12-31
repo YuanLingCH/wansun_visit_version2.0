@@ -50,6 +50,7 @@ public class LoginActiovity extends BaseActivity {
         but_login= (Button) findViewById(R.id.but_login);
         login_ll= (LinearLayout) findViewById(R.id.login_ll);
         String account = SharedUtils.getString("account");
+
         if (!TextUtils.isEmpty(account)){
             et_acount.setText(account);
             et_pasw.requestFocus(); //光标移动到指定位置
@@ -124,6 +125,7 @@ public class LoginActiovity extends BaseActivity {
                             String id = data.getId()+"";
                             SharedUtils.putString("id",id);
                             SharedUtils.putString("password",pasword);
+                            SharedUtils.putString("userName",data.getName()+"");
                         }else {
                             ToastUtil.showToast(LoginActiovity.this,message);
                         }

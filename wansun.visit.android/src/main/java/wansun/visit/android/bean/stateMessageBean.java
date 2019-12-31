@@ -14,7 +14,7 @@ public class stateMessageBean {
     private String statusID;
     private String message;
     private String dataType;
-    private String data;
+    private Object data;
 
     public String getStatusID() {
         return statusID;
@@ -40,11 +40,11 @@ public class stateMessageBean {
         this.dataType = dataType;
     }
 
-    public String getData() {
+    public Object getData() {
         return data;
     }
 
-    public void setData(String data) {
+    public void setData(Object data) {
         this.data = data;
     }
 }

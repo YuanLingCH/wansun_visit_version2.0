@@ -33,14 +33,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
   </RelativeLayout>
-
-
-
-
-
-
-
-
   <LinearLayout
       android:layout_below="@+id/rl_tobar"
       android:id="@+id/ll"
@@ -65,18 +57,125 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content" />
   </LinearLayout>
+    <LinearLayout
+
+       android:layout_marginLeft="@dimen/dimen_5"
+        android:layout_marginRight="@dimen/dimen_5"
+        android:layout_marginTop="@dimen/dimen_3"
+        android:layout_marginBottom="@dimen/dimen_3"
+        android:background="@drawable/infowindown_shape"
+        android:layout_below="@+id/ll"
+        android:id="@+id/onLine_qury"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_gravity="center"
+            android:textColor="@color/black"
+            android:text="在线查询(输入其中一个条件)"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+<LinearLayout
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+  <LinearLayout
+      android:orientation="vertical"
+      android:layout_width="0dp"
+      android:layout_weight="9"
+      android:layout_height="wrap_content">
+
+      <LinearLayout
+          android:orientation="horizontal"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content">
+        <TextView
+            android:textColor="@color/black"
+            android:text="债务人查询"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+       <EditText
+            android:id="@+id/et_qury_name"
+           android:layout_marginLeft="@dimen/dimen_5"
+           android:hint="请输入债务人名字"
+           android:background="@drawable/login_shape"
+          android:layout_width="0dp"
+           android:layout_weight="1"
+          android:layout_height="35dp" />
+
+      </LinearLayout>
+      <LinearLayout
+          android:orientation="horizontal"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content">
+        <TextView
+            android:textColor="@color/black"
+            android:text="甲方            "
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <EditText
+            android:id="@+id/et_qury_customer_name"
+            android:layout_marginLeft="@dimen/dimen_5"
+            android:hint="请输入甲方"
+            android:background="@drawable/login_shape"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="35dp" />
+
+      </LinearLayout>
+      <LinearLayout
+          android:orientation="horizontal"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content">
+        <TextView
+            android:textColor="@color/black"
+            android:text="债务人地址"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <EditText
+            android:id="@+id/et_qury_address"
+            android:layout_marginLeft="@dimen/dimen_5"
+            android:hint="请输入债务人地址"
+            android:background="@drawable/login_shape"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="35dp" />
+
+      </LinearLayout>
+
+
+  </LinearLayout>
+  <ImageView
+      android:layout_gravity="center"
+      android:id="@+id/image_name"
+      android:layout_marginRight="@dimen/dimen_5"
+      android:layout_marginLeft="@dimen/dimen_5"
+      android:src="@mipmap/bottom_search"
+      android:layout_width="0dp"
+      android:layout_weight="1"
+      android:layout_height="wrap_content" />
+</LinearLayout>
+        <TextView
+            android:textColor="@color/red"
+            android:layout_margin="@dimen/dimen_10"
+            android:layout_below="@+id/onLine_qury"
+            android:id="@+id/tv_explain"
+            android:text="说明:这里面的案件，是提交外访催记后没有标记完成或者没有外访的案件(外访结束时间在当前时间之前)"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 
     <wansun.visit.android.view.loadMoreListView
         android:id="@+id/lv_visit_order"
         android:divider="@null"
-        android:layout_below="@+id/ll"
+        android:layout_below="@+id/onLine_qury"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
   <wansun.visit.android.view.EmptyLayout
         android:id="@+id/empty_layout"
         android:visibility="gone"
-        android:layout_below="@+id/ll"
+        android:layout_below="@+id/onLine_qury"
         android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>

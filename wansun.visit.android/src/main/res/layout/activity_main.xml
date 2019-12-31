@@ -16,7 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <ImageView
-           android:layout_marginLeft="@dimen/dimen_20"
+           android:layout_marginLeft="@dimen/dimen_10"
             android:layout_marginTop="@dimen/margin_10"
             android:id="@+id/iv_navigation"
             android:src="@mipmap/ic_navigation_bar_list"
@@ -26,19 +26,20 @@
 <LinearLayout
     android:layout_toRightOf="@+id/iv_navigation"
     android:background="@drawable/search_shape"
-    android:layout_margin="@dimen/margin_10"
+android:layout_marginTop="@dimen/dimen_10"
+    android:layout_marginLeft="@dimen/dimen_5"
+    android:layout_marginRight="@dimen/dimen_5"
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
     <EditText
         android:gravity="center"
-        android:focusable="false"
         android:layout_marginLeft="@dimen/dimen_3"
         android:id="@+id/et_address"
-        android:text="外访地址"
+        android:hint="输入外访地址的一个字或者几个字"
         android:background="@null"
-        android:layout_weight="8"
-        android:textSize="@dimen/text_14"
+        android:layout_weight="1"
+        android:textSize="@dimen/text_12"
         android:layout_width="0dp"
         android:layout_height="@dimen/login_height" />
     <View
@@ -58,6 +59,13 @@
         android:src="@mipmap/pull"
         android:layout_width="40dp"
         android:layout_height="@dimen/login_height" />
+    <Button
+        android:id="@+id/but_data_loading"
+        android:textSize="10sp"
+        android:text="加载全部"
+        android:minWidth="0dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 </LinearLayout>
     </RelativeLayout>
 <TextView
@@ -77,7 +85,7 @@
         android:layout_marginTop="60dp"
         android:id="@+id/lv_main"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="350dp"/>
     <!--  底部导航布局-->
     <LinearLayout
         android:layout_marginRight="@dimen/dimen_10"
@@ -474,12 +482,11 @@
                     android:layout_height="wrap_content" />
     </RelativeLayout>
             <View
-                android:visibility="gone"
                 android:background="#aaa"
                 android:layout_width="match_parent"
                 android:layout_height="0.2dp"/>
             <RelativeLayout
-                android:visibility="gone"
+                android:id="@+id/rl_counts"
                 android:layout_marginBottom="@dimen/dimen_5"
                 android:paddingTop="@dimen/dimen_5"
                 android:layout_width="match_parent"

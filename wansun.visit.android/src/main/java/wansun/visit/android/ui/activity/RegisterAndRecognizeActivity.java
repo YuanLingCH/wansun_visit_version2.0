@@ -69,6 +69,11 @@ import wansun.visit.android.utils.logUtils;
 
 import static com.arcsoft.arcfacedemo.R.id.switch_liveness_detect;
 
+
+/**
+ * 人脸识别界面
+ */
+
 public class RegisterAndRecognizeActivity extends AppCompatActivity implements ViewTreeObserver.OnGlobalLayoutListener {
     private static final String TAG = "RegisterAndRecognize";
     private Toast toast = null;
@@ -88,6 +93,7 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
     private FaceHelper faceHelper;
     private List<CompareResult> compareResultList;
     private ShowFaceInfoAdapter adapter;
+    Button but_switch_face;// 切换人脸
     /**
      * 活体检测的开关
      */
@@ -149,11 +155,13 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
         previewView = findViewById(R.id.texture_preview);
         //在布局结束后才做初始化操作
         previewView.getViewTreeObserver().addOnGlobalLayoutListener(this);
+        but_switch_face= (Button) findViewById(R.id.but_switch_face);
         initView();
         register= (Button) findViewById(R.id.register);
         faceRectView = (FaceRectView) findViewById(R.id.face_rect_view);
         switchLivenessDetect = (Switch) findViewById(switch_liveness_detect);
         switchLivenessDetect.setChecked(livenessDetect);
+
         switchLivenessDetect.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -205,7 +213,18 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
         ConfigUtil.setFtOrient(RegisterAndRecognizeActivity.this, FaceEngine.ASF_OP_0_ONLY); //激活SDK的引擎
         ConfigUtil.setFtOrient(RegisterAndRecognizeActivity.this, FaceEngine.ASF_OP_270_ONLY);
         initEngine();
+        /**
+         * 切换人脸
+         */
+        but_switch_face.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedUtils.clear("faceId");
+                SharedUtils.clear("account");
+                register.setVisibility(View.VISIBLE);
 
+            }
+        });
     }
 
     /**

@@ -16,7 +16,7 @@ import wansun.visit.android.utils.logUtils;
 
 public class requestBodyUtils {
     //外访item
-    public  static RequestBody visitItemToService(String userName,boolean toDay,String pageNum,String pageSize){
+    public  static RequestBody visitItemToService(String userName,boolean toDay,String pageNum,String pageSize,String debtorName,String customerName,String address){
         Map<String ,String> pageMap=new HashMap<>();
         pageMap.put("pageNum",pageNum);
         pageMap.put("pageSize",pageSize);
@@ -27,6 +27,9 @@ public class requestBodyUtils {
         map.put("toDay",toDay);
         map.put("sortStrategy","ASC");
         map.put("page", pageMap);
+        map.put("debtorName", debtorName);
+        map.put("customerName", customerName);
+        map.put("address", address);
         Gson gson=new Gson();
         String json = gson.toJson(map);
         logUtils.d("json "+json);
@@ -115,11 +118,11 @@ public class requestBodyUtils {
     }
     //添加外访单添加联系电话
     public static  RequestBody visitCaseAddPhoneToService(String caseCode,Integer relationId,String name, String phoneNumber,
-            Integer phoneStatus,String company,String remark,String relationText,Integer phoneType,String phoneTypeText,String phoneStatusText,String Creator,Long CreatDate ){
+            Integer phoneStatus,String company,String remark,String relationText,Integer phoneType,String phoneTypeText,String phoneStatusText,String Creator,Long CreatDate ,String id){
         Map map=new HashMap<>();
         map.put("caseCode",caseCode);  //必须填
         map.put("relationId",relationId);
-        map.put("relationText",relationText);
+        map.put("relation",relationText);
         map.put("name",name);  //必须填写
         map.put("phoneNumber",phoneNumber);  //必须填写
         map.put("status",phoneStatus);
@@ -131,13 +134,14 @@ public class requestBodyUtils {
         map.put("companyGuId","");
         map.put("Creator",Creator);
         map.put("CreatDate ",CreatDate );
+        map.put("CreatorId",id);
         Gson gson=new Gson();
         String json = gson.toJson(map);
         logUtils.d("传参"+json );
         return RequestBody.create(MediaType.parse("application/json; charset=utf-8"),json);
     }
     //案件添加上门外访催记
-    public static  RequestBody visitAddVisitUrgeToService(String caseCode,String visitGuid,String operatorName ,Integer operateId,String operateContent,long CreatDate ){
+    public static  RequestBody visitAddVisitUrgeToService(String caseCode,String visitGuid,String operatorName ,Integer operateId,String operateContent,long CreatDate,String id ,String gpsAddress){
         Map<String ,Object> map=new HashMap<>();
         map.put("caseCode",caseCode);
         map.put("visitGuid",visitGuid);
@@ -147,6 +151,8 @@ public class requestBodyUtils {
         map.put("operateTypeText","");
         map.put("Creator",operatorName);
         map.put("CreatDate ",CreatDate );
+        map.put("CreatorId",id);
+        map.put("gpsAddress",gpsAddress);
         Gson gson=new Gson();
         String json = gson.toJson(map);
         logUtils.d("传参"+json );
@@ -202,7 +208,7 @@ public class requestBodyUtils {
     }
     //添加案件电话催收
     public static  RequestBody visitCaseAddphoneUrgeToService(String caseCode,Integer relation,String name,String phone,String remark,String creator,
-                                                             Integer contactSummary,String callRecords,Integer contactResult,String contactSummaryText,String contactResultText ,long CreatDate ){
+                                                             Integer contactSummary,String callRecords,Integer contactResult,String contactSummaryText,String contactResultText ,long CreatDate,String creatorId ){
         Map map=new HashMap<>();
         map.put("caseCode",caseCode);  //必须填
         map.put("relation",relation);
@@ -216,6 +222,7 @@ public class requestBodyUtils {
         map.put("remark",remark);
         map.put("creator",creator);
         map.put("CreatDate ",CreatDate );
+        map.put("creatorId",creatorId);
         Gson gson=new Gson();
         String json = gson.toJson(map);
         logUtils.d("传参"+json );
@@ -288,6 +295,17 @@ public class requestBodyUtils {
         map.put("longitude",IMIE);
         map.put("latitude",IMIE);
         map.put("positioningTime",positioningTime);
+        Gson gson=new Gson();
+        String json = gson.toJson(map);
+        logUtils.d("传参"+json );
+        return RequestBody.create(MediaType.parse("application/json; charset=utf-8"),json);
+    }
+    //统计业绩
+    public static  RequestBody queryCounts(String operateStartTime,String operateEndTime,String operatorId){
+        Map<String ,Object> map=new HashMap<>();
+        map.put("operateStartTime",operateStartTime);
+        map.put("operateEndTime",operateEndTime);
+        map.put("operatorId",operatorId);
         Gson gson=new Gson();
         String json = gson.toJson(map);
         logUtils.d("传参"+json );

@@ -55,7 +55,7 @@ import wansun.visit.android.ui.activity.BaseActivity;
 import wansun.visit.android.utils.NetWorkTesting;
 import wansun.visit.android.utils.SharedUtils;
 import wansun.visit.android.utils.ToastUtil;
-import wansun.visit.android.utils.WindowsUitlity;
+import wansun.visit.android.utils.WindowsRecordUitlity;
 import wansun.visit.android.utils.dialogUtils;
 import wansun.visit.android.utils.logUtils;
 
@@ -74,7 +74,8 @@ public class RecordActivity extends BaseActivity {
     List<fileInfo>  recordData; //录音文件地址
     RecyclerView lv_record;
     otherFileReAdapter bottomAdapter;
-    final int[] cont = {0};
+    List dataDaoId;
+    int cont = 0;
     Handler mHandler=new Handler(){
         @Override
         public void handleMessage(Message msg) {
@@ -82,15 +83,17 @@ public class RecordActivity extends BaseActivity {
             switch (msg.what){
                 case 0:
                     ToastUtil.showToast(RecordActivity.this,"录音文件上传失败");
+                    utils.cancleDialog();
                     break;
                 case 1:
                     ToastUtil.showToast(RecordActivity.this,"录音文件上传完成");
                     recordData.clear();
                     updataUI();
                     tv_record_flag.setText("暂无录音文件");
+                    utils.cancleDialog();
                     break;
             }
-            utils.cancleDialog();
+
 
 
 
@@ -102,13 +105,15 @@ public class RecordActivity extends BaseActivity {
         return R.layout.activity_record;
     }
     protected void initEvent() {
-
         recordData=new ArrayList<>();
+        dataDaoId=new ArrayList();
+        dataDaoId.clear();
         recordData.clear();
         //进行录音
         mBtnRecordAudio.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mBtnRecordAudio.setEnabled(false);
               permission();
 
             }
@@ -118,34 +123,38 @@ public class RecordActivity extends BaseActivity {
         btn_record_upload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                NetWorkTesting net=new NetWorkTesting(RecordActivity.this);
+                WindowManager manager = getWindowManager();
+                View view = LayoutInflater.from(waifangApplication.getContext()).inflate(R.layout.loading_layout, null);
+                utils = new dialogUtils(RecordActivity.this, manager, view);
+
+                if (net.isNetWorkAvailable()) {
+                cont=0;
                 List<fileInfo> fileInfos = dao.loadAll();
                 try {
                     if (fileInfos.size()>0&&fileInfos!=null){
-                    WindowManager manager = getWindowManager();
-                    View view = LayoutInflater.from(waifangApplication.getContext()).inflate(R.layout.loading_layout, null);
-                    utils = new dialogUtils(RecordActivity.this, manager, view);
+                        utils.getDialog();
                     TextView tv= (TextView) view.findViewById(R.id.tv_load);
                     tv.setText(R.string.upload_record);
-                    utils.getDialog();
                     //TODO 上传到服务器
-               /*     SharedPreferences sharePreferences = getSharedPreferences("sp_name_audio", MODE_PRIVATE);
-                    String filePath = sharePreferences.getString("audio_path", "");
-                    logUtils.d("录音文件地址"+filePath);*/
-                    NetWorkTesting net=new NetWorkTesting(RecordActivity.this);
-                    if (net.isNetWorkAvailable()) {
-
                         if (fileInfos.size()>0){
                             Iterator<fileInfo> iterator = fileInfos.iterator();
                             try {
                                 while (iterator.hasNext()){    //  遍历数据
                                     fileInfo next = iterator.next();
-                                    logUtils.d("测试数据"+next.path+"ID:"+next.getId());
+                                    Long id = next.getId();
+                                    logUtils.d("测试数据"+next.path+"ID:"+ id);
                                     String batch = next.getBatch();
                                     String  path = next.getPath();
-                                    if (batch.equals(visitGuid)&&path.endsWith(".mp3")){
+                                    if (batch.equals(visitGuid)&&path.endsWith("recording.mp3")||path.endsWith(".mp3")){
                                         logUtils.d("录音地址"+path);
-                                        doUpLoad(path);
-                                        dao.deleteByKey(next.getId());  //删除数据库
+
+                                        dataDaoId.add(id);
+                                        doUpLoad(path,id);    //上传成功后才散掉数据库
+
+
+                                    }else {
+                                        ToastUtil.showToast(RecordActivity.this,"请关闭录音...");
                                     }
                                 }
 
@@ -156,15 +165,19 @@ public class RecordActivity extends BaseActivity {
                             }
                         }
 
+                    }else {
+                        ToastUtil.showToast(RecordActivity.this,"请先录制...");
                     }
 
-                    }else {
-                        ToastUtil.showToast(RecordActivity.this,"暂时无录音文件");
-                    }
+
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
+                }else {
+                    utils.cancleDialog();
+                    ToastUtil.showToast(RecordActivity.this,R.string.network_unavailing);
+                }
             }
         });
         iv_visit_back.setOnClickListener(new View.OnClickListener() {
@@ -176,6 +189,10 @@ public class RecordActivity extends BaseActivity {
         });
     }
 
+    /**
+     * 展示录音
+     *
+     */
     private void displayRecord() {
         List<fileInfo> fileInfos = dao.loadAll();
         if (fileInfos.size()>0){
@@ -262,9 +279,9 @@ public class RecordActivity extends BaseActivity {
         }
 
         if (!permissionLists.isEmpty()) {//说明肯定有拒绝的权限
-
             ActivityCompat.requestPermissions(this, permissionLists.toArray(new String[permissionLists.size()]), REQUEST_TAKE_PHOTO_PERMISSION);
-
+            Toast.makeText(this, "权限被拒绝",Toast.LENGTH_SHORT).show();
+            return;
         } else {
             //  Toast.makeText(this, "权限都授权了",Toast.LENGTH_SHORT).show();
            // record();
@@ -273,8 +290,8 @@ public class RecordActivity extends BaseActivity {
     }
 
     private void windownRecord() {
-        logUtils.d("点击录音");
-        WindowsUitlity uitlity=new WindowsUitlity(RecordActivity.this);
+        logUtils.d("点击录音....");
+        WindowsRecordUitlity uitlity=new WindowsRecordUitlity(RecordActivity.this,mBtnRecordAudio);
         uitlity.showPopupWindow(RecordActivity.this,"");
     }
 
@@ -308,7 +325,13 @@ public class RecordActivity extends BaseActivity {
      * 上传录音文件
      * @param filePath
      */
-    private void doUpLoad(String filePath) {
+    private void doUpLoad(String filePath, final long daoId) {
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        logUtils.d("上传录音》》》》》》》》》");
         File file = new File(filePath);
         String caseCode = SharedUtils.getString("caseCode");
 
@@ -337,6 +360,7 @@ public class RecordActivity extends BaseActivity {
                     public void onFailure(Call call, IOException e) {
                         logUtils.d("上传录音"+e.toString());
                         mHandler.sendEmptyMessage(0);
+
                     }
 
                     @Override
@@ -348,9 +372,12 @@ public class RecordActivity extends BaseActivity {
                             String statusID = bean.getStatusID();
                             if (statusID.equals("200")){
                                 logUtils.d("上传录音"+body);
-                                cont[0]++;
-                                if (cont[0]==recordData.size()){
+                                cont++;
+                                logUtils.d("上传录音"+"recordData.size()"+recordData.size()+">>>"+cont);
+                                dao.deleteByKey(daoId);  //删除数据库
+                                if (cont==recordData.size()){
                                     mHandler.sendEmptyMessage(1);
+
                                 }
 
                             }else {
@@ -365,19 +392,6 @@ public class RecordActivity extends BaseActivity {
             }
         }.start();
 
-    }
-
-    private void record() {
-        final RecordAudioDialogFragment fragment = RecordAudioDialogFragment.newInstance();
-        fragment.show(getSupportFragmentManager(), RecordAudioDialogFragment.class.getSimpleName());
-        fragment.setCancelable(false);
-        fragment.setOnCancelListener(new RecordAudioDialogFragment.OnAudioCancelListener() {
-            @Override
-            public void onCancel() {
-                //
-                fragment.dismiss();
-            }
-        });
     }
 
     @Override
@@ -426,7 +440,11 @@ public class RecordActivity extends BaseActivity {
      * 打开权限设置界面
      */
     public void openSetting() {
-           startActivityForResult(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName())), 11);
+       Intent intent= new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (intent.resolveActivity(RecordActivity.this.getPackageManager()) != null) {
+            RecordActivity.this.startActivityForResult(intent, 11);
+        }
 
     }
 
@@ -459,13 +477,19 @@ public class RecordActivity extends BaseActivity {
             requestPermission();
         } else if ("Meizu".equals(Build.MANUFACTURER)) {//魅族手机
             logUtils .e("魅族手机");
+
             requestPermission();
         } else {//其他手机
-            logUtils .e("其他手机");
+            logUtils .e("其他手机"+getPackageName());
             if (Build.VERSION.SDK_INT >= 23) {
                 if (!Settings.canDrawOverlays(this)) {
-                    Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-                    startActivityForResult(intent, 12);
+
+                    Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:" + getPackageName()));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    if (intent.resolveActivity(this.getPackageManager()) != null) {
+                        this.startActivityForResult(intent, 12);
+                    }
+                   // startActivityForResult(intent, 12);
                 } else {
                     windownRecord();
                 }

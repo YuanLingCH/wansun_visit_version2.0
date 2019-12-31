@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import okhttp3.Call;
@@ -93,6 +94,8 @@ public class TakePhotosActivity extends BaseActivity {
             switch (msg.what){
                 case SUCCESS:
                     ToastUtil.showToast(TakePhotosActivity.this,"图片上传完成");
+                    iv_photos.setImageDrawable(null);  //清空图片数据
+                    fullPath="";
                     break;
                 case fAIL:
                     ToastUtil.showToast(TakePhotosActivity.this,"图片上传失败");
@@ -209,6 +212,8 @@ public class TakePhotosActivity extends BaseActivity {
                                             logUtils.d("图片上传" + s);
 
                                             mHandler.sendEmptyMessage(SUCCESS);
+
+                                            deletePicture();
                                         }else {
                                             mHandler.sendEmptyMessage(fAIL);
                                         }
@@ -227,7 +232,23 @@ public class TakePhotosActivity extends BaseActivity {
             }
         }
     }
+    //上传后就删掉数据库
+    private void deletePicture() {
+        List<fileInfo> fileInfos = dao.loadAll();
+        if (!fileInfos.isEmpty()&&fileInfos.size()>0) {
+            Iterator<fileInfo> iterator = fileInfos.iterator();
+            String visitGuid = SharedUtils.getString("visitGuid");
+            while (iterator.hasNext()) {    //  遍历数据
+                fileInfo next = iterator.next();
+                String batch = next.getBatch();
+                if (batch.equals(visitGuid) && next.getType().equals("0")) {  //2为选择图片
+                    Long id = next.getId();
+                    dao.deleteByKey(id);
 
+                }
+            }
+        }
+    }
 
 
     @Override
@@ -313,11 +334,8 @@ public class TakePhotosActivity extends BaseActivity {
             folder.mkdirs();
         }*/
       //  logUtils.d("生产地址"+imageUri);
-
-
         if (Build.VERSION.SDK_INT>24){  //sdk大于24
             imageUri = FileProvider.getUriForFile(TakePhotosActivity.this, "wansun.visit.android.fileprovider", new File(fullPath));
-
         }else {
             imageUri = Uri.fromFile(new File(fullPath));
 
@@ -348,7 +366,8 @@ public class TakePhotosActivity extends BaseActivity {
               // 合并水印
               final Bitmap destMap = CommonUtil.CreateBitmapWithWatermark(bitmap, waterMap);
               logUtils.d("拍照图片显示");
-              final Bitmap bitmap1 = CommonUtil.getBitmap(destMap,4);
+              if (destMap!=null){
+              final Bitmap bitmap1 = CommonUtil.getBitmap(destMap,6);     //图片压缩   6为采样率
               iv_photos.setImageBitmap(bitmap1);//显示到ImageView上
           new Thread(){
                   @Override
@@ -360,13 +379,11 @@ public class TakePhotosActivity extends BaseActivity {
                           dao.insert(info);
                           String fileSize = getFileSize(fullPath);
                           logUtils.d("fileSize" + fileSize);
-
                       }
                   }
               }.start();
 
-
-
+              }
 
           } catch (FileNotFoundException e) {
               e.printStackTrace();

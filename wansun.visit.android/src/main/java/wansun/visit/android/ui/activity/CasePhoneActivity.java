@@ -101,7 +101,7 @@ public class CasePhoneActivity extends BaseActivity {
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-
+                logUtils.d("案件电话下载数据" + t.toString());
             }
         });
 

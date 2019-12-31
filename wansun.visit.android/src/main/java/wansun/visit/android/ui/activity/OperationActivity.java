@@ -60,12 +60,6 @@ public class OperationActivity extends BaseActivity {
         BaseFragmentPagerAdapter pagerAdapter = new BaseFragmentPagerAdapter(
                 getSupportFragmentManager(), list);
         vp.setAdapter(pagerAdapter);
-
-
-
-
-
-
     }
 
     @Override

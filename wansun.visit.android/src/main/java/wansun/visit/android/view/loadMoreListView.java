@@ -23,14 +23,20 @@ public class loadMoreListView extends ListView implements AbsListView.OnScrollLi
     private boolean isLoading = false;//是否正在加载数据
     //实现接口加载更多的数据
     public  onLoadMoreListenner moreListenner;
+    public  onScrollStateListnner scrollStateListnner;
     public  void  setLoadMoreListnner(onLoadMoreListenner moreListenner){
         this.moreListenner=moreListenner;
     }
     public  interface onLoadMoreListenner{
         void  loadMore();
     }
+    public  void  setScrollStateListnner(onScrollStateListnner scrollStateListnner){
+        this.scrollStateListnner=scrollStateListnner;
+    }
+    public  interface onScrollStateListnner{
 
-
+        void  scrollState(int scrollState);
+    }
     public loadMoreListView(Context context) {
         this(context,null);
     }
@@ -51,6 +57,7 @@ public class loadMoreListView extends ListView implements AbsListView.OnScrollLi
         footView.setVisibility(GONE);
         setOnScrollListener(this);
 
+
     }
 
     /**
@@ -62,9 +69,10 @@ public class loadMoreListView extends ListView implements AbsListView.OnScrollLi
     public void onScrollStateChanged(AbsListView view, int scrollState) {
         //最后一条数据并且手指停止滑动
         logUtils.d("加载数据更多1");
+
         if (isLastRow&&scrollState==OnScrollListener.SCROLL_STATE_IDLE){
             if (!isLoading){
-        footView.setVisibility(VISIBLE);
+           footView.setVisibility(VISIBLE);
             isLastRow=false;
             isLoading = true;
             logUtils.d("加载数据更多2");
@@ -95,5 +103,7 @@ public class loadMoreListView extends ListView implements AbsListView.OnScrollLi
             footView.setVisibility(GONE);
         }
     }
+
+
 
 }

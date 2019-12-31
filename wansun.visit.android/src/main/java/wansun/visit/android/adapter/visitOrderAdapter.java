@@ -6,12 +6,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.List;
 
 import wansun.visit.android.R;
 import wansun.visit.android.bean.visitItemBean;
+import wansun.visit.android.event.AddressEvent;
+import wansun.visit.android.utils.logUtils;
 import wansun.visit.android.utils.unixTime;
 
 /**
@@ -50,7 +55,7 @@ public class visitOrderAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
         if (convertView==null){
             holder=new ViewHolder();
@@ -78,33 +83,39 @@ public class visitOrderAdapter extends BaseAdapter {
             holder.tv_visitReason= (TextView) convertView.findViewById(R.id.tv_visitReason);
             holder.tv_remark= (TextView) convertView.findViewById(R.id.tv_remark);
             holder.iv_flag= (ImageView) convertView.findViewById(R.id.iv_flag);
+            holder.ll_visit_state= (LinearLayout) convertView.findViewById(R.id.ll_visit_state);
+            holder.tv_address_type= (TextView) convertView.findViewById(R.id.tv_address_type);
+            holder.tv_navigation= (TextView) convertView.findViewById(R.id.tv_navigation);
             convertView.setTag(holder);
 
         }
-        visitItemBean.DataBean dataBean = data.get(position);
+        final visitItemBean.DataBean dataBean = data.get(position);
         holder= (ViewHolder) convertView.getTag();
         holder.tv_visit_apply_debtor_name.setText("债务人："+dataBean.getName());
         holder.tv_visit_apply_gender_text.setText("性别："+dataBean.getGenderText());
+        holder.tv_visit_apply_last_arrear_amount.setVisibility(View.GONE);
         holder.tv_visit_apply_last_arrear_amount.setText("还款总金额："+dataBean.getCaseTotalRepaymentAmount());
        // Long applyTime = dataBean.getApplyTime()/1000;
        // String applyTimeone= unixTime.stampToTime(applyTime);
         holder.tv_visit_apply_time.setText("申请时间："+ unixTime.stampToTime( dataBean.getApplyTime()/1000));
+        holder.tv_visit_apply_collect_amount.setVisibility(View.GONE);
         holder.tv_visit_apply_collect_amount.setText("案件催收金额:"+dataBean.getCaseTotalUrgeAmount());
       //  Object visitCompleteDate = dataBean.getVisitCompleteDate()/1000;
       //  holder.tv_visit_completeDate.setText("外访完成时间："+dataBean.getVisitCompleteDate());
        Long visitBeginTime = dataBean.getVisitBeginTime()/1000;
     String visitBeginTimeone= unixTime.stampToTime(visitBeginTime);
-    holder.tv_visit_begin_time.setText("外访开始："+visitBeginTimeone);
+      holder.tv_visit_begin_time.setText("外访开始："+visitBeginTimeone);
        Long visitEndTime = dataBean.getVisitEndTime()/1000;
       String visitEndTimeone= unixTime.stampToTime(visitEndTime);
-      holder.tv_visit_end_time.setText("外访结束："+visitEndTimeone);
-      //  holder.tv_visit_bapply_case_type.setText("案件类型："+dataBean.getCaseType());
+       holder.tv_visit_end_time.setText("外访结束："+visitEndTimeone);
+        holder.ll_visit_state.setVisibility(View.VISIBLE);
+       holder.tv_visit_bapply_case_type.setText("外访状态："+dataBean.getVisitStatusText());
         holder.tv_visit_apply_urgeStatusText.setText("催收状态："+dataBean.getCaseUrgeStatusText());
         holder.tv_visit_applyOrgName.setText("申请机构："+dataBean.getApplyOrgName());
         holder.tv_visitOrgName.setText("外访机构："+dataBean.getVisitOrgName());
         holder.tv_visitors.setText("外访人："+dataBean.getVisitors());
       //  holder.tv_visitGoal.setText("外访目标："+dataBean.getVisitGoal());
-        holder.tv_visit_customerName.setText("客户名称："+dataBean.getCustomerName());
+        holder.tv_visit_customerName.setText("甲方："+dataBean.getCustomerName());
         holder.tv_visit_caseCode.setText("案件编号："+dataBean.getCaseCode());
         holder.tv_visit_batchCode.setText("批次编号："+dataBean.getBatchCode());
      //   holder.tv_visitArea.setText("外访区域："+dataBean.getVisitArea());
@@ -119,7 +130,7 @@ public class visitOrderAdapter extends BaseAdapter {
         } else if (visitReason.equals("3")){
             holder.tv_visitReason.setText("外访理由："+"结案前确认");
         }
-
+        holder.tv_address_type.setText("地址类型："+dataBean.getAddressTypeText());
         holder.tv_remark.setText("备注："+dataBean.getRemark());
         if (flag){
             holder.iv_flag.setVisibility(View.VISIBLE);
@@ -127,21 +138,32 @@ public class visitOrderAdapter extends BaseAdapter {
             holder.iv_flag.setVisibility(View.VISIBLE);
             holder.iv_flag.setImageResource(R.mipmap.doing);
         }
+        holder.tv_navigation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                logUtils.d("点击了导航");  //接口回调到activity 中
+
+                EventBus.getDefault().post(new AddressEvent(dataBean.getAddress()));
+            }
+        });
         return convertView;
     }
     class  ViewHolder {
         TextView tv_visit_apply_debtor_name,tv_visit_apply_gender_text,tv_visit_apply_last_arrear_amount,tv_visit_apply_time,tv_visit_apply_collect_amount;
         TextView tv_visit_begin_time,tv_visit_end_time,tv_visit_bapply_case_type,tv_visit_apply_urgeStatusText,tv_visit_applyOrgName;
         TextView tv_visitOrgName,tv_visitors,tv_visitGoal,tv_visit_customerName,tv_visit_caseCode,tv_visit_batchCode,tv_visitArea,tv_address,tv_visitReason;
-        TextView tv_remark;
+        TextView tv_remark,tv_address_type,tv_navigation;
         ImageView iv_flag;
+        LinearLayout ll_visit_state;
     }
 
     /**
      * 添加列表项
      */
    public  void  addItem( visitItemBean.DataBean bean){
-        data.add(bean);
+        this.data.add(bean);
+       notifyDataSetChanged();
+       logUtils.d(" addItem走了");
     }
 
 

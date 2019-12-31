@@ -4,7 +4,12 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import wansun.visit.android.global.waifangApplication;
+import wansun.visit.android.utils.SharedUtils;
+import wansun.visit.android.utils.waterMark;
 
 /**
  * Created by User on 2019/1/8.
@@ -18,7 +23,14 @@ public abstract class BaseActivity extends AppCompatActivity {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initLise();
+        //this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);  //设置防止用截屏
         setContentView(getLayoutId());
+        String userName = SharedUtils.getString("account");
+        long  currentTime=System.currentTimeMillis();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
+        String formatTime = sdf.format(new Date(currentTime));
+        String waterText="WanSun"+"-"+userName+"-"+formatTime;
+        waterMark.getInstance().show(this, waterText);   //水印加在布局文件的上面
         initView();
         initEvent();
         initData();

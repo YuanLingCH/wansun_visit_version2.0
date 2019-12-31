@@ -33,7 +33,7 @@ import wansun.visit.android.utils.netUtils;
 
 public class CaseCardMessageActivity extends BaseActivity {
     ImageView iv_visit_back;
-    TextView tv_visit_tobar;
+    TextView tv_visit_tobar,tv_appoint,tv_urge,tv_receipt;
     List cardData;
     caseCardMessageAdapter adapter;
     ListView lv_card_message;
@@ -48,7 +48,10 @@ public class CaseCardMessageActivity extends BaseActivity {
         tv_visit_tobar= (TextView) findViewById(R.id.tv_visit_tobar);
         tv_visit_tobar.setText("卡信息");
         lv_card_message= (ListView) findViewById(R.id.lv_card_message);
-      getIntentData();
+        tv_appoint= (TextView) findViewById(R.id.tv_appoint);
+        tv_urge= (TextView) findViewById(R.id.tv_urge);
+        tv_receipt= (TextView) findViewById(R.id.tv_receipt);
+        getIntentData();
 
 
     }
@@ -56,6 +59,12 @@ public class CaseCardMessageActivity extends BaseActivity {
     private void getIntentData() {
         cardData=new ArrayList();
         String caseCode = getIntent().getStringExtra("caseCode");
+        String caseTotalAppointAmount = getIntent().getStringExtra("caseTotalAppointAmount");
+        String caseTotalUrgeAmount = getIntent().getStringExtra("caseTotalUrgeAmount");
+        String caseTotalReceiptAmount = getIntent().getStringExtra("caseTotalReceiptAmount");
+        tv_appoint.setText("委案金额："+caseTotalAppointAmount+"元");
+        tv_urge.setText("催收金额："+caseTotalUrgeAmount+"元");
+        tv_receipt.setText("回款金额："+caseTotalReceiptAmount+"元");
         Retrofit retrofit = netUtils.getRetrofit();
         apiManager manager= retrofit.create(apiManager.class);
         final RequestBody requestBody = requestBodyUtils.visitCaseDetailsCardFromeService(caseCode);

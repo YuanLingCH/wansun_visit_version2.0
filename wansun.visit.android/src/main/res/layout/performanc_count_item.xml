@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/dimen_5"
+        android:layout_marginTop="@dimen/dimen_5"
+        android:background="@drawable/infowindown_shape"
+        android:orientation="horizontal" >
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dip"
+            android:layout_marginLeft="10dip"
+            android:orientation="vertical" >
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/tvAttachmentTakeOperateDate"
+                    android:layout_width="0dp"
+                    android:layout_weight="2"
+                    android:textColor="#000"
+                    android:layout_height="fill_parent"
+                    android:text="外访员" />
+                <TextView
+                    android:id="@+id/tv_debtor"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:textColor="#000"
+                    android:layout_height="fill_parent"
+                    android:text="债务人" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvAttachmentType"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+
+                android:textColor="#000"
+                android:text="外访时间" />
+            <TextView
+                android:id="@+id/tvAttachmentFullName"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:textColor="#000"
+                android:text="案件编号" />
+
+            <TextView
+
+                android:id="@+id/tv_address"
+                android:text="地址"
+                android:textColor="#000"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

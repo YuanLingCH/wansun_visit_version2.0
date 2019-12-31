@@ -29,7 +29,7 @@ import wansun.visit.android.utils.logUtils;
  */
 
 public class batchuploadFileService extends Service {
-
+    int cont = 0;  //上传文件数量的标记
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -38,6 +38,7 @@ public class batchuploadFileService extends Service {
 
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
+        cont=0;  //每次提交 都要清空
         logUtils.d("上传服务启动");
         final ArrayList<String> listpath = intent.getStringArrayListExtra("listpath");
         String caseCode = SharedUtils.getString("caseCode");
@@ -48,7 +49,7 @@ public class batchuploadFileService extends Service {
         for (String path:listpath){
             logUtils.d("测试路劲"+path);
         }
-        final int[] cont = {0};
+
 
         for (int i = 0; i <listpath.size(); i++) {
             final OkHttpClient okHttpClient = new OkHttpClient.Builder()
@@ -86,6 +87,7 @@ public class batchuploadFileService extends Service {
             final Request request = new Request.Builder()
                     .url(filePath).post(requestBody).build();
                 Call call = okHttpClient.newCall(request);
+
                 call.enqueue(new Callback() {
                     @Override
                     public void onFailure(Call call, IOException e) {
@@ -99,31 +101,19 @@ public class batchuploadFileService extends Service {
                     public void onResponse(Call call, Response response) throws IOException {
                         ResponseBody body = response.body();
                         logUtils.d("文件上传"+body.string());
-                        cont[0]++;
-                        if (cont[0]==listpath.size()){
-                            stopSelf();//停止服务
-                            logUtils.d("服务停止");
+                        cont++;
+                        logUtils.d(" cont"+ cont+"listpath.size"+listpath.size());
+                        if (cont==listpath.size()){
                             // ToastUtil.showToast(batchuploadFileService.this,"文件上传完成");
                             Intent intent1=new Intent();
                             intent1.setAction("com.example.timejob.service");
                             sendBroadcast(intent1);
+                            logUtils.d("服务停止>>>>>>>>>>>");
+                            stopSelf();//停止服务
                         }
                     }
                 });
 
-//            new Thread(){
-//                @Override
-//                public void run() {
-//
-//
-//                }
-//            }.start();
-/*            UIutils.newCacheThreadPool().execute(new Runnable() {
-                @Override
-                public void run() {
-
-                }
-            });*/
 
         }
         return super.onStartCommand(intent, flags, startId);
@@ -133,6 +123,7 @@ public class batchuploadFileService extends Service {
     public void onDestroy() {
         super.onDestroy();
         stopSelf();  //停止服务
+        cont=0;
 
     }
 

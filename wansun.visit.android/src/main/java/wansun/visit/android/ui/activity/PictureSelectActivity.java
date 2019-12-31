@@ -27,6 +27,7 @@ import com.lidong.photopicker.intent.PhotoPreviewIntent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import okhttp3.Call;
@@ -69,15 +70,25 @@ public class PictureSelectActivity extends  BaseActivity {
     ImageView iv_visit_back;
     TextView tv_visit_tobar;
     dialogUtils utils;
+    int cont = 0;
     Handler mHandler=new Handler(){
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            utils.cancleDialog();
-            ToastUtil.showToast(PictureSelectActivity.this,"图片上传完成");
-            imagePaths.clear();
-            imagePaths.add("paizhao");
-            gridAdapter.notifyDataSetChanged();
+            switch (msg.what){
+                case 0:  //图片上传完成
+                    utils.cancleDialog();
+                    ToastUtil.showToast(PictureSelectActivity.this,"图片上传完成");
+                    imagePaths.clear();
+                    imagePaths.add("paizhao");
+                    gridAdapter.notifyDataSetChanged();
+                    break;
+                case 1:   //图片上传失败
+                    utils.cancleDialog();
+                    ToastUtil.showToast(PictureSelectActivity.this,"图片上传失败");
+                    break;
+            }
+
         }
     };
 
@@ -133,6 +144,7 @@ public class PictureSelectActivity extends  BaseActivity {
         tv_click.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                cont=0;
                 NetWorkTesting net=new NetWorkTesting(PictureSelectActivity.this);
                 if (net.isNetWorkAvailable()) {
 
@@ -154,7 +166,7 @@ public class PictureSelectActivity extends  BaseActivity {
                 String id = SharedUtils.getString("id");
                 final OkHttpClient okHttpClient = new OkHttpClient();
 
-                final int[] cont = {0};
+
                 for (int i = 0; i < imagePaths.size(); i++) {
                     if (imagePaths.contains("paizhao")){
                         imagePaths.remove("paizhao");
@@ -180,18 +192,19 @@ public class PictureSelectActivity extends  BaseActivity {
                                 @Override
                                 public void onFailure(Call call, IOException e) {
                                     logUtils.d("图片上传错误"+e.toString());
-                                    utils.cancleDialog();
-                                    ToastUtil.showToast(PictureSelectActivity.this,"图片上传失败");
+                                    mHandler.sendEmptyMessage(1);   //图片上传错误
+
                                 }
 
                                 @Override
                                 public void onResponse(Call call, Response response) throws IOException {
                                     ResponseBody body = response.body();
-                                    cont[0]++;
-                                    logUtils.d("图片上传"+body.string()+"..."+cont[0]);
-                                    if (cont[0]==imagePaths.size()-1||cont[0]==imagePaths.size()){
+                                    cont++;
+                                    logUtils.d("图片上传"+body.string()+"..."+cont);
+                                    if (cont==imagePaths.size()-1||cont==imagePaths.size()){
                                         mHandler.sendEmptyMessage(0);
-
+                                        //  图片上传成功后就删掉数据库的图片
+                                        deletePicture();
                                     }
                                 }
                             });
@@ -204,6 +217,26 @@ public class PictureSelectActivity extends  BaseActivity {
             }
         });
 
+    }
+
+    /**
+     * 在图片上传到服务器后就要删掉数据库里面的数据
+     */
+    private void deletePicture() {
+        List<fileInfo> fileInfos = dao.loadAll();
+        if (!fileInfos.isEmpty()&&fileInfos.size()>0) {
+            Iterator<fileInfo> iterator = fileInfos.iterator();
+            String visitGuid = SharedUtils.getString("visitGuid");
+            while (iterator.hasNext()) {    //  遍历数据
+                fileInfo next = iterator.next();
+                String batch = next.getBatch();
+                if (batch.equals(visitGuid) && next.getType().equals("2")) {  //2为选择图片
+                    Long id = next.getId();
+                    dao.deleteByKey(id);
+
+                }
+            }
+        }
     }
 
     private void permission() {

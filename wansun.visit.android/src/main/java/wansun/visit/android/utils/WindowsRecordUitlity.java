@@ -3,26 +3,40 @@ package wansun.visit.android.utils;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
+import android.media.AudioFormat;
 import android.os.Environment;
 import android.os.SystemClock;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import java.io.File;
+import com.zlw.main.recorderlib.RecordManager;
+import com.zlw.main.recorderlib.recorder.RecordConfig;
+import com.zlw.main.recorderlib.recorder.RecordHelper;
+import com.zlw.main.recorderlib.recorder.listener.RecordResultListener;
+import com.zlw.main.recorderlib.recorder.listener.RecordStateListener;
+import com.zlw.main.recorderlib.utils.Logger;
 
-import soundrecorderutils.RecordingService;
+import org.greenrobot.eventbus.EventBus;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 import wansun.visit.android.R;
+import wansun.visit.android.db.fileInfo;
+import wansun.visit.android.event.MessageEvent;
+import wansun.visit.android.global.waifangApplication;
+import wansun.visit.android.greendao.gen.fileInfoDao;
 
 /**
 
@@ -32,30 +46,34 @@ import wansun.visit.android.R;
 
  */
 
-public class WindowsUitlity {
-
-    private static String TAG = WindowsUitlity.class.getSimpleName();
-
+public class WindowsRecordUitlity {
+    private static String TAG = WindowsRecordUitlity.class.getSimpleName();
     private static WindowManager mWindowManager = null;
-
     private static WindowManager.LayoutParams params;
-
     public static Boolean isShown = false;
-
     private static View mView = null;
     private boolean mStartRecording = true;
     private boolean mPauseRecording = true;
-
     long timeWhenPaused = 0;
-
     private com.melnykov.fab.FloatingActionButton mFabRecord;
     private Chronometer mChronometerTime;
     private ImageView mIvClose;
+    private fileInfoDao dao;
+    Button but;
+    List bottomPath;
+    Activity activity;
 
+    List<Long> dataDaoId;
+    final RecordManager recordManager = RecordManager.getInstance();
+    private boolean isStart = false;
+    private boolean isPause = false;
 
-     Activity activity;
-    public WindowsUitlity(Activity activity) {
+    public WindowsRecordUitlity(Activity activity, Button  but) {
         this.activity=activity;
+        dao= waifangApplication.getInstence().getSession().getFileInfoDao();
+        bottomPath=new ArrayList();
+        dataDaoId=new ArrayList();
+        this.but=but;
     }
 
     /**
@@ -127,23 +145,9 @@ public class WindowsUitlity {
 
     }
 
+    private static int canTouchFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
 
-
-
-
-    private static int canTouchFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-
-            | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
-
-
-
-       private static int notTouchFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|
-
-            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
-
-
-
-
+    private static int notTouchFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE| WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
 
     /**
 
@@ -169,12 +173,7 @@ public class WindowsUitlity {
 
         mWindowManager.updateViewLayout(mView, params);
 
-
-
     }
-
-
-
 
 
     /**
@@ -195,78 +194,12 @@ public class WindowsUitlity {
 
     }
 
-
-
-    public static void setShowTxt(String txt) {
-
-        try {
-
-          //  TextView showTv = (TextView) mView.findViewById(R.id.tv_showinpop);
-
-          //  showTv.setText(txt);
-
-            mWindowManager.updateViewLayout(mView, params);
-
-        }catch (Exception e){
-
-        //    Log.d(TAG, "setShowTxt: 更新悬浮框错误");
-
-            e.printStackTrace();
-
-            if(e.getMessage().contains("not attached to window manager")){
-
-                mWindowManager.addView(mView, params);
-
-            }
-
-        }
-
-    }
-
-
-
-
-
-    public static void setShowImg(Bitmap bitmap) {
-
-        try {
-
-        //    ImageView showImg = (ImageView) mView.findViewById(R.id.iv_showinpop);
-
-         //   showImg.setImageBitmap(bitmap);
-
-            mWindowManager.updateViewLayout(mView, params);
-
-        }catch (Exception e){
-
-            Log.d(TAG, "setShowTxt: 更新悬浮框错误");
-
-            e.printStackTrace();
-
-            if(e.getMessage().contains("not attached to window manager")){
-
-                mWindowManager.addView(mView, params);
-
-            }
-
-        }
-
-    }
-
-
-
     static LinearLayout rl_drag_showinpop;
-
-
 
     public  View setUpView(final Context context, String showtxt) {
 
         View view = LayoutInflater.from(context).inflate(R.layout.fragment_record_audio, null);
 
-
-        //   TextView showTv = (TextView) view.findViewById(R.id.tv_showinpop);
-
-     //  showTv.setText(showtxt);
 
         initView(view);
 
@@ -286,8 +219,6 @@ public class WindowsUitlity {
             private float tranX; //悬浮窗移动位置的相对值
 
             private float tranY;
-
-
 
             @Override
 
@@ -326,8 +257,6 @@ public class WindowsUitlity {
                         params.x += tranX;
 
                         params.y += tranY;
-
-
 
                         //更新悬浮窗位置
 
@@ -369,18 +298,11 @@ public class WindowsUitlity {
         mFabRecord.setMinimumHeight(25);
         mFabRecord.setColorNormal(activity.getResources().getColor(R.color.colorPrimary));
         mFabRecord.setColorPressed(activity.getResources().getColor(R.color.colorPrimaryDark));
+        initEvent();
         mFabRecord.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
-//                        != PackageManager.PERMISSION_GRANTED) {
-//                    ActivityCompat.requestPermissions(getActivity()
-//                            , new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO}, 1);
-//                }else {
-                onRecord(mStartRecording);
-                mStartRecording = !mStartRecording;
-//                }
-
+                doPlay();  // 开始
             }
         });
         /**
@@ -390,70 +312,122 @@ public class WindowsUitlity {
             @Override
             public void onClick(View v) {
                 logUtils.d("关掉录音");
-                isShown=false;
-
-            rl_drag_showinpop.setVisibility(View.GONE);
-                stopRecord();
-                hidePopupWindow();
-
+                but.setEnabled(true);
+                doStop();  //关掉录音
             }
         });
     }
 
-    private void stopRecord() {
-        if (intent!=null){
-        String flags = intent.getFlags()+"";
-        if (flags.equals("1")){
-            activity.stopService(intent);
-            mChronometerTime.stop();
-            timeWhenPaused = 0;
-        }
-        }
+    private void doStop() {
+        recordManager.stop();
+        //    btRecord.setText("开始");
+        isPause = false;
+        isStart = false;
+        mChronometerTime.stop();
+        mFabRecord.setImageResource(R.drawable.ic_mic_white_36dp);
+        //mPauseButton.setVisibility(View.GONE);
+        Toast.makeText(activity, "关掉录音...", Toast.LENGTH_SHORT).show();
+        rl_drag_showinpop.setVisibility(View.GONE);
+        hidePopupWindow();
 
     }
 
-    Intent intent;
-    private void onRecord(boolean start) {
 
-       intent = new Intent(activity, RecordingService.class);
-        intent.addFlags(1);  //1 表示有录音
 
-        if (start) {
-            // start recording
+    private void doPlay() {
+        if (isStart) {
+            recordManager.pause();
+            //   btRecord.setText("开始");
+            isPause = true;
+            isStart = false;
             mFabRecord.setImageResource(R.drawable.ic_media_stop);
-            //mPauseButton.setVisibility(View.VISIBLE);
-            Toast.makeText(activity, "开始录音...", Toast.LENGTH_SHORT).show();
-            File folder = new File(Environment.getExternalStorageDirectory() + "/SoundRecorder");
-            if (!folder.exists()) {
-                //folder /SoundRecorder doesn't exist, create the folder
-                folder.mkdir();
+            //mPauseButton.setVisibility(View.GONE);
+            Toast.makeText(activity, "暂停录音...", Toast.LENGTH_SHORT).show();
+            mChronometerTime.stop();
+            timeWhenPaused = SystemClock.elapsedRealtime();
+            logUtils.d("recordManager.pause()");
+        } else {
+            if (isPause) {
+                recordManager.resume();
+                logUtils.d("recordManager.resume()");
+                Toast.makeText(activity, "继续录音...", Toast.LENGTH_SHORT).show();
+                mFabRecord.setImageResource(R.drawable.ic_mic_white_36dp);
+                    mChronometerTime.setBase(mChronometerTime.getBase()+(SystemClock.elapsedRealtime()-timeWhenPaused));
+            } else {
+                recordManager.start();
+                logUtils.d("recordManager.start()");
+                mFabRecord.setImageResource(R.drawable.ic_media_stop);
+                //mPauseButton.setVisibility(View.VISIBLE);
+                Toast.makeText(activity, "开始录音...", Toast.LENGTH_SHORT).show();
+                mChronometerTime.setBase(SystemClock.elapsedRealtime());//计时器清零
+                timeWhenPaused = SystemClock.elapsedRealtime();
+            }
+            mChronometerTime.start();
+            // btRecord.setText("暂停");
+            isStart = true;
+        }
+    }
+
+
+    private void initEvent() {
+        RecordManager.getInstance().init(waifangApplication.getInstence(), true);
+        RecordManager.getInstance().changeFormat(RecordConfig.RecordFormat.MP3);
+        RecordManager.getInstance().changeRecordConfig(recordManager.getRecordConfig().setSampleRate(8000));
+        RecordManager.getInstance().changeRecordConfig(recordManager.getRecordConfig().setEncodingConfig(AudioFormat.ENCODING_PCM_8BIT));
+
+        String caseCode = SharedUtils.getString("caseCode");
+        String str="%s/wansun.visit.android/record/"+caseCode+"_";     //"%s/wansun.visit.android/record/test"
+        final String recordDir = String.format(Locale.getDefault(), str,
+                Environment.getExternalStorageDirectory().getAbsolutePath());
+                  recordManager.changeRecordDir(recordDir);
+
+        recordManager.setRecordStateListener(new RecordStateListener() {
+            @Override
+            public void onStateChange(RecordHelper.RecordState state) {
+                Logger.i(TAG, "onStateChange %s", state.name());
+
+                switch (state) {
+                    case PAUSE:
+                      //  tvState.setText("暂停中");
+                        logUtils.d("暂停中");
+                        break;
+                    case IDLE:
+                       // tvState.setText("空闲中");
+                        logUtils.d("空闲中");
+                        break;
+                    case RECORDING:
+                       // tvState.setText("录音中");
+
+                        break;
+                    case STOP:
+                       // tvState.setText("停止");
+                        break;
+                    case FINISH:
+                        logUtils.d("结束");
+                        break;
+                    default:
+                        break;
+                }
             }
 
-            //start Chronometer
-            mChronometerTime.setBase(SystemClock.elapsedRealtime());
-            mChronometerTime.start();
+            @Override
+            public void onError(String error) {
+                Logger.i(TAG, "onError %s", error.toString());
+            }
+        });
+        RecordManager.getInstance().setRecordResultListener(new RecordResultListener() {
+            @Override
+            public void onResult(File result) {
 
-            //start RecordingService
-            activity.startService(intent);   //启动服务录音
-            //keep screen on while recording
-//            getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        } else {
-            //stop recording
-            mFabRecord.setImageResource(R.drawable.ic_mic_white_36dp);
-            //mPauseButton.setVisibility(View.GONE);
-
-            Toast.makeText(activity, "录音结束...", Toast.LENGTH_SHORT).show();
-            stopRecord();
-
-            //allow the screen to turn off again once recording is finished
-            activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        }
+                logUtils.d("结束录音》》》》"+result.getPath());
+                String    visitGuid = SharedUtils.getString("visitGuid");
+                fileInfo info=new fileInfo(null,result.getPath(),"41",System.currentTimeMillis(),visitGuid);  //4为录音  41为合并录音
+                dao.insert(info);
+                EventBus.getDefault().post(new MessageEvent(result.getPath()));
+            }
+        });
     }
-
-
-
-
 
 
 }

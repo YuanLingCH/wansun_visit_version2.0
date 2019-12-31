@@ -740,20 +740,27 @@ public class OutBoundActivity extends BaseActivity {
      * @param bean
      */
     String ugrerName;
+    double caseTotalAppointAmount;
+    double caseTotalUrgeAmount;
+    double caseTotalReceiptAmount;
     private void updataUi(caseDetailBean.DataBean bean) {
      ugrerName = bean.getName();
         tv_debtor_name.setText("欠款人："+ ugrerName);
-        tv_debtor_money.setText("委案金额："+bean.getCaseTotalAppointAmount()+"元");
+        tv_debtor_money.setVisibility(View.GONE);
+        caseTotalAppointAmount = bean.getCaseTotalAppointAmount();
+        tv_debtor_money.setText("委案金额："+ caseTotalAppointAmount +"元");
         tv_debtor_adress.setText("欠款人地址："+bean.getAddress());
-        tv_base_collecta_mount.setText("催收金额："+bean.getCaseTotalUrgeAmount()+"元");
-        tv_base_last_arrears.setText("回款金额："+bean.getCaseTotalReceiptAmount()+"元");
+        caseTotalUrgeAmount = bean.getCaseTotalUrgeAmount();
+        tv_base_collecta_mount.setText("催收金额："+ caseTotalUrgeAmount +"元");
+        caseTotalReceiptAmount = bean.getCaseTotalReceiptAmount();
+        tv_base_last_arrears.setText("回款金额："+ caseTotalReceiptAmount +"元");
         tv_visit_area.setText("外访区域："+bean.getVisitArea());
         tv_visit_goal.setText("外访目标："+bean.getVisitGoal());
         tv_visit_remark.setText("外访备注："+bean.getRemark());
-        tv_customer_name.setText("客户名称："+bean.getCustomerName());
+        tv_customer_name.setText("甲方："+bean.getCustomerName());
         tv_gender.setText("性别："+bean.getGenderText());
-        tv_clerk.setText("案件催收员："+bean.getClerkName());
-        tv_visitors.setText("外访人员："+bean.getVisitors());
+        tv_clerk.setText("管理员："+bean.getClerkName());
+        tv_visitors.setText("外访员："+bean.getVisitors());
         tv_collect_status.setText("催收状态："+bean.getCaseUrgeStatusText());
         logUtils.d("案件编号："+caseCode);
         tv_visit_caseid.setText("案件编号："+caseCode);
@@ -825,7 +832,16 @@ public class OutBoundActivity extends BaseActivity {
                 if (trim.equals(password)){
                     if (type.equals("1")){
                         if (!TextUtils.isEmpty(cidNo)){
-                            et_modify.setText(cidNo);
+                            StringBuilder sb  =new StringBuilder();
+                            for (int i = 0; i <cidNo.length(); i++) {
+                                char c = cidNo.charAt(i);
+                                if (i <= 5) {
+                                    sb.append("*");
+                                } else {
+                                    sb.append(c);
+                                }
+                            }
+                            et_modify.setText(sb.toString());
                             isFlag=false;
                             et_modify.setFocusable(false);
                         }else {
@@ -833,8 +849,17 @@ public class OutBoundActivity extends BaseActivity {
                         }
                     }else if (type.equals("2")){
                         utils.cancleDialog();
+
+             /*           double caseTotalAppointAmount;
+                        double caseTotalUrgeAmount;
+                        double caseTotalReceiptAmount;
+                        */
+
                         Intent intent=new Intent(OutBoundActivity.this,CaseCardMessageActivity .class);
                         intent.putExtra("caseCode",caseCode);
+                        intent.putExtra("caseTotalAppointAmount",caseTotalAppointAmount+"");
+                        intent.putExtra("caseTotalUrgeAmount",caseTotalUrgeAmount+"");
+                        intent.putExtra("caseTotalReceiptAmount",caseTotalReceiptAmount+"");
                         startActivity(intent);
                         overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left); // 由右向左滑入的效果
                     }

@@ -8,6 +8,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import okhttp3.RequestBody;
@@ -148,6 +149,8 @@ public class AddPeopleFragment extends BaseFragment {
         bt_submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                bt_submit.setFocusable(false);
+
                 doSubmit();
             }
         });
@@ -173,6 +176,7 @@ public class AddPeopleFragment extends BaseFragment {
             ToastUtil.showToast(getActivity(),"请输入年龄");
             return;
         }
+        bt_submit.setText(R.string.submit_data_ing);
         //提交信息到服务器
         String caseCode = SharedUtils.getString("caseCode");
         Retrofit retrofit = netUtils.getRetrofit();
@@ -184,25 +188,37 @@ public class AddPeopleFragment extends BaseFragment {
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
-                String body = response.body();
-                logUtils.d("提交联系人"+body);
-                if (!TextUtils.isEmpty(body)){
-                    Gson gson=new Gson();
-                    caseAddPeopleBean data = gson.fromJson(body, new TypeToken<caseAddPeopleBean>() {}.getType());
-                    String statusID = data.getStatusID();
-                    if (AppConfig.SUCCESS.equals(statusID)){
-                        ToastUtil.showToast(getActivity(), "添加联系人成功");
+                try {
+                    String body = response.body();
+                    logUtils.d("提交联系人"+body);
+                    if (!TextUtils.isEmpty(body)){
+                        Gson gson=new Gson();
+                        caseAddPeopleBean data = gson.fromJson(body, new TypeToken<caseAddPeopleBean>() {}.getType());
+                        String statusID = data.getStatusID();
+                        if (AppConfig.SUCCESS.equals(statusID)){
+                            ToastUtil.showToast(getActivity(), "添加联系人成功");
+                            ed_people.setText("");
+                            ed_card_numbler.setText("");
+                            et_age.setText("");
+                        }else {
+                            ToastUtil.showToast(getActivity(), "添加地址联系人失败");
+                        }
                     }else {
                         ToastUtil.showToast(getActivity(), "添加地址联系人失败");
                     }
-                }else {
-                    ToastUtil.showToast(getActivity(), "添加地址联系人失败");
+                } catch (JsonSyntaxException e) {
+                    e.printStackTrace();
+                } finally {
+                    bt_submit.setFocusable(true);
+                    bt_submit.setText(R.string.submit_data_complete);
                 }
             }
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
                 ToastUtil.showToast(getActivity(), "添加地址联系人失败"+t.toString());
+                bt_submit.setFocusable(true);
+                bt_submit.setText(R.string.submit_data_complete);
             }
         });
 

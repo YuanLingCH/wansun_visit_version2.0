@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -19,12 +20,11 @@ import com.arcsoft.arcfacedemo.common.Constants;
 import com.arcsoft.face.ErrorInfo;
 import com.arcsoft.face.FaceEngine;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
@@ -43,10 +43,14 @@ import wansun.visit.android.api.apiManager;
 import wansun.visit.android.bean.stateMessageBean;
 import wansun.visit.android.global.AppConfig;
 import wansun.visit.android.net.requestBodyUtils;
+import wansun.visit.android.utils.CommonUtil;
+import wansun.visit.android.utils.NetWorkTesting;
 import wansun.visit.android.utils.SharedUtils;
 import wansun.visit.android.utils.ToastUtil;
 import wansun.visit.android.utils.logUtils;
 import wansun.visit.android.utils.netUtils;
+
+import static com.baidu.platform.comjni.engine.NAEngine.unInitEngine;
 
 /**
  * 首页
@@ -58,6 +62,7 @@ public class WelocmeActivity extends BaseActivity {
     private static final int REQUEST_TAKE_PHOTO_PERMISSION = 1;
     Button but_imei;
     private Toast toast = null;
+    String imei;
     @Override
     protected int getLayoutId() {
         return R.layout.activity_welcome;
@@ -81,55 +86,82 @@ public class WelocmeActivity extends BaseActivity {
     }
 
     private void getData() {
-        TelephonyManager telephonyManager=(TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
-        final String imei=telephonyManager.getDeviceId();
-        SharedUtils.putString("imei",imei);
-        logUtils.d("手机串号"+imei);
+        NetWorkTesting net = new NetWorkTesting(WelocmeActivity.this);
+        if (net.isNetWorkAvailable()) {
+       TelephonyManager telephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
+           imei = telephonyManager.getDeviceId();
+            if (TextUtils.isEmpty(imei)){
+                imei= CommonUtil.getIMEINew(WelocmeActivity.this);
+            }
+
+        SharedUtils.putString("imei", imei);
+        logUtils.d("手机串号" + imei);
         tv_link_devices.setText(R.string.link_devices);
         Retrofit retrofit = netUtils.getRetrofit();
-        apiManager manager= retrofit.create(apiManager.class);
+        apiManager manager = retrofit.create(apiManager.class);
         final RequestBody requestBody = requestBodyUtils.checkImie(imei);
         Call<String> call = manager.checkImie(requestBody);
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
-                String body = response.body();
-                logUtils.d("手机串号下载"+body);
-                if (!TextUtils.isEmpty(body)){
-                    Gson gson=new Gson();
-                    stateMessageBean data = gson.fromJson(body, new TypeToken<stateMessageBean>() {}.getType());
-                    String statusID = data.getStatusID();
-                    if (statusID.equals(AppConfig.SUCCESS)){
-                        Timer timer=new Timer();
-                        timer.schedule(new TimerTask() {
-                            @Override
-                            public void run() {
-                               // Intent intent=new Intent(WelocmeActivity.this,LoginActiovity.class);
-                              Intent intent=new Intent(WelocmeActivity.this,RegisterAndRecognizeActivity.class);
-                                 startActivity(intent);
+                try {
+                    String body = response.body();
+                    logUtils.d("手机串号下载" + body);
+                    if (!TextUtils.isEmpty(body)) {
+                        Gson gson = new Gson();
+                        stateMessageBean data = gson.fromJson(body, new TypeToken<stateMessageBean>() {}.getType());
+                        String statusID = data.getStatusID();
+                        if (statusID.equals(AppConfig.SUCCESS)) {
+
+                            if (Build.VERSION.SDK_INT <= 28) {
+                                Intent intent = new Intent(WelocmeActivity.this, RegisterAndRecognizeActivity.class);
+                                startActivity(intent);
+                            } else {
+                                String account = SharedUtils.getString("account");
+                                if (!TextUtils.isEmpty(account)) {
+                                    // new Intent(RegisterAndRecognizeActivity.this,MainActivity.class);
+                                    startActivity(new Intent(WelocmeActivity.this, MainActivity.class));
+                                    finish();
+                                    unInitEngine();
+                                } else {
+
+                                    startActivity(new Intent(WelocmeActivity.this, LoginActiovity.class));
+                                    finish();
+                                    unInitEngine();     //销毁引擎
+                                    // overridePendingTransition(R.anim.in_from_right,R.anim.out_to_left);
+                                }
+
 
                             }
-                        },500);
-                    }else {
-                        tv_check_state.setText(R.string.check_imei_state);
-                        tv_imie.setText("设备IMEI:"+imei.toString().trim());
-                        tv_imie.setTextSize(18);
-                        tv_link_devices.setText("设备连接失败...");
-                        String imeiSucess = SharedUtils.getString("imeiSucess");
-                        if (!TextUtils.isEmpty(imeiSucess)){
-                            SharedUtils.clear("imeiSucess");
+
+
+                        } else {
+                            tv_check_state.setText(R.string.check_imei_state);
+                            tv_imie.setText("设备IMEI:" + imei.toString().trim());
+                            tv_imie.setTextSize(18);
+                            tv_link_devices.setText("设备连接失败...");
+                            String imeiSucess = SharedUtils.getString("imeiSucess");
+                            if (!TextUtils.isEmpty(imeiSucess)) {
+                                SharedUtils.clear("imeiSucess");
+                            }
                         }
                     }
+                } catch (JsonSyntaxException e) {
+                    e.printStackTrace();
+                    ToastUtil.showToast(WelocmeActivity.this, "网络错误，请稍后再试...");
                 }
             }
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-                logUtils.d("手机串号下载失败"+t.toString());
-                ToastUtil.showToast(WelocmeActivity.this,t.toString());
+                logUtils.d("手机串号下载失败" + t.toString());
+                ToastUtil.showToast(WelocmeActivity.this, t.toString());
             }
         });
+    }else {
+            ToastUtil.showToast(WelocmeActivity.this, "网络错误，请稍后再试...");
 
+        }
     }
     @Override
     protected void initLise() {
@@ -217,12 +249,12 @@ public class WelocmeActivity extends BaseActivity {
 
                     @Override
                     public void onError(Throwable e) {
-
+                        Log.d("TAG","点击失败");
                     }
 
                     @Override
                     public void onComplete() {
-
+                        Log.d("TAG","点击了成功");
                     }
                 });
 

@@ -120,6 +120,7 @@ public class visitItemBean implements Serializable{
          * caseTotalRepaymentAmount : -10328.46
          * visitOrgName :
          * debtorName :
+         * addressTypeText
          */
 
         private String visitGuid;
@@ -129,7 +130,7 @@ public class visitItemBean implements Serializable{
         private String customerName;
         private String name;
         private String genderText;
-        private double caseTotalUrgeAmount;
+        private Object caseTotalUrgeAmount;
         private String caseUrgeStatusText;
         private String address;
         private long applyTime;
@@ -142,6 +143,15 @@ public class visitItemBean implements Serializable{
         private String debtorName;
         private long visitBeginTime;
         private long visitEndTime;
+        private  String addressTypeText;
+
+        public String getAddressTypeText() {
+            return addressTypeText;
+        }
+
+        public void setAddressTypeText(String addressTypeText) {
+            this.addressTypeText = addressTypeText;
+        }
 
         public long getVisitBeginTime() {
             return visitBeginTime;
@@ -215,11 +225,11 @@ public class visitItemBean implements Serializable{
             this.genderText = genderText;
         }
 
-        public double getCaseTotalUrgeAmount() {
+        public Object getCaseTotalUrgeAmount() {
             return caseTotalUrgeAmount;
         }
 
-        public void setCaseTotalUrgeAmount(double caseTotalUrgeAmount) {
+        public void setCaseTotalUrgeAmount(Object caseTotalUrgeAmount) {
             this.caseTotalUrgeAmount = caseTotalUrgeAmount;
         }
 

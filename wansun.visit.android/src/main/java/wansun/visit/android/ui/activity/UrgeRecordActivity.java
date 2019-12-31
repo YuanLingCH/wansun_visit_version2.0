@@ -35,10 +35,6 @@ public class UrgeRecordActivity extends BaseActivity {
 
     }
 
-
-
-
-
     private void updataUI() {
        adapter=new caseUrgeRecordAdapter(UrgeRecordActivity.this,data );
         lv_urge_record.setAdapter(adapter);

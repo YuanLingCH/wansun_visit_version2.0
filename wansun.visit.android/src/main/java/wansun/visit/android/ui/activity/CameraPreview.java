@@ -120,6 +120,5 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     public void setCamera(Camera camera) {
         //method to set a camera instance
         mCamera = camera;
-
     }
 }

@@ -59,7 +59,6 @@ public class waifangApplication extends Application {
         * */
         CrashReport.initCrashReport(getApplicationContext(), "18ca237fe3", true);
 
-
     }
     private void initDatabass() {
         //这里之后会修改，关于升级数据库

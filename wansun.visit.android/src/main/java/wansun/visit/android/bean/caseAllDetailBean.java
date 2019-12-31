@@ -89,7 +89,7 @@ public class caseAllDetailBean implements Serializable {
         private CaseStatusItemBean caseStatusItem;
         private double caseTotalAppointAmount;
         private int caseType;
-        private int caseNewRepayment;
+        private Object caseNewRepayment;
         private long latestFollowUpTime;
         private long reportTime;
         private long latestFollowTime;
@@ -191,11 +191,11 @@ public class caseAllDetailBean implements Serializable {
             this.caseType = caseType;
         }
 
-        public int getCaseNewRepayment() {
+        public Object getCaseNewRepayment() {
             return caseNewRepayment;
         }
 
-        public void setCaseNewRepayment(int caseNewRepayment) {
+        public void setCaseNewRepayment(Object caseNewRepayment) {
             this.caseNewRepayment = caseNewRepayment;
         }
 
@@ -5166,7 +5166,7 @@ public class caseAllDetailBean implements Serializable {
             private long verificationDate;
             private long createAccountDate;
             private String branchesBank;
-            private int creditLine;
+            private Object creditLine;
             private int stagingPeriods;
             private double caseAmount;
             private double collectAmount;
@@ -5176,14 +5176,14 @@ public class caseAllDetailBean implements Serializable {
             private CardStatusItemBean cardStatusItem;
             private String defaultRatings;
             private String overdueDays;
-            private int interest;
+            private Object interest;
             private String overdueInstallments;
             private String currency;
             private CarItemBean carItem;
-            private int collectFee;
+            private Object collectFee;
             private double repaymentAmountPerPeriod;
             private String accountNo;
-            private int rate;
+            private Object rate;
             private long reconciliationDate;
             private String branches;
             private long lastPaymentDate;
@@ -5195,9 +5195,9 @@ public class caseAllDetailBean implements Serializable {
             private String cardNo;
             private String cardGuid;
             private String repaymentsPeriods;
-            private int forfeitPenalty;
-            private int otherFee;
-            private long lastPaymentAmount;
+            private Object forfeitPenalty;
+            private Object otherFee;
+            private Object lastPaymentAmount;
             private float principal;
             private Object cardDescription;
             private CardAddressBean cardAddress;
@@ -5232,11 +5232,11 @@ public class caseAllDetailBean implements Serializable {
                 this.branchesBank = branchesBank;
             }
 
-            public int getCreditLine() {
+            public Object getCreditLine() {
                 return creditLine;
             }
 
-            public void setCreditLine(int creditLine) {
+            public void setCreditLine(Object creditLine) {
                 this.creditLine = creditLine;
             }
 
@@ -5312,11 +5312,11 @@ public class caseAllDetailBean implements Serializable {
                 this.overdueDays = overdueDays;
             }
 
-            public int getInterest() {
+            public Object getInterest() {
                 return interest;
             }
 
-            public void setInterest(int interest) {
+            public void setInterest(Object interest) {
                 this.interest = interest;
             }
 
@@ -5344,11 +5344,11 @@ public class caseAllDetailBean implements Serializable {
                 this.carItem = carItem;
             }
 
-            public int getCollectFee() {
+            public Object getCollectFee() {
                 return collectFee;
             }
 
-            public void setCollectFee(int collectFee) {
+            public void setCollectFee(Object collectFee) {
                 this.collectFee = collectFee;
             }
 
@@ -5368,11 +5368,11 @@ public class caseAllDetailBean implements Serializable {
                 this.accountNo = accountNo;
             }
 
-            public int getRate() {
+            public Object getRate() {
                 return rate;
             }
 
-            public void setRate(int rate) {
+            public void setRate(Object rate) {
                 this.rate = rate;
             }
 
@@ -5464,27 +5464,27 @@ public class caseAllDetailBean implements Serializable {
                 this.repaymentsPeriods = repaymentsPeriods;
             }
 
-            public int getForfeitPenalty() {
+            public Object getForfeitPenalty() {
                 return forfeitPenalty;
             }
 
-            public void setForfeitPenalty(int forfeitPenalty) {
+            public void setForfeitPenalty(Object forfeitPenalty) {
                 this.forfeitPenalty = forfeitPenalty;
             }
 
-            public int getOtherFee() {
+            public Object getOtherFee() {
                 return otherFee;
             }
 
-            public void setOtherFee(int otherFee) {
+            public void setOtherFee(Object otherFee) {
                 this.otherFee = otherFee;
             }
 
-            public long getLastPaymentAmount() {
+            public Object getLastPaymentAmount() {
                 return lastPaymentAmount;
             }
 
-            public void setLastPaymentAmount(long lastPaymentAmount) {
+            public void setLastPaymentAmount(Object lastPaymentAmount) {
                 this.lastPaymentAmount = lastPaymentAmount;
             }
 

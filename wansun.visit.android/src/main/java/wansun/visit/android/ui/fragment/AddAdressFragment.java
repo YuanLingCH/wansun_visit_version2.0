@@ -8,6 +8,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import okhttp3.RequestBody;
@@ -153,6 +154,8 @@ public class AddAdressFragment extends BaseFragment{
             @Override
             public void onClick(View v) {
                 doSubmit();
+                bt_submit.setFocusable(false);
+
             }
         });
 
@@ -174,6 +177,7 @@ public class AddAdressFragment extends BaseFragment{
         String unit = ed_unit.getText().toString().trim();
         String remark = ed_remark.getText().toString().trim();
         if (!TextUtils.isEmpty(name)&&!TextUtils.isEmpty(remark)){
+            bt_submit.setText(R.string.submit_data_ing);
             String caseCode = SharedUtils.getString("caseCode");
             String account = SharedUtils.getString("account");
             long time = System.currentTimeMillis();
@@ -185,25 +189,38 @@ public class AddAdressFragment extends BaseFragment{
             call.enqueue(new Callback<String>() {
                 @Override
                 public void onResponse(Call<String> call, Response<String> response) {
-                    String body = response.body();
-                    logUtils.d("提交数据电话号码"+body);
-                    if (!TextUtils.isEmpty(body)){
-                        Gson gson=new Gson();
-                        stateMessageBean data = gson.fromJson(body, new TypeToken<stateMessageBean>() {}.getType());
-                        String statusID = data.getStatusID();
-                        if (AppConfig.SUCCESS.equals(statusID)){
-                            ToastUtil.showToast(getActivity(), "添加地址成功");
+                    try {
+                        String body = response.body();
+                        logUtils.d("提交数据电话号码"+body);
+                        if (!TextUtils.isEmpty(body)){
+                            Gson gson=new Gson();
+                            stateMessageBean data = gson.fromJson(body, new TypeToken<stateMessageBean>() {}.getType());
+                            String statusID = data.getStatusID();
+                            if (AppConfig.SUCCESS.equals(statusID)){
+                                ToastUtil.showToast(getActivity(), "添加地址成功");
+                                ed_person.setText("");
+                                ed_add_address.setText("");
+                                ed_remark.setText("");
+                                ed_unit.setText("");
+                            }else {
+                                ToastUtil.showToast(getActivity(), "添加地址失败");
+                            }
                         }else {
                             ToastUtil.showToast(getActivity(), "添加地址失败");
                         }
-                    }else {
-                        ToastUtil.showToast(getActivity(), "添加地址失败");
+                    } catch (JsonSyntaxException e) {
+                        e.printStackTrace();
+                    } finally {
+                        bt_submit.setFocusable(true);
+                        bt_submit.setText(R.string.submit_data_complete);
                     }
                 }
 
                 @Override
                 public void onFailure(Call<String> call, Throwable t) {
                     ToastUtil.showToast(getActivity(), "添加地址失败"+t.toString());
+                    bt_submit.setFocusable(true);
+                    bt_submit.setText(R.string.submit_data_complete);
                 }
             });
         }

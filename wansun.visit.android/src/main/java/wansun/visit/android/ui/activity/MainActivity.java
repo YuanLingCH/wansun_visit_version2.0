@@ -81,13 +81,15 @@ import com.baidu.navisdk.adapter.IBNRoutePlanManager;
 import com.baidu.navisdk.adapter.IBNTTSManager;
 import com.baidu.navisdk.adapter.IBaiduNaviManager;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -118,6 +120,7 @@ import wansun.visit.android.bean.searchBean;
 import wansun.visit.android.bean.stateMessageBean;
 import wansun.visit.android.bean.visitItemBean;
 import wansun.visit.android.config.MessageCode;
+import wansun.visit.android.event.LatlngEvent;
 import wansun.visit.android.global.waifangApplication;
 import wansun.visit.android.net.requestBodyUtils;
 import wansun.visit.android.utils.CommonUtil;
@@ -154,7 +157,7 @@ public class MainActivity extends BaseActivity implements OnGetGeoCoderResultLis
     private static final String APP_FOLDER_NAME = "BNSDKSimpleDemo";
     private static final int authBaseRequestCode = 1;
     LinearLayout ll_gps,ll_bottom;
-    Button but_gps_walk,but_gps_car,but_gps_bike,but_other_map;
+    Button but_gps_walk,but_gps_car,but_gps_bike,but_other_map,but_data_loading;
     BikeNaviLaunchParam bikeParam;    // 起点和终点经纬度
     private LatLng startPt,endPt;
     WalkNaviLaunchParam walkParam;
@@ -171,7 +174,7 @@ public class MainActivity extends BaseActivity implements OnGetGeoCoderResultLis
     Marker marker;  //添加mark
     addressAdapter addAaapter;
     GeoCoder mSearch = null;
-    RelativeLayout rl_visit_order,rl_visit_order_record;
+    RelativeLayout rl_visit_order,rl_visit_order_record,rl_counts;
 
     List addressData; //从服务器取得的地址信息
     int lv_mainItemPostion;
@@ -179,8 +182,11 @@ public class MainActivity extends BaseActivity implements OnGetGeoCoderResultLis
     // 当前页号
     public  int pageNo=1;
     //每页显示的记录输
-    public  int pageSize=100;
+    public  int pageSize=1500;
+    String queryContent=null;
+    boolean queryContentFlag=false;
     private static final int LOCTION_PERMISSION = 100;  //定位权限
+    Handler mhandler=new Handler();
     private static final String[] authBaseArr = {
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.ACCESS_FINE_LOCATION
@@ -229,7 +235,8 @@ public class MainActivity extends BaseActivity implements OnGetGeoCoderResultLis
         visit_but_search= (ImageView) findViewById(R.id.visit_but_search);
         tv_modify_face_account= (TextView) findViewById(R.id.tv_modify_face_account);   //切换人脸或者账号
         tv_display_account= (TextView) findViewById(R.id.tv_display_account);
-
+        but_data_loading= (Button) findViewById(R.id.but_data_loading);
+        rl_counts= (RelativeLayout) findViewById(R.id.rl_counts); //业绩统计
     }
 
     /**
@@ -461,10 +468,16 @@ public void getSearch(String city,String address){
     boolean self_flag=false;
     boolean click_flag=false;
     boolean click_address_item_flag=false;
+    boolean dataLoadingFlag=false;
+
     @Override
     protected void initEvent() {
         map = mMapView.getMap();
         data=new ArrayList();
+        applyData=new ArrayList();
+        visitData=new ArrayList<>();
+        addressData=new ArrayList();
+        mapInfoData=new ArrayList<>();
         //检索的功能
         suggestionSearch = SuggestionSearch.newInstance();
         suggestionSearch.setOnGetSuggestionResultListener(listener);
@@ -543,8 +556,14 @@ public void getSearch(String city,String address){
             public void onClick(View v) {
                 if (visitData.size()>0){
                     Intent intent=new Intent(MainActivity.this,VisitOrderActivity.class);
-                    intent.putExtra("visitData", (Serializable) visitData);
+            /*        Bundle bundle=new Bundle();
+                   bundle.clear();   // visitItemBean.DataBean
+                    bundle.putSerializable("visitData",(Serializable)visitData);
+                   // intent.putExtra("visitData", (Serializable) visitData);
+                    intent.putExtras(bundle);*/
+                    EventBus.getDefault().postSticky(visitData);
                     startActivity(intent);
+
                     overridePendingTransition(R.anim.in_from_right,R.anim.out_to_left);
                 }else {
                     ToastUtil.showToast(MainActivity.this,R.string.nodata_now);
@@ -572,14 +591,58 @@ public void getSearch(String city,String address){
             }
         });
         /**
-         * 点击查询外访单
+         * 模糊查询外访单
          */
         visit_but_search.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                logUtils.d("点击了查询");
-                click_address_item_flag=true;
-                getData();
+                mapInfoData.clear();
+                currrentCount=0;
+               queryContent= et_address.getText().toString().trim();
+                logUtils.d("输入的地址类容"+queryContent);
+                if (TextUtils.isEmpty(queryContent)){
+                    ToastUtil.showToast(MainActivity.this,"请输入地址");
+                }else {
+                    if (marker!=null){
+                        map.clear();
+
+                    }
+                new Thread(){
+                    @Override
+                    public void run() {
+                        super.run();
+                        if (dataDispose.size()>0){
+                        Iterator<visitItemBean.DataBean> iterator = dataDispose.iterator();
+                            logUtils.d("模糊查询走了"+dataDispose.size());
+                        while (iterator.hasNext()){
+                            try {
+                                Thread.sleep(80);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            visitItemBean.DataBean next = iterator.next();
+                            String name = next.getName();
+                            String address = next.getAddress();
+                            if (!TextUtils.isEmpty(address)){
+                                //   if (!addressData.contains(address)){  //过滤掉相同的地址信息
+                                logUtils.d("地址反编码"+address);
+                           if (address.contains(queryContent)){
+                               logUtils.d("地址反编码"+":"+address+"》》》》》债务人"+name);
+                               //  搜索的功能
+                               mapInfoData.add(new mapInfoBean(name,next.getVisitStatusText(),next.getCustomerName(),next.getAddress(),next.getCaseCode(),next.getVisitGuid()));
+                               mSearch.geocode(new GeoCodeOption()
+                                       .city("")
+                                       .address(address));
+                           }
+
+                                //  }
+                            }
+
+                        }
+                    }
+                    }
+                }.start();
+                }
             }
         });
         tv_modify_face_account.setOnClickListener(new View.OnClickListener() {
@@ -587,6 +650,36 @@ public void getSearch(String city,String address){
             public void onClick(View v) {
                 logUtils.d("点击了修改人脸识别和账号");
                 modifyFaceAndAcount();
+            }
+        });
+        /**
+         * 加载全部数据
+         */
+        but_data_loading.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                logUtils.d("点击了查询");
+                click_address_item_flag=true;
+                dataLoadingFlag=true;
+                currrentCount=0;
+                //清掉地图上全部的Mark点 在标记
+                if (marker!=null){
+                    map.clear();
+
+                }
+        getData();
+            }
+        });
+
+        /**
+         * 业绩统计
+         */
+        rl_counts.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(MainActivity.this,CountsActivity.class);
+                startActivity(intent);
+                overridePendingTransition(R.anim.in_from_right,R.anim.out_to_left);
             }
         });
     }
@@ -684,43 +777,53 @@ public void getSearch(String city,String address){
             if (null != geoCodeResult && null != geoCodeResult.getLocation()) {
                 if (geoCodeResult == null || geoCodeResult.error != SearchResult.ERRORNO.NO_ERROR) {
                     //没有检索到结果
+                    logUtils.d("没有检索到结果退出循环>>>>>>>>>>>>>>>>>>>");
                     return;
                 } else {
-                    service_flag=true;
-                    double latitude = geoCodeResult.getLocation().latitude;
-                    double longitude = geoCodeResult.getLocation().longitude;
-                    LatLng latLng=new LatLng(latitude,longitude );
-                    logUtils.d("地理反编码地址"+"latitude"+latitude+"longitude"+longitude);
-                    servicePoint = new LatLng(latitude, longitude);
-                    //创建OverlayOptions属性
-                     //  lv_mainItemPostion
-                    mapInfoBean mapInfoBean=null;
-                    if (!click_address_item_flag){
-                            mapInfoBean = mapInfoData.get(currrentCount);
-                            currrentCount++;
+                    try {
 
-                    }else {
-                        mapInfoBean = mapInfoData.get(lv_mainItemPostion);
-                    }
-                        BitmapDescriptor bitmap = BitmapDescriptorFactory.fromResource(R.mipmap.man);
-                        OverlayOptions option1 =  new MarkerOptions()
-                                .position(servicePoint)
-                                .icon(bitmap);
-                        marker = (Marker) map.addOverlay(option1);
-                        Bundle bundle=new Bundle();
-                        bundle.putSerializable("info", mapInfoBean);
-                        marker.setExtraInfo(bundle);
-                    MapStatus mMapStatus = new MapStatus.Builder()
-                            .target(latLng)
-                            .zoom(15)
-                            .build();
-                    //定义MapStatusUpdate对象，以便描述地图状态将要发生的变化
-                    MapStatusUpdate mMapStatusUpdate = MapStatusUpdateFactory.newMapStatus(mMapStatus);
+                        service_flag=true;
+                        double latitude = geoCodeResult.getLocation().latitude;
+                        double longitude = geoCodeResult.getLocation().longitude;
+                        LatLng latLng=new LatLng(latitude,longitude );
+                        servicePoint = new LatLng(latitude, longitude);
+                        mapInfoBean mapInfoBean=null;
+                        if (!click_address_item_flag||dataLoadingFlag&&mapInfoData.size()>0){
+                                mapInfoBean = mapInfoData.get(currrentCount);
+                            logUtils.d("集合大小："+mapInfoData.size()+">>>下标"+currrentCount+"债务人》》"+mapInfoBean.getDebtor());
+                                currrentCount++;
+                        }else {
+                            mapInfoBean = mapInfoData.get(lv_mainItemPostion);
+                        }
+
+                                BitmapDescriptor bitmap = BitmapDescriptorFactory.fromResource(R.mipmap.man);
+                                OverlayOptions option1 =  new MarkerOptions()
+                                        .position(servicePoint)
+                                        .icon(bitmap);
+                                marker = (Marker) map.addOverlay(option1);
+                                Bundle bundle=new Bundle();
+                                bundle.putSerializable("info", mapInfoBean);
+                                marker.setExtraInfo(bundle);
+                                MapStatus mMapStatus = new MapStatus.Builder()
+                                        .target(latLng)
+                                        .zoom(15)
+                                        .build();
+                                //定义MapStatusUpdate对象，以便描述地图状态将要发生的变化
+
+                                MapStatusUpdate mMapStatusUpdate = MapStatusUpdateFactory.newMapStatus(mMapStatus);
 //改变地图状态
-                    map.animateMapStatus(mMapStatusUpdate);
+                                map.animateMapStatus(mMapStatusUpdate);
+
+
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        ToastUtil.showToast(MainActivity.this,"地址异常");
+                    }
 
                 }
             }
+
         }
 
         @Override
@@ -919,15 +1022,17 @@ public void getSearch(String city,String address){
     public class MyNotifyLister extends BDNotifyListener {
         public void onNotify(BDLocation mlocation, float distance){
             //已到达设置监听位置附近  弹出对话框
-            ToastUtil.showToast(MainActivity.this,"到达目标位置请注意");
+
             Log.e("TAG","到达目标位置请注意"+distance);
             Vibrator vibrator = (Vibrator)MainActivity.this.getSystemService(MainActivity.this.VIBRATOR_SERVICE);
             vibrator.vibrate(2000);   //手机震动提示
             String s = "你已经到达"+mlocation.getProvince() + mlocation.getCity() + mlocation.getLocationDescribe();
+            ToastUtil.showToast(MainActivity.this,"到达目标位置请注意"+s);
             Log.e("TAG","到达目标位置请注意"+s);
             waifangApplication.getmSpeechSynthesizer().speak(s);
         }
     }
+
     List dataAddress=new ArrayList();
     OnGetSuggestionResultListener listener = new OnGetSuggestionResultListener() {
         @Override
@@ -1002,9 +1107,9 @@ public void getSearch(String city,String address){
     /**
      * 给地图添加标记物Mark  并且显示在手机屏幕的中央  可以拖动
      */
- double distance;
+    double distance;
     searchBean bean;
-
+    int numbler=0;
     private void addMark(final searchBean bean) {
         if (pt!=null){
             //定义Maker坐标点   根据精度和纬度
@@ -1015,7 +1120,7 @@ public void getSearch(String city,String address){
                 click_address_item_flag=false;
                 bitmap = BitmapDescriptorFactory
                         .fromResource(R.mipmap.man);
-                logUtils.d("走了man");
+                logUtils.d("numbler"+numbler++);
             }
                 if (lv_flag){
                     logUtils.d("走了location");
@@ -1040,7 +1145,7 @@ public void getSearch(String city,String address){
 
             Log.d("TAG","定位修改，，，，，"+"longitude"+longitude+"latitude"+latitude);
             //设置位置提醒，四个参数分别是：纬度、经度、半径、坐标类型
-            myLocationListener.SetNotifyLocation(latitude,longitude , 1000, mLocationClient.getLocOption().getCoorType());
+            myLocationListener.SetNotifyLocation(latitude,longitude , 10000, mLocationClient.getLocOption().getCoorType());   //设置位置提醒
             LatLng point1=new LatLng(latitude,longitude);
             mLocationClient.start();
 
@@ -1073,7 +1178,7 @@ public void getSearch(String city,String address){
             TextView tv_name = (TextView) InfoConentWindowView.findViewById(R.id.tv_name);
             tv_name.setText("债务人姓名：" + bean.getDebtor());
             TextView tv_custome_name = (TextView) InfoConentWindowView.findViewById(R.id.tv_custome_name);
-            tv_custome_name.setText("欠款机构：" + bean.getCustomer());
+            tv_custome_name.setText("甲方：" + bean.getCustomer());
             tv_address = (TextView) InfoConentWindowView.findViewById(R.id.home_address);
             tv_address.setText("地址：" + bean.getAddressDeail());
             but_info_cancle = (Button) InfoConentWindowView.findViewById(R.id.but_info_cancle);
@@ -1192,12 +1297,12 @@ public void getSearch(String city,String address){
                                         tv_address.setText(et_modify.getText().toString().trim());
                                         tv_bottom_destination_location.setText(et_modify.getText().toString().trim());
                                         butGPS();
-                                        ToastUtil.showToast(MainActivity.this,data.getData());
+                                        ToastUtil.showToast(MainActivity.this,data.getData()+"");
                                         //TODO 修改后要重新请求服务器  同步数据
                                         getData();
                                         et_address.setText(et_modify.getText().toString().trim());
                                     }else {
-                                        ToastUtil.showToast(MainActivity.this,data.getData());
+                                        ToastUtil.showToast(MainActivity.this,data.getData()+"");
                                     }
 
                                 }
@@ -1603,6 +1708,7 @@ public void getSearch(String city,String address){
     List<visitItemBean.DataBean> visitData;
     List <visitItemBean.DataBean> applyData;
     List <mapInfoBean>mapInfoData; //地图展示的数据
+    boolean isLoadFirstFlag=false;
     @Override
     protected void initData() {
         getData();
@@ -1644,17 +1750,15 @@ public void getSearch(String city,String address){
             }
         });
     }
+     List<visitItemBean.DataBean> dataDispose;
     private void getData() {
-        applyData=new ArrayList();
-        visitData=new ArrayList<>();
-        addressData=new ArrayList();
-        mapInfoData=new ArrayList<>();
+
         String userName = SharedUtils.getString("account");
         tv_display_account.setText("当前登录账号："+userName);
         logUtils.d("userName"+userName);
         Retrofit retrofit = netUtils.getRetrofit();
         apiManager manager= retrofit.create(apiManager.class);
-        RequestBody requestBody = requestBodyUtils.visitItemToService(userName,true,pageNo+"",pageSize+"");
+        RequestBody requestBody = requestBodyUtils.visitItemToService(userName,true,pageNo+"",pageSize+"","","",""); //  3个null 为查询债务人，客户地址，贷款机构
         Call<String> call = manager.visitListFormeService(requestBody);
         applyData.clear();
         visitData.clear();
@@ -1666,41 +1770,74 @@ public void getSearch(String city,String address){
                 String body = response.body();
                 logUtils.d("body"+body);
                 if (!TextUtils.isEmpty(body)){
-                    Gson gson=new Gson();
-                    visitItemBean bean = gson.fromJson(body, new TypeToken<visitItemBean>() {}.getType());
-                    String statusID = bean.getStatusID();
-                    if (statusID.equals("200")){
-                        List<visitItemBean.DataBean> data = bean.getData();
-                        logUtils.d("data.size()"+data.size());
-                        if (data.size()>0){
-                            Iterator<visitItemBean.DataBean> iterator = data.iterator();
-                            while (iterator.hasNext()){
-                                visitItemBean.DataBean next = iterator.next();
-                                visitData.add(next);
-                                String name = next.getName();
-                                logUtils.d("债务人名字："+name);
-                                applyData.add(next);
-                                String address = next.getAddress();
+                    try {
+                        Gson gson=new Gson();
+                        visitItemBean bean = gson.fromJson(body, new TypeToken<visitItemBean>() {}.getType());
+                        String statusID = bean.getStatusID();
+                        if (statusID.equals("200")){
+                        dataDispose = bean.getData();
+                            logUtils.d("data.size()"+dataDispose.size());
+                            if (dataDispose.size()>0){
                                 ToastUtil.showToast(MainActivity.this,R.string.nodata_sucess);
                                 // TODO地址遍历 加载再地图上  放在子线程里面去做  防止数据太多 阻塞主线程
-                                if (!TextUtils.isEmpty(address)){
-                                    if (!addressData.contains(address)){  //过滤掉相同的地址信息
-                                        addressData.add(address);
-                                        mapInfoData.add(new mapInfoBean(name,next.getVisitStatusText(),next.getCustomerName(),next.getAddress(),next.getCaseCode(),next.getVisitGuid()));
-                                        mSearch.geocode(new GeoCodeOption()
-                                                .city("")
-                                                .address(address));
-                                        logUtils.d("地址反编码"+":"+address);
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                         /*           new Thread(new Runnable() {
+                                        @Override
+                                        public void run() {*/
+                                        final Iterator<visitItemBean.DataBean> iterator = dataDispose.iterator();
 
+                                        while (iterator.hasNext()){
+                                            if (!isLoadFirstFlag){
+                                                isLoadFirstFlag=!isLoadFirstFlag;
+                                            }else {
+                                                try {
+                                                    Thread.sleep(180);//项目经理说等给钱优化
+                                                } catch (InterruptedException e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }
+
+                                            visitItemBean.DataBean next = iterator.next();
+                                            visitData.add(next);
+                                            String name = next.getName();
+                                            applyData.add(next);
+                                            String address = next.getAddress();
+                                            if (!TextUtils.isEmpty(address)){
+                                                //   if (!addressData.contains(address)){  //过滤掉相同的地址信息
+                                                addressData.add(address);
+
+                                                //  搜索的功能
+                                                mapInfoData.add(new mapInfoBean(name,next.getVisitStatusText(),next.getCustomerName(),next.getAddress(),next.getCaseCode(),next.getVisitGuid()));
+
+                                                mSearch.geocode(new GeoCodeOption()
+                                                        .city("")
+                                                        .address(address));
+                                                logUtils.d("地址反编码"+":"+address+"》》》》》债务人"+name);
+                                                //  }
+                                            }
+
+
+
+                                                }
                                     }
-                                }
+                                }).start();
+
+                         /*               }
+                                    }).start();*/
+
+                            }else {
+                                logUtils.d("占无外访单");
+                                et_address.setText("暂无外访单");
+                                ToastUtil.showToast(MainActivity.this,R.string.nodata_now);
                             }
-                        }else {
-                            logUtils.d("占无外访单");
-                            et_address.setText("暂无外访单");
-                            ToastUtil.showToast(MainActivity.this,R.string.nodata_now);
-                        }
-                        }
+                            }
+                    } catch (JsonSyntaxException e) {
+                        e.printStackTrace();
+                        ToastUtil.showToast(MainActivity.this,"网络超时请重试...");
+
+                    }
 
                 }
 
@@ -1709,6 +1846,7 @@ public void getSearch(String city,String address){
             @Override
             public void onFailure(Call<String> call, Throwable t) {
                 logUtils.d("请求数据失败："+t.toString());
+                ToastUtil.showToast(MainActivity.this,"网络超时请重试...");
             }
         });
     }
@@ -1767,7 +1905,7 @@ public void getSearch(String city,String address){
 //可选，默认gcj02，设置返回的定位结果坐标系，如果配合百度地图使用，建议设置为bd09ll;
         locationOption.setCoorType("bd09ll");
 //可选，默认0，即仅定位一次，设置发起连续定位请求的间隔需要大于等于1000ms才是有效的
-        locationOption.setScanSpan(5000);
+        locationOption.setScanSpan(100000);
 
 //可选，设置是否需要地址信息，默认不需要
         locationOption.setIsNeedAddress(true);
@@ -1876,7 +2014,10 @@ public void getSearch(String city,String address){
         tv_location.setText(location.getProvince()+location.getCity()+locationDescribe);
         curentLcotion=location.getProvince()+location.getCity()+locationDescribe;
         tv_bottom_current_location.setText("当前位置："+curentLcotion);
-     //   logUtils.d("位置描述+curentLcotion"+curentLcotion);
+     // logUtils.d("位置描述+curentLcotion"+curentLcotion);
+        SharedUtils.putString("curentLcotion",curentLcotion);
+        EventBus.getDefault().postSticky(new LatlngEvent(location.getLatitude(),location.getLongitude(),curentLcotion));
+
 
     }
     /**

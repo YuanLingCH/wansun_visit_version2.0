@@ -8,15 +8,21 @@
             android:background="@drawable/border_red_roval_sign"
             android:id="@+id/but_lab_complete"
             android:layout_margin="@dimen/dimen_10"
-            android:text="标记为完成"
+            android:text="标记外访为完成"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
          <Button
              android:textColor="@color/white"
              android:background="@drawable/border_red_roval_sign"
              android:id="@+id/but_lab_visit"
+             android:layout_margin="@dimen/dimen_10"
+             android:text="标记外访为当前外访"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content" />
+    <TextView
+        android:textColor="@color/red"
+        android:text="提示:标记外访为完成后，此案件系统不推送到App端"
         android:layout_margin="@dimen/dimen_10"
-        android:text="标记为当前外访"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 </LinearLayout>

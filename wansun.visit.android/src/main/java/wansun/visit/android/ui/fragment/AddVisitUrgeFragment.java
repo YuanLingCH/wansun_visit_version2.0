@@ -6,6 +6,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import okhttp3.RequestBody;
@@ -53,38 +54,56 @@ public class AddVisitUrgeFragment extends BaseFragment {
         final   String account = SharedUtils.getString("account");
         final  String id = SharedUtils.getString("id");
         final    String trim = et_visit_urge.getText().toString().trim();
+        String gpsAddress= SharedUtils.getString("curentLcotion");
+        String  userName= SharedUtils.getString("userName");
+
         if (TextUtils.isEmpty(trim)){
             ToastUtil.showToast(getActivity(),"请输入内容");
             return;
         }
+        bt_visit_submit.setText(R.string.submit_data_ing);
         long time = System.currentTimeMillis();
+
         Retrofit retrofit = netUtils.getRetrofit();
                 apiManager manager= retrofit.create(apiManager.class);
                 Integer it = Integer.valueOf(id);
-                RequestBody requestBody = requestBodyUtils.visitAddVisitUrgeToService(caseCode,visitGuid,account,it ,trim,time);
+                RequestBody requestBody = requestBodyUtils.visitAddVisitUrgeToService(caseCode,visitGuid,account+"("+userName+")",it ,trim,time,id,gpsAddress);
                 Call<String> call = manager.visitCaseAddVisitUrge(requestBody);
                 call.enqueue(new Callback<String>() {
                     @Override
                     public void onResponse(Call<String> call, Response<String> response) {
                         String body = response.body();
                         logUtils.d("添加外访："+body);
-                        if (!TextUtils.isEmpty(body)){
-                            Gson gson=new Gson();
-                            caseVistAddVisitUrgeBean data = gson.fromJson(body, new TypeToken<caseVistAddVisitUrgeBean>() {}.getType());
-                            String statusID = data.getStatusID();
-                            if (AppConfig.SUCCESS.equals(statusID)){
-                                ToastUtil.showToast(getActivity(), "添加外访成功");
+                        try {
+                            if (!TextUtils.isEmpty(body)){
+                                Gson gson=new Gson();
+
+                                caseVistAddVisitUrgeBean data = gson.fromJson(body, new TypeToken<caseVistAddVisitUrgeBean>() {}.getType());
+
+                                String statusID = data.getStatusID();
+                                if (AppConfig.SUCCESS.equals(statusID)){
+                                    ToastUtil.showToast(getActivity(), "添加外访成功");
+                                    et_visit_urge.setText("");
+                                }else {
+                                    ToastUtil.showToast(getActivity(), "添加外访失败");
+                                }
                             }else {
                                 ToastUtil.showToast(getActivity(), "添加外访失败");
                             }
-                        }else {
-                            ToastUtil.showToast(getActivity(), "添加外访失败");
+                        } catch (JsonSyntaxException e) {
+                            e.printStackTrace();
+                            ToastUtil.showToast(getActivity(), "添加外访失败"+e.toString());
+                        }finally {
+                            bt_visit_submit.setFocusable(true);
+                            bt_visit_submit.setText(R.string.submit_data_complete);
                         }
                     }
 
                     @Override
                     public void onFailure(Call<String> call, Throwable t) {
                         ToastUtil.showToast(getActivity(), "添加外访失败"+t.toString());
+                        bt_visit_submit.setFocusable(true);
+                        bt_visit_submit.setText(R.string.submit_data_complete);
                     }
                 });
 
@@ -99,6 +118,8 @@ public class AddVisitUrgeFragment extends BaseFragment {
             @Override
             public void onClick(View v) {
                 logUtils.d("点击提交");
+                bt_visit_submit.setFocusable(false);
+
                 doSubmit();
             }
         });

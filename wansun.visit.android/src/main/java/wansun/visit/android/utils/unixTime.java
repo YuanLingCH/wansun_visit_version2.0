@@ -20,7 +20,7 @@ public class unixTime {
  * 将时间转换为时间戳
  */
     public  static String dateToStamp(String time)  {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         Date date = null;
         try {
             date = simpleDateFormat.parse(time);

@@ -8,6 +8,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import okhttp3.RequestBody;
@@ -125,6 +126,8 @@ public class AddUrgeFragment extends BaseFragment {
         bt_ugre_submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                bt_ugre_submit.setFocusable(false);
+
                 doSubmit();
             }
         });
@@ -150,37 +153,51 @@ public class AddUrgeFragment extends BaseFragment {
             ToastUtil.showToast(getActivity(),"请输入催收记录");
         }
         String mark = ed_remark.getText().toString().trim();
-
+        bt_ugre_submit.setText(R.string.submit_data_ing);
         String caseCode = SharedUtils.getString("caseCode");
         String account = SharedUtils.getString("account");
+        String creatorId = SharedUtils.getString("id");
         long time = System.currentTimeMillis();
 
         Retrofit retrofit = netUtils.getRetrofit();
         apiManager manager= retrofit.create(apiManager.class);
-        RequestBody requestBody = requestBodyUtils.visitCaseAddphoneUrgeToService(caseCode,relationId,name,numbler,mark,account,contactSummary,content,contactResult,contactSummaryText,contactResultText,time);
+        RequestBody requestBody = requestBodyUtils.visitCaseAddphoneUrgeToService(caseCode,relationId,name,numbler,mark,account,contactSummary,content,contactResult,contactSummaryText,contactResultText,time,creatorId);
         Call<String> call = manager.visitCaseAddPhoneUrge(requestBody);
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
-                String body = response.body();
-                logUtils.d("提交电话催收"+body);
-                if (!TextUtils.isEmpty(body)){
-                    Gson gson=new Gson();
-                    caseAddPhoneUrgeBean data = gson.fromJson(body, new TypeToken<caseAddPhoneUrgeBean>() {}.getType());
-                    String statusID = data.getStatusID();
-                    if (AppConfig.SUCCESS.equals(statusID)){
-                        ToastUtil.showToast(getActivity(), "添加电话催记成功");
+                try {
+                    String body = response.body();
+                    logUtils.d("提交电话催收"+body);
+                    if (!TextUtils.isEmpty(body)){
+                        Gson gson=new Gson();
+                        caseAddPhoneUrgeBean data = gson.fromJson(body, new TypeToken<caseAddPhoneUrgeBean>() {}.getType());
+                        String statusID = data.getStatusID();
+                        if (AppConfig.SUCCESS.equals(statusID)){
+                            ToastUtil.showToast(getActivity(), "添加电话催记成功");
+                            ed_people.setText("");
+                            et_phone_numbler.setText("");
+                            ed_content.setText("");
+                            ed_remark.setText("");
+                        }else {
+                            ToastUtil.showToast(getActivity(), "添加地电话催记失败");
+                        }
                     }else {
                         ToastUtil.showToast(getActivity(), "添加地电话催记失败");
                     }
-                }else {
-                    ToastUtil.showToast(getActivity(), "添加地电话催记失败");
+                } catch (JsonSyntaxException e) {
+                    e.printStackTrace();
+                } finally {
+                    bt_ugre_submit.setFocusable(true);
+                    bt_ugre_submit.setText(R.string.submit_data_complete);
                 }
             }
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
                 ToastUtil.showToast(getActivity(), "添加地电话催记失败"+t.toString());
+                bt_ugre_submit.setFocusable(true);
+                bt_ugre_submit.setText(R.string.submit_data_complete);
             }
         });
     }

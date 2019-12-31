@@ -18,14 +18,15 @@ import retrofit2.http.Query;
  */
 
 public interface apiManager {
-   //String baseUrl="http://192.168.166.133:8082";  //测试环境  http://visit-api.cnwansun.com/visit       datahouse-api
+//String baseUrl="http://192.168.166.133:8082";  //测试环境  http://visit-api.cnwansun.com/visit       datahouse-api
   //  String baseUrl_datahouse_api="http://192.168.166.133:8080";
     //  19.168.166.133：8082
 //String baseUrl="http://122.13.149.162";  // 线上环境
-
+   // http://192.168.166.45:8080
+   // String baseUrl="http://192.168.166.45:8082";  //陈江新的地址
 //  visit-api.cnwansun.com        ws-api.cnwansun.com/visit         http://visit-api.cnwansun.com/visit/"  上一次的url  测试通过的
- String baseUrl="http://ws-api.cnwansun.com/visit/";   // 7月1号上线环境    还没有测试
-  //String baseUrl="http://visit-api.cnwansun.com/visit/";   //测试环境
+//String baseUrl="http://ws-api.cnwansun.com/visit/";   // 7月1号上线环境
+String baseUrl="http://visit-api.cnwansun.com/visit/";   //测试环境
     //登陆接口
     @FormUrlEncoded
     @POST(baseUrl+"/user/login?")
@@ -138,6 +139,11 @@ public interface apiManager {
     @FormUrlEncoded
     @POST(baseUrl+"/case/getByCaseCode")
     Call<String> getByCaseCodeFromService(@Field("caseCode") String caseCode);
+    //根据案件编号查询案件详情    以后界面卡顿  服务端要优化
 
+    // 上传普通定位的信息
+    @Headers({"Content-Type: application/json","Accept: application/json"})
+    @POST (baseUrl+"/case/visitRecord/findVisitRecordList")
+    Call <String>findVisitRecordList(@Body RequestBody  body);
  }
 

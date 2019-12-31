@@ -69,10 +69,14 @@ public class otherFileReAdapter extends RecyclerView.Adapter<otherFileReAdapter.
         final Long id = bean.getId();
         File file = new File(path);
         if (file.exists()) {
+
             holder.tvAttachmentFullName.setText("存储路径："+path);
             String operateTime= unixTime.stampToTime(bean.getTime()/1000 );
             holder.tvAttachmentTakeOperateDate.setText("操作时间："+operateTime);
             holder.tv_id.setText(id+"");
+
+
+
             if (path.endsWith(".jpg")||path.endsWith(".png")) // 图像文件
             {
                 Log.v(AppConfig.TAG, ".jpg");
@@ -84,13 +88,16 @@ public class otherFileReAdapter extends RecyclerView.Adapter<otherFileReAdapter.
                 Log.v(AppConfig.TAG, ".mp4");
                 Glide.with(mconext).load(file).into(holder.iv);
                 holder.tvAttachmentType.setText("文件类型："+"视频文件");
-            }else if (path.endsWith(".mp3")){
-
+            }else if (path.endsWith("recording.mp3")||path.endsWith(".mp3")){
+                holder.tvAttachmentType.setText("文件类型："+"录音文件");
             }else {
-                holder.iv.setImageResource(R.mipmap.file);
-                holder.tvAttachmentType.setText("文件类型："+"普通文件");
-            }
 
+                    holder.iv.setImageResource(R.mipmap.file);
+                    holder.tvAttachmentType.setText("文件类型："+"普通文件");
+
+
+
+            }
         }
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -105,7 +112,7 @@ public class otherFileReAdapter extends RecyclerView.Adapter<otherFileReAdapter.
             @Override
             public void onClick(View v) {
                 logUtils.d("点击了图片"+path);
-                if (path.endsWith(".mp3")||path.endsWith(".mp4")||path.endsWith(".jpg")||path.endsWith(".png")){
+                if (path.endsWith("recording.mp3")||path.endsWith(".mp4")||path.endsWith(".jpg")||path.endsWith(".png")||path.endsWith(".mp3")){
                     Intent intent=new Intent(mconext, playPictureAndVideoActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.putExtra("path",path);

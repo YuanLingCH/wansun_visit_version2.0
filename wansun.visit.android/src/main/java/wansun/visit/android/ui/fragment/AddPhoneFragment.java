@@ -8,6 +8,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
@@ -154,6 +155,8 @@ public class AddPhoneFragment extends BaseFragment {
         bt_submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                bt_submit.setFocusable(false);
+
                 doSubmit();
             }
         });
@@ -175,38 +178,52 @@ public class AddPhoneFragment extends BaseFragment {
            return;
         }
         if (!TextUtils.isEmpty(person)&&!TextUtils.isEmpty(phone)){
+            bt_submit.setText(R.string.submit_data_ing);
         String caseCode = SharedUtils.getString("caseCode");
         String account = SharedUtils.getString("account");
+            String id = SharedUtils.getString("id");
             long time = System.currentTimeMillis();
             String remark = ed_remark.getText().toString().trim();
             String unit = ed_unit.getText().toString().trim();
             Retrofit retrofit = netUtils.getRetrofit();
         apiManager manager= retrofit.create(apiManager.class);
        RequestBody requestBody = requestBodyUtils.visitCaseAddPhoneToService(caseCode,relationId,person,phone,phoneStatus,
-           unit,remark,relationText,phoneType,phoneTypeText,phoneStatusText,account,time );
+           unit,remark,relationText,phoneType,phoneTypeText,phoneStatusText,account,time ,id);
        Call<String> call = manager.visitCaseAddPhone(requestBody);
     call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
-                String body = response.body();
-                logUtils.d("提交数据电话号码"+body);
-                if (!TextUtils.isEmpty(body)){
-                    Gson gson=new Gson();
-                    stateMessageBean data = gson.fromJson(body, new TypeToken<stateMessageBean>() {}.getType());
-                    String statusID = data.getStatusID();
-                    if (AppConfig.SUCCESS.equals(statusID)){
-                        ToastUtil.showToast(getActivity(), "添加电话成功");
+                try {
+
+                    String body = response.body();
+                    logUtils.d("提交数据电话号码"+body);
+                    if (!TextUtils.isEmpty(body)){
+                        Gson gson=new Gson();
+                        stateMessageBean data = gson.fromJson(body, new TypeToken<stateMessageBean>() {}.getType());
+                        String statusID = data.getStatusID();
+                        if (AppConfig.SUCCESS.equals(statusID)){
+                            ToastUtil.showToast(getActivity(), "添加电话成功");
+                            ed_person.setText("");
+                            ed_phone_number.setText("");
+                        }else {
+                            ToastUtil.showToast(getActivity(), "添加电话失败");
+                        }
                     }else {
                         ToastUtil.showToast(getActivity(), "添加电话失败");
                     }
-                }else {
-                    ToastUtil.showToast(getActivity(), "添加电话失败");
+                } catch (JsonSyntaxException e) {
+                    e.printStackTrace();
+                } finally {
+                    bt_submit.setFocusable(true);
+                    bt_submit.setText(R.string.submit_data_complete);
                 }
             }
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
                 ToastUtil.showToast(getActivity(), "添加地电话失败"+t.toString());
+                bt_submit.setFocusable(true);
+                bt_submit.setText(R.string.submit_data_complete);
             }
         });
         }
