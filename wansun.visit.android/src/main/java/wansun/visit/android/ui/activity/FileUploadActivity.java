@@ -32,7 +32,6 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -44,6 +43,7 @@ import wansun.visit.android.db.fileInfo;
 import wansun.visit.android.global.waifangApplication;
 import wansun.visit.android.greendao.gen.fileInfoDao;
 import wansun.visit.android.service.batchuploadFileService;
+import wansun.visit.android.utils.CommonUtil;
 import wansun.visit.android.utils.NetWorkTesting;
 import wansun.visit.android.utils.SharedUtils;
 import wansun.visit.android.utils.ToastUtil;
@@ -196,6 +196,8 @@ public class FileUploadActivity extends BaseActivity {
                         fileInfo next = iterator.next();
                         Long id = next.getId();
                         dao.deleteByKey(id);
+                        boolean b = CommonUtil.deleteFile(next.getPath());  //删除文件夹里面的
+                        logUtils.d("删除文件"+b);
 
                     }
                     bottomAdapter.notifyDataSetChanged();
@@ -230,7 +232,7 @@ public class FileUploadActivity extends BaseActivity {
             final String account = SharedUtils.getString("account");
             logUtils.d("account"+account);
             String id = SharedUtils.getString("id");
-            final OkHttpClient okHttpClient = new OkHttpClient();
+           // final OkHttpClient okHttpClient = new OkHttpClient();
 
             for (int i = 0; i <list.size(); i++) {
                 File file = new File(list.get(i));
@@ -249,7 +251,8 @@ public class FileUploadActivity extends BaseActivity {
                     @Override
                     public void run() {
                         super.run();
-                        Call call = okHttpClient.newCall(request);
+                       // OkHttpClient client = waifangApplication.getInstence().getClient();
+                        Call call = waifangApplication.getInstence().getClient().newCall(request);
                         call.enqueue(new Callback() {
                             @Override
                             public void onFailure(Call call, IOException e) {

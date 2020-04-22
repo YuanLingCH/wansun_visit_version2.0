@@ -8,7 +8,7 @@ android {
         minSdkVersion  19
         targetSdkVersion 26
         versionCode 1    //服务器的接口没有改变  这里不改变  服务器为2   ，这里打包时候不用改
-        versionName "1.9.0"  //改这里就好了
+        versionName "1.10.0"  //改这里就好了
         multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk {

@@ -182,11 +182,12 @@ public class MainActivity extends BaseActivity implements OnGetGeoCoderResultLis
     // 当前页号
     public  int pageNo=1;
     //每页显示的记录输
-    public  int pageSize=1500;
+    public  int pageSize=2000;
     String queryContent=null;
     boolean queryContentFlag=false;
     private static final int LOCTION_PERMISSION = 100;  //定位权限
     Handler mhandler=new Handler();
+
     private static final String[] authBaseArr = {
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.ACCESS_FINE_LOCATION
@@ -306,15 +307,6 @@ public void getSearch(String city,String address){
         MapView.setCustomMapStylePath(moduleName + "/" + fileName);
     }
 
-    private boolean hasBasePhoneAuth() {
-        PackageManager pm = this.getPackageManager();
-        for (String auth : authBaseArr) {
-            if (pm.checkPermission(auth, this.getPackageName()) != PackageManager.PERMISSION_GRANTED) {
-                return false;
-            }
-        }
-        return true;
-    }
 
     /**
      * 初始化导航
@@ -472,6 +464,7 @@ public void getSearch(String city,String address){
 
     @Override
     protected void initEvent() {
+
         map = mMapView.getMap();
         data=new ArrayList();
         applyData=new ArrayList();
@@ -919,14 +912,6 @@ public void getSearch(String city,String address){
 
     }
 
-    /**
-     * 删除原来的mark点
-     */
-    private void delete() {
-        if (!key.isEmpty()){
-            marker.remove();
-        }
-    }
     geogCodeBean goeBean;  //地理反编码
     List  geoData = new ArrayList<>();
     ListView lvbottom;
@@ -1059,24 +1044,6 @@ public void getSearch(String city,String address){
             }
 
             adapter=new searchAdapter(MainActivity.this,dataAddress);
-     /*       if (lv_flag){
-                lv_flag=false;
-                lv_main.setVisibility(View.VISIBLE);
-                lv_main.setAdapter(adapter);
-                lv_main.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        lv_main.setVisibility(View.INVISIBLE);
-                        bean = (searchBean) dataAddress.get(position);
-                        pt = bean.getPt();
-                        addMark(bean );
-                        if (dialog!=null){
-                            dialog.hide();
-                        }
-
-                    }
-                });
-            }else {*/
             lv.setVisibility(View.VISIBLE);
             lv.setAdapter(adapter);
             lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -1793,7 +1760,7 @@ public void getSearch(String city,String address){
                                                 isLoadFirstFlag=!isLoadFirstFlag;
                                             }else {
                                                 try {
-                                                    Thread.sleep(180);//项目经理说等给钱优化
+                                                    Thread.sleep(50);//项目经理说等给钱优化
                                                 } catch (InterruptedException e) {
                                                     e.printStackTrace();
                                                 }
@@ -1835,7 +1802,7 @@ public void getSearch(String city,String address){
                             }
                     } catch (JsonSyntaxException e) {
                         e.printStackTrace();
-                        ToastUtil.showToast(MainActivity.this,"网络超时请重试...");
+                        ToastUtil.showToast(MainActivity.this,"网络超时请重试..."+e.toString());
 
                     }
 
@@ -1846,7 +1813,7 @@ public void getSearch(String city,String address){
             @Override
             public void onFailure(Call<String> call, Throwable t) {
                 logUtils.d("请求数据失败："+t.toString());
-                ToastUtil.showToast(MainActivity.this,"网络超时请重试...");
+                ToastUtil.showToast(MainActivity.this,"请求数据失败...");
             }
         });
     }
@@ -1965,6 +1932,7 @@ public void getSearch(String city,String address){
                 permission.WRITE_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED){
             permissionList.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
         }
+
         if (!permissionList.isEmpty()){
      /*       String[] permissions=permissionList.toArray(new String[permissionList.size()]);
             ActivityCompat.requestPermissions(MainActivity.this,permissions,1);*/

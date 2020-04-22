@@ -65,7 +65,7 @@ public class casePhoneDetailsAdapter extends BaseAdapter {
         holder.tv_case_phone_number.setText("电话号码："+phoneDetailsBean.getPhoneNumber());
         holder.tv_case_phone_relation.setText("与债务人关系："+phoneDetailsBean.getRelation());
         holder.tv_case_phone_phoneTypeText.setText("电话类型："+phoneDetailsBean.getPhoneTypeText());
-        holder.tv_case_phone_remark.setText("备注："+phoneDetailsBean.getRemark());
+       // holder.tv_case_phone_remark.setText("备注："+phoneDetailsBean.getRemark());
 
         return convertView;
     }

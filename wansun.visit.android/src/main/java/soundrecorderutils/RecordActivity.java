@@ -52,6 +52,7 @@ import wansun.visit.android.event.MessageEvent;
 import wansun.visit.android.global.waifangApplication;
 import wansun.visit.android.greendao.gen.fileInfoDao;
 import wansun.visit.android.ui.activity.BaseActivity;
+import wansun.visit.android.utils.CommonUtil;
 import wansun.visit.android.utils.NetWorkTesting;
 import wansun.visit.android.utils.SharedUtils;
 import wansun.visit.android.utils.ToastUtil;
@@ -76,6 +77,7 @@ public class RecordActivity extends BaseActivity {
     otherFileReAdapter bottomAdapter;
     List dataDaoId;
     int cont = 0;
+
     Handler mHandler=new Handler(){
         @Override
         public void handleMessage(Message msg) {
@@ -91,6 +93,7 @@ public class RecordActivity extends BaseActivity {
                     updataUI();
                     tv_record_flag.setText("暂无录音文件");
                     utils.cancleDialog();
+
                     break;
             }
 
@@ -99,6 +102,21 @@ public class RecordActivity extends BaseActivity {
 
         }
     };
+
+    /**
+     * 删除上传成功的文件
+     */
+    private void delectFile() {
+        Iterator<fileInfo> iterator = recordData.iterator();
+        while (iterator.hasNext()){
+            fileInfo next = iterator.next();
+            String path = next.getPath();
+            boolean b = CommonUtil.deleteFile(path);
+            logUtils.d("删除文件"+b);
+
+        }
+    }
+
 
     @Override
     protected int getLayoutId() {
@@ -187,6 +205,8 @@ public class RecordActivity extends BaseActivity {
                 overridePendingTransition(R.anim.in_from_left,R.anim.out_to_right);
             }
         });
+
+
     }
 
     /**
@@ -293,6 +313,8 @@ public class RecordActivity extends BaseActivity {
         logUtils.d("点击录音....");
         WindowsRecordUitlity uitlity=new WindowsRecordUitlity(RecordActivity.this,mBtnRecordAudio);
         uitlity.showPopupWindow(RecordActivity.this,"");
+
+
     }
 
     @Override
@@ -376,6 +398,7 @@ public class RecordActivity extends BaseActivity {
                                 logUtils.d("上传录音"+"recordData.size()"+recordData.size()+">>>"+cont);
                                 dao.deleteByKey(daoId);  //删除数据库
                                 if (cont==recordData.size()){
+                                    delectFile(); //  删除文件夹里面的文件
                                     mHandler.sendEmptyMessage(1);
 
                                 }
@@ -440,11 +463,16 @@ public class RecordActivity extends BaseActivity {
      * 打开权限设置界面
      */
     public void openSetting() {
-       Intent intent= new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
+   startActivityForResult(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName())), 11);
+
+
+
+/*     Intent intent= new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         if (intent.resolveActivity(RecordActivity.this.getPackageManager()) != null) {
             RecordActivity.this.startActivityForResult(intent, 11);
-        }
+        }*/
+
 
     }
 
@@ -452,16 +480,24 @@ public class RecordActivity extends BaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 11) {
-            if (isFloatWindowOpAllowed(this)) {//已经开启
-                windownRecord();
+          if (isFloatWindowOpAllowed(this)) {//已经开启
+               windownRecord();
             } else {
-                logUtils .e("开启悬浮窗失败");
+                logUtils .e("开启悬浮窗失败11");
                 ToastUtil.showToast(this,"请手动开启悬浮窗允许");
             }
+
+
         } else if (requestCode == 12) {
             if (Build.VERSION.SDK_INT >= 23) {
                 if (!Settings.canDrawOverlays(RecordActivity.this)) {
-                    ToastUtil.showToast(this,"权限授予失败,无法开启悬浮窗");
+
+                    try {
+                        windownRecord();
+                    } catch (Exception e) {
+                        ToastUtil.showToast(this,"权限授予失败,无法开启悬浮窗");
+                        e.printStackTrace();
+                    }
                 } else {
                     windownRecord();
                 }
@@ -483,13 +519,9 @@ public class RecordActivity extends BaseActivity {
             logUtils .e("其他手机"+getPackageName());
             if (Build.VERSION.SDK_INT >= 23) {
                 if (!Settings.canDrawOverlays(this)) {
+                  Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:" + getPackageName()));
+                   startActivityForResult(intent, 12);
 
-                    Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:" + getPackageName()));
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    if (intent.resolveActivity(this.getPackageManager()) != null) {
-                        this.startActivityForResult(intent, 12);
-                    }
-                   // startActivityForResult(intent, 12);
                 } else {
                     windownRecord();
                 }
@@ -503,6 +535,8 @@ public class RecordActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         org.greenrobot.eventbus.EventBus.getDefault().unregister(RecordActivity.this);
+
+
     }
 
 

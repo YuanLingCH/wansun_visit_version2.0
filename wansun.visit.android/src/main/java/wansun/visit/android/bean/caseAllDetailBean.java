@@ -4268,7 +4268,7 @@ public class caseAllDetailBean implements Serializable {
                 private int applicantId;
                 private String applicantName;
                 private long applyTime;
-                private String visitors;
+                private Object visitors;
                 private String visitorsName;
                 private long visitBeginTime;
                 private long visitEndTime;
@@ -4465,11 +4465,11 @@ public class caseAllDetailBean implements Serializable {
                     this.applyTime = applyTime;
                 }
 
-                public String getVisitors() {
+                public Object getVisitors() {
                     return visitors;
                 }
 
-                public void setVisitors(String visitors) {
+                public void setVisitors(Object visitors) {
                     this.visitors = visitors;
                 }
 

@@ -92,7 +92,7 @@ public class caseDetailBean implements Serializable{
         private String address;
         private String visitArea;
         private long applyTime;
-        private String visitors;
+        private Object visitors;
         private String visitStatusText;
         private String remark;
         private String visitGoal;
@@ -194,11 +194,11 @@ public class caseDetailBean implements Serializable{
             this.applyTime = applyTime;
         }
 
-        public String getVisitors() {
+        public Object getVisitors() {
             return visitors;
         }
 
-        public void setVisitors(String visitors) {
+        public void setVisitors(Object visitors) {
             this.visitors = visitors;
         }
 

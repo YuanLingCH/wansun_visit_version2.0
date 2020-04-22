@@ -64,7 +64,7 @@ public class unixTime {
 //时间戳转字符串
 public static String getStrTime(String timeStamp){
         String timeString = null;
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 hh:mm");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
         long  l = Long.valueOf(timeStamp);
         timeString = sdf.format(new Date(l));//单位秒
         return timeString;

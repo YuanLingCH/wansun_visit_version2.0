@@ -45,7 +45,6 @@ public interface AppConfig
 	// 临时文件存贮路径
 	public static final String RECORD_TEMP_FILE = VISIT_DATA_PATH + "/record.mp3";
 
-	// Environment.getExternalStorageDirectory()
 
 
 }

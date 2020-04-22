@@ -98,7 +98,7 @@ public class caseUrgeRecordAdapter extends BaseAdapter {
         holder.tv_case_rege_operator.setText("电话接通总结："+urgeRecord.getContactSummaryText());
         holder.tv_case_rege_vertify_data.setText("联系结果："+urgeRecord.getContactResultText());
         holder.tv_case_return_money_state.setVisibility(View.VISIBLE);
-        holder.tv_case_return_money_state.setText("备注:"+urgeRecord.getRemark());
+       // holder.tv_case_return_money_state.setText("备注:"+urgeRecord.getRemark());
         return convertView;
     }
     class  ViewHolder {

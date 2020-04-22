@@ -86,7 +86,7 @@ public class caseVisitRecordAdapter extends BaseAdapter {
         holder.tv_case_operate_operate_visit_address.setText("外访地址:"+Bean.getAddress());
         holder.tv_case_operate_operate_visit_address.setTextColor(Color.RED);
         holder.tv_case_operate_operate_visit_goal.setText("外访目标:"+Bean.getVisitGoal());
-        holder.tv_case_operate_operate_remark.setText("备注:"+Bean.getRemark());
+       // holder.tv_case_operate_operate_remark.setText("备注:"+Bean.getRemark());
         holder.tv_case_operate_operate_visit_goal.setTextColor(Color.GREEN);
         List<caseAllDetailBean.DataBean.UrgeItemsBean.UrgeVisitItemsBean.VisitRecordItemsBean> visitRecordItems = Bean.getVisitRecordItems();
 

@@ -6,5 +6,8 @@ package wansun.visit.android.global;
  */
 public class AppConfig {
     //网络请求成功
-    public  static  String SUCCESS="200";
+    public final static  String SUCCESS="200";
+    public final static String VISIT_ANNEX_PICTURE="1";
+    public final static String VISIT_ANNEX_AUDIO="2";
+
 }

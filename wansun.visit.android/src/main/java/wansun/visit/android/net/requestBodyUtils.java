@@ -311,4 +311,13 @@ public class requestBodyUtils {
         logUtils.d("传参"+json );
         return RequestBody.create(MediaType.parse("application/json; charset=utf-8"),json);
     }
+    //查询案件外访记录 催记 录音 图片
+    public static  RequestBody findVisitAnnex(String caseCode){
+        Map<String ,Object> map=new HashMap<>();
+        map.put("caseCode",caseCode);
+        Gson gson=new Gson();
+        String json = gson.toJson(map);
+        logUtils.d("传参"+json );
+        return RequestBody.create(MediaType.parse("application/json; charset=utf-8"),json);
+    }
 }

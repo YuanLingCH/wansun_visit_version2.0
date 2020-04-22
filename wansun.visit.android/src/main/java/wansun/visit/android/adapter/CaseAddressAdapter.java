@@ -97,7 +97,7 @@ public class CaseAddressAdapter extends BaseAdapter {
         holder.tv_case_return_money_state.setText("地址一:"+urgeRecord.getAddress1());
         holder.tv_case_rege_measure.setText("地址二："+urgeRecord.getAddress2());
         holder.tv_case_return_remark.setVisibility(View.VISIBLE);
-        holder.tv_case_return_remark.setText("备注:"+urgeRecord.getRemark());
+      //  holder.tv_case_return_remark.setText("备注:"+urgeRecord.getRemark());
         return convertView;
     }
     class  ViewHolder {

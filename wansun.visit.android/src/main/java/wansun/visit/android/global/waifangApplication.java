@@ -3,6 +3,7 @@ package wansun.visit.android.global;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.media.AudioManager;
 
@@ -18,8 +19,10 @@ import com.tencent.bugly.crashreport.CrashReport;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
+import soundrecorderutils.LiveService;
 import wansun.visit.android.greendao.gen.DaoMaster;
 import wansun.visit.android.greendao.gen.DaoSession;
 
@@ -36,6 +39,7 @@ public class waifangApplication extends Application {
     private SQLiteDatabase db;
     private DaoMaster mDaoMaster;
     private DaoSession mDaoSession;
+    Intent intLiveService;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -58,7 +62,8 @@ public class waifangApplication extends Application {
         *
         * */
         CrashReport.initCrashReport(getApplicationContext(), "18ca237fe3", true);
-
+        intLiveService=new Intent(this, LiveService.class);
+        startService(intLiveService);
     }
     private void initDatabass() {
         //这里之后会修改，关于升级数据库
@@ -113,6 +118,10 @@ public class waifangApplication extends Application {
         if (okHttpClient==null){
             okHttpClient = new OkHttpClient.Builder()
                     .cookieJar(cookieJar)
+                    .retryOnConnectionFailure(true)
+                    . connectTimeout(10, TimeUnit.SECONDS)
+                    .readTimeout(60, TimeUnit.SECONDS)
+                    . writeTimeout(60, TimeUnit.SECONDS)
                     .build();
         }
         return okHttpClient;
@@ -147,4 +156,6 @@ public class waifangApplication extends Application {
             activity.finish();
         }
     }
+
+
 }

@@ -3,6 +3,7 @@ package wansun.visit.android.utils;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.PixelFormat;
+import android.os.Build;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -46,9 +47,14 @@ public class vedioWindowsUtils {
         params= new WindowManager.LayoutParams();
         mView = setUpView(context, "");
         //  WindowManager.LayoutParams.TYPE_SYSTEM_ALERT | WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY
-        params.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT |
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
-                WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;
+            params.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+
+        } else {
+            params.type = WindowManager.LayoutParams.TYPE_PHONE;
+
+        }
         // 设置flag
         int flags = canTouchFlags;
         // | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;

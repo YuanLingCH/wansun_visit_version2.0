@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -62,17 +63,34 @@ public class WelocmeActivity extends BaseActivity {
     private static final int REQUEST_TAKE_PHOTO_PERMISSION = 1;
     Button but_imei;
     private Toast toast = null;
-    String imei;
+    String imei=null;
     @Override
     protected int getLayoutId() {
         return R.layout.activity_welcome;
     }
     @Override
     protected void initView() {
+
         tv_imie= (TextView) findViewById(R.id.tv_imie);
         tv_link_devices= (TextView) findViewById(R.id.tv_link_devices);
         tv_check_state= (TextView) findViewById(R.id.tv_check_state);
         but_imei= (Button) findViewById(R.id.but_imei);
+// 避免从桌面启动程序后，会重新实例化入口类的activity
+        if (!this.isTaskRoot()) { // 当前类不是该Task的根部，那么之前启动
+            Intent intent = getIntent();
+            if (intent != null) {
+                String action = intent.getAction();
+                if (intent.hasCategory(Intent.CATEGORY_LAUNCHER) && Intent.ACTION_MAIN.equals(action)) { // 当前类是从桌面启动的
+                    finish(); // finish掉该类，直接打开该Task中现存的Activity
+                    return;
+                }
+            }
+        }
+
+
+
+
+
     }
 
     @Override
@@ -89,11 +107,11 @@ public class WelocmeActivity extends BaseActivity {
         NetWorkTesting net = new NetWorkTesting(WelocmeActivity.this);
         if (net.isNetWorkAvailable()) {
        TelephonyManager telephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
+            String android_id= Settings.System.getString(getContentResolver(),Settings.Secure.ANDROID_ID);
            imei = telephonyManager.getDeviceId();
             if (TextUtils.isEmpty(imei)){
-                imei= CommonUtil.getIMEINew(WelocmeActivity.this);
+          imei= CommonUtil.getIMEINew(WelocmeActivity.this);
             }
-
         SharedUtils.putString("imei", imei);
         logUtils.d("手机串号" + imei);
         tv_link_devices.setText(R.string.link_devices);
@@ -116,7 +134,7 @@ public class WelocmeActivity extends BaseActivity {
                             if (Build.VERSION.SDK_INT <= 28) {
                                 Intent intent = new Intent(WelocmeActivity.this, RegisterAndRecognizeActivity.class);
                                 startActivity(intent);
-                            } else {
+                            } else if (Build.VERSION.SDK_INT==29){
                                 String account = SharedUtils.getString("account");
                                 if (!TextUtils.isEmpty(account)) {
                                     // new Intent(RegisterAndRecognizeActivity.this,MainActivity.class);

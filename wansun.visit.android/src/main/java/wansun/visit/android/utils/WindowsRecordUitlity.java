@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.media.AudioFormat;
+import android.os.Build;
 import android.os.Environment;
 import android.os.SystemClock;
 import android.view.Gravity;
@@ -104,20 +105,15 @@ public class WindowsRecordUitlity {
         logUtils.d("添加了view");
         mView = setUpView(context, showtxt);
         params = new WindowManager.LayoutParams();
-
-        // 类型，系统提示以及它总是出现在应用程序窗口之上。
-//WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
-        params.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT |
-
-                WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;
-
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            params.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        } else {
+            params.type = WindowManager.LayoutParams.TYPE_PHONE;
+        }
 
         // 设置flag
 
         int flags = canTouchFlags;
-
-
 
         // | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 
@@ -374,9 +370,8 @@ public class WindowsRecordUitlity {
         RecordManager.getInstance().changeFormat(RecordConfig.RecordFormat.MP3);
         RecordManager.getInstance().changeRecordConfig(recordManager.getRecordConfig().setSampleRate(8000));
         RecordManager.getInstance().changeRecordConfig(recordManager.getRecordConfig().setEncodingConfig(AudioFormat.ENCODING_PCM_8BIT));
-
         String caseCode = SharedUtils.getString("caseCode");
-        String str="%s/wansun.visit.android/record/"+caseCode+"_";     //"%s/wansun.visit.android/record/test"
+        String str="%s/wansun.visit.android/record/"+caseCode+"_";     //"%s/wansun.visit.android/record/test" +caseCode+"_"
         final String recordDir = String.format(Locale.getDefault(), str,
                 Environment.getExternalStorageDirectory().getAbsolutePath());
                   recordManager.changeRecordDir(recordDir);

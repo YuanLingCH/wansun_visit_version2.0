@@ -756,7 +756,7 @@ public class OutBoundActivity extends BaseActivity {
         tv_base_last_arrears.setText("回款金额："+ caseTotalReceiptAmount +"元");
         tv_visit_area.setText("外访区域："+bean.getVisitArea());
         tv_visit_goal.setText("外访目标："+bean.getVisitGoal());
-        tv_visit_remark.setText("外访备注："+bean.getRemark());
+      //  tv_visit_remark.setText("外访备注："+bean.getRemark());
         tv_customer_name.setText("甲方："+bean.getCustomerName());
         tv_gender.setText("性别："+bean.getGenderText());
         tv_clerk.setText("管理员："+bean.getClerkName());

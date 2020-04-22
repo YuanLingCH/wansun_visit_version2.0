@@ -1,5 +1,7 @@
 package soundrecorderutils;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaRecorder;
@@ -19,6 +21,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimerTask;
 
+import wansun.visit.android.R;
 import wansun.visit.android.db.fileInfo;
 import wansun.visit.android.event.MessageEvent;
 import wansun.visit.android.event.MessageStartAndPauseRecord;
@@ -47,6 +50,10 @@ public class RecordingService extends Service {
     private long mElapsedMillis = 0;
     private TimerTask mIncrementTimerTask = null;
      List fileList=new ArrayList();
+
+    private NotificationManager notificationManager;
+    //通知的唯一标识号。
+    private int NOTIFICATION = 1;
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -56,9 +63,34 @@ public class RecordingService extends Service {
     public void onCreate() {
         super.onCreate();
         dao= waifangApplication.getInstence().getSession().getFileInfoDao();
-        logUtils.d("onCreate() ");
+        logUtils.d("onCreate()。。。。 ");
+        notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        showNotification();
         EventBus.getDefault().register(this);
+
+
     }
+
+    private void showNotification(){
+        // PendingIntent如果用户选择此通知，则启动我们的活动
+        Log.d("TAG","通知启动");
+       // PendingIntent pendingIntent = PendingIntent.getActivity(this,0,new Intent(this,RecordingService.class),0);
+
+        //设置通知面板中显示的视图的信息。
+        Notification notification =new Notification.Builder(this).setSmallIcon(R.mipmap.ic_launcher).setTicker("正在通话")
+                .setContentTitle(getText(R.string.notification_live_start))
+                .setContentTitle("正在运行")
+               // .setContentIntent(pendingIntent)
+                .build();
+       // LogUtil.i(TAG,"显示通知");
+        Log.d("TAG","通知开始");
+        //发送通知
+        notificationManager.notify(NOTIFICATION,notification);
+        startForeground(NOTIFICATION,notification);
+    }
+
+
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -75,6 +107,7 @@ public class RecordingService extends Service {
             logUtils.d("录音服务销毁"+fileList.size());
             EventBus.getDefault().unregister(this);
         }
+        notificationManager.cancel(NOTIFICATION);
         super.onDestroy();
     }
 

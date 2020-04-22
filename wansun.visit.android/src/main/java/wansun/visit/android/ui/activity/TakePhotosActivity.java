@@ -244,11 +244,18 @@ public class TakePhotosActivity extends BaseActivity {
                 if (batch.equals(visitGuid) && next.getType().equals("0")) {  //2为选择图片
                     Long id = next.getId();
                     dao.deleteByKey(id);
+                    String path = next.getPath();
+                    boolean b = CommonUtil.deleteFile(path);  //删除文件夹里面的
+                    logUtils.d("删除文件"+b);
 
                 }
             }
         }
     }
+
+
+
+
 
 
     @Override
@@ -334,7 +341,7 @@ public class TakePhotosActivity extends BaseActivity {
             folder.mkdirs();
         }*/
       //  logUtils.d("生产地址"+imageUri);
-        if (Build.VERSION.SDK_INT>24){  //sdk大于24
+        if (Build.VERSION.SDK_INT>=24){  //sdk大于24
             imageUri = FileProvider.getUriForFile(TakePhotosActivity.this, "wansun.visit.android.fileprovider", new File(fullPath));
         }else {
             imageUri = Uri.fromFile(new File(fullPath));

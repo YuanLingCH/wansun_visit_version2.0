@@ -1,9 +1,11 @@
 package wansun.visit.android.ui.activity;
 
+import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -192,7 +194,20 @@ public class CountsActivity extends BaseActivity {
                 logUtils.d("onScroll");
             }
         });
+        lv_counts.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                performancCountsBean.DataBean dataBean = querydata.get(position);
+                String caseCode = dataBean.getCaseCode();
+                logUtils.d("案件编号=======>"+caseCode);
+                if (!TextUtils.isEmpty(caseCode)){
+                    Intent intent=new Intent(CountsActivity.this,VisitAnnexActivity.class);
+                    intent.putExtra("caseCodeAnnex",caseCode);
+                    startActivity(intent);
+                }
 
+            }
+        });
     }
 
     /**

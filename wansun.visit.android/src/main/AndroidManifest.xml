@@ -20,6 +20,7 @@
     <!-- SD卡读取权限，用户写入离线定位数据-->
     <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"/>
     <!-- 手机震动权限 -->
+
     <uses-permission android:name="android.permission.BODY_SENSORS"/>
     <uses-permission android:name="android.permission.BAIDU_LOCATION_SERVICE" />
     <uses-permission android:name="android.permission.VIBRATE"/>
@@ -46,6 +47,7 @@
     <uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS"/>
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW" />
+
 
     <application
         android:name=".global.waifangApplication"
@@ -79,7 +81,7 @@
         </activity>
         <activity android:name=".ui.activity.LoginActiovity"/>
         <activity android:name=".ui.activity.MainActivity"
-            android:launchMode="singleInstance" />
+            android:launchMode="singleTask" />
         <activity android:name="bikenavi_demo.BNaviGuideActivity"/>
         <activity android:name="bikenavi_demo.WNaviGuideActivity"/>
         <activity android:name="baidu.navi.sdkdemo.newif.DemoGuideActivity"/>
@@ -118,6 +120,7 @@
         <activity android:name=".ui.activity.OperaterRecordActivity"/>
         <activity android:name=".ui.activity.VisitDetailRecordActivity"/>
         <activity android:name=".ui.activity.CountsActivity"/>
+        <activity android:name=".ui.activity.VisitAnnexActivity"/>
 
         <provider
             android:name="android.support.v4.content.FileProvider"
@@ -152,6 +155,7 @@
             >
         </receiver>
         <service android:name=".service.autoUpdataService"/>
+        <service android:name="soundrecorderutils.LiveService"/>
         <service android:name="com.zlw.main.recorderlib.recorder.RecordService" android:exported="false" android:enabled="true"/>
     </application>
 

@@ -1,6 +1,7 @@
 package wansun.visit.android.adapter;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ import wansun.visit.android.R;
 import wansun.visit.android.bean.visitItemBean;
 import wansun.visit.android.event.AddressEvent;
 import wansun.visit.android.utils.logUtils;
+import wansun.visit.android.utils.starUtils;
 import wansun.visit.android.utils.unixTime;
 
 /**
@@ -119,7 +121,15 @@ public class visitOrderAdapter extends BaseAdapter {
         holder.tv_visit_caseCode.setText("案件编号："+dataBean.getCaseCode());
         holder.tv_visit_batchCode.setText("批次编号："+dataBean.getBatchCode());
      //   holder.tv_visitArea.setText("外访区域："+dataBean.getVisitArea());
-        holder.tv_address.setText("地址："+dataBean.getAddress());
+        String address = dataBean.getAddress();
+       // String starString = starUtils.getStarString(address, address.length() - 5, address.length());
+       // logUtils .e("starString"+starString);
+        if (!TextUtils.isEmpty(address)&&address.length()<0){
+            holder.tv_address.setText("地址："+ starUtils.getStarString(address, address.length() - 5, address.length()));
+        }else {
+            holder.tv_address.setText("地址："+ address);
+        }
+
         String visitReason = dataBean.getVisitReason();
         if (visitReason.equals("0")){
             holder.tv_visitReason.setText("外访理由："+"其他原因");
@@ -131,7 +141,7 @@ public class visitOrderAdapter extends BaseAdapter {
             holder.tv_visitReason.setText("外访理由："+"结案前确认");
         }
         holder.tv_address_type.setText("地址类型："+dataBean.getAddressTypeText());
-        holder.tv_remark.setText("备注："+dataBean.getRemark());
+       // holder.tv_remark.setText("备注："+dataBean.getRemark());       机构反应 要屏蔽掉
         if (flag){
             holder.iv_flag.setVisibility(View.VISIBLE);
         }else {
