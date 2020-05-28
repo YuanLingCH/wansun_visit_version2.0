@@ -51,7 +51,7 @@ public class addressAdapter extends BaseAdapter {
             convertView.setTag(holder);
 
         }
-            holder= (ViewHolder) convertView.getTag();
+       holder= (ViewHolder) convertView.getTag();
         String bean = (String) data.get(position);
         holder.tv_search_item.setText(bean);
 

@@ -82,10 +82,12 @@ public class VisitAnnexLisitPicturesFragment extends BaseFragment {
                                 VisitAnnexPicturesBean.DataBean next = iterator.next();
                                 if (next.getType().equals("照片")){
                                     dataPicture.add(next.getUrl());
+
                                     data.add(next);
                                 }
                             }
                             updataUi();
+                            logUtils.d("图片数量"+dataPicture.size());
                         }
 
 

@@ -67,7 +67,7 @@ public class GridAdapter extends BaseAdapter {
                     .placeholder(R.mipmap.default_error)
                     .error(R.mipmap.default_error)
                     .centerCrop()
-                    .crossFade()
+                  //  .crossFade()
                     .into(holder.image);
         }
         return convertView;

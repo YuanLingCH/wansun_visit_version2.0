@@ -34,15 +34,13 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDNotifyListener;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.bikenavi.BikeNavigateHelper;
-import com.baidu.mapapi.bikenavi.adapter.IBEngineInitListener;
-import com.baidu.mapapi.bikenavi.adapter.IBRoutePlanListener;
-import com.baidu.mapapi.bikenavi.model.BikeRoutePlanError;
 import com.baidu.mapapi.bikenavi.params.BikeNaviLaunchParam;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
@@ -70,10 +68,6 @@ import com.baidu.mapapi.search.sug.SuggestionResult;
 import com.baidu.mapapi.search.sug.SuggestionSearch;
 import com.baidu.mapapi.search.sug.SuggestionSearchOption;
 import com.baidu.mapapi.utils.DistanceUtil;
-import com.baidu.mapapi.walknavi.WalkNavigateHelper;
-import com.baidu.mapapi.walknavi.adapter.IWEngineInitListener;
-import com.baidu.mapapi.walknavi.adapter.IWRoutePlanListener;
-import com.baidu.mapapi.walknavi.model.WalkRoutePlanError;
 import com.baidu.mapapi.walknavi.params.WalkNaviLaunchParam;
 import com.baidu.navisdk.adapter.BNRoutePlanNode;
 import com.baidu.navisdk.adapter.BaiduNaviManagerFactory;
@@ -100,8 +94,6 @@ import java.util.TimerTask;
 
 import baidu.navi.sdkdemo.NormalUtils;
 import baidu.navi.sdkdemo.newif.DemoGuideActivity;
-import bikenavi_demo.BNaviGuideActivity;
-import bikenavi_demo.WNaviGuideActivity;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -175,7 +167,6 @@ public class MainActivity extends BaseActivity implements OnGetGeoCoderResultLis
     addressAdapter addAaapter;
     GeoCoder mSearch = null;
     RelativeLayout rl_visit_order,rl_visit_order_record,rl_counts;
-
     List addressData; //从服务器取得的地址信息
     int lv_mainItemPostion;
     String positionGuid ;// 保存定位信息的GUID
@@ -507,9 +498,8 @@ public void getSearch(String city,String address){
             @Override
             public void onClick(View v) {
                 logUtils.d("测试地址");
-                if (!click_flag){
+                if (!click_flag&&addressData.size()>0){
                     iv_search_address.setImageResource(R.mipmap.upone);
-
                     click_flag=true;
                     lv_main.setVisibility(View.VISIBLE);
                     addAaapter=new addressAdapter(MainActivity.this,addressData);
@@ -549,14 +539,8 @@ public void getSearch(String city,String address){
             public void onClick(View v) {
                 if (visitData.size()>0){
                     Intent intent=new Intent(MainActivity.this,VisitOrderActivity.class);
-            /*        Bundle bundle=new Bundle();
-                   bundle.clear();   // visitItemBean.DataBean
-                    bundle.putSerializable("visitData",(Serializable)visitData);
-                   // intent.putExtra("visitData", (Serializable) visitData);
-                    intent.putExtras(bundle);*/
                     EventBus.getDefault().postSticky(visitData);
                     startActivity(intent);
-
                     overridePendingTransition(R.anim.in_from_right,R.anim.out_to_left);
                 }else {
                     ToastUtil.showToast(MainActivity.this,R.string.nodata_now);
@@ -632,7 +616,9 @@ public void getSearch(String city,String address){
                             }
 
                         }
-                    }
+                    }else {
+                            ToastUtil.showToast(MainActivity.this,"暂时无外访单...");
+                        }
                     }
                 }.start();
                 }
@@ -851,14 +837,17 @@ public void getSearch(String city,String address){
             public void onClick(View v) {
                 lv_main.setVisibility(View.GONE);
                 logUtils.d("点击了搜索");
-                String trim = et_address_botom.getText().toString().trim();   //可以优化 自动搜索
-                if (!TextUtils.isEmpty(trim)) {
-                    suggestionSearch.requestSuggestion(new SuggestionSearchOption()
-                            .city("深圳市")
-                            .keyword(trim));
-                } else {
-                    ToastUtil.showToast(MainActivity.this, "请输入地址");
-                }
+
+                    String trim = et_address_botom.getText().toString().trim();   //可以优化 自动搜索
+                    if (!TextUtils.isEmpty(trim)) {
+                        suggestionSearch.requestSuggestion(new SuggestionSearchOption()
+                                .city("深圳市")
+                                .keyword(trim));
+                    } else {
+                        ToastUtil.showToast(MainActivity.this, "请输入地址");
+                    }
+
+
             }
         });
 
@@ -1312,7 +1301,7 @@ public void getSearch(String city,String address){
                 map.hideInfoWindow();  //点击导航就隐藏弹窗
                 ll_bottom.setVisibility(View.GONE);
                 tv_bottom_destination_location.setText("");
-                startWalkNavi();
+
 
             }
         });
@@ -1334,7 +1323,7 @@ public void getSearch(String city,String address){
                 map.hideInfoWindow();  //点击导航就隐藏弹窗
                 ll_bottom.setVisibility(View.GONE);
                 tv_bottom_destination_location.setText("");
-                startBikeNavi();
+
 
             }
         });
@@ -1571,103 +1560,9 @@ public void getSearch(String city,String address){
 
 
 
-    /**
-     * 开始骑行导航
-     */
-    private void startBikeNavi() {
-        Log.d(TAG, "startBikeNavi");
-        try {
-            BikeNavigateHelper.getInstance().initNaviEngine(this, new IBEngineInitListener() {
-                @Override
-                public void engineInitSuccess() {
-                    Log.d(TAG, "BikeNavi engineInitSuccess");
-                    routePlanWithBikeParam();
-                }
-                @Override
-                public void engineInitFail() {
-                    Log.d(TAG, "BikeNavi engineInitFail");
-                }
-            });
-        } catch (Exception e) {
-            Log.d(TAG, "startBikeNavi Exception");
-            e.printStackTrace();
-        }
-    }
-    /**
-     * 发起骑行导航算路
-     */
-    private void routePlanWithBikeParam() {
-        bikeParam = new BikeNaviLaunchParam().stPt(startPt).endPt(endPt);
-        BikeNavigateHelper.getInstance().routePlanWithParams(bikeParam, new IBRoutePlanListener() {
-            @Override
-            public void onRoutePlanStart() {
-                Log.d(TAG, "BikeNavi onRoutePlanStart");
-            }
 
-            @Override
-            public void onRoutePlanSuccess() {
-                Log.d(TAG, "BikeNavi onRoutePlanSuccess");
-                Intent intent = new Intent();
-                intent.setClass(MainActivity.this, BNaviGuideActivity.class);
-                startActivity(intent);
-            }
-            @Override
-            public void onRoutePlanFail(BikeRoutePlanError error) {
-                Log.d(TAG, "BikeNavi onRoutePlanFail"+error.toString());
-                ToastUtil.showToast(MainActivity.this,"距离太远支持骑行");
-            }
-        });
-    }
-    /**
-     * 开始步行导航
-     */
-    private void startWalkNavi() {
-        Log.d(TAG, "startBikeNavi");
-        try {
-            WalkNavigateHelper.getInstance().initNaviEngine(this, new IWEngineInitListener() {
-                @Override
-                public void engineInitSuccess() {
-                    Log.d(TAG, "WalkNavi engineInitSuccess");
-                    routePlanWithWalkParam();
-                }
-                @Override
-                public void engineInitFail() {
-                    Log.d(TAG, "WalkNavi engineInitFail");
 
-                }
-            });
-        } catch (Exception e) {
-            Log.d(TAG, "startBikeNavi Exception");
-            e.printStackTrace();
-        }
-    }
-    /**
-     * 发起步行导航算路
-     */
 
-    private void routePlanWithWalkParam() {
-        walkParam = new WalkNaviLaunchParam().stPt(startPt).endPt(endPt);
-        WalkNavigateHelper.getInstance().routePlanWithParams(walkParam, new IWRoutePlanListener() {
-            @Override
-            public void onRoutePlanStart() {
-                Log.d(TAG, "WalkNavi onRoutePlanStart");
-            }
-
-            @Override
-            public void onRoutePlanSuccess() {
-                Log.d("View", "onRoutePlanSuccess");
-                Intent intent = new Intent();
-                intent.setClass(MainActivity.this, WNaviGuideActivity.class);
-                startActivity(intent);
-            }
-            @Override
-            public void onRoutePlanFail(WalkRoutePlanError error) {
-                Log.d(TAG, "WalkNavi onRoutePlanFail"+error.toString());
-                ToastUtil.showToast(MainActivity.this,"距离太远支持步行");
-            }
-
-        });
-    }
 
     /**
      * 加载数据
@@ -1747,13 +1642,10 @@ public void getSearch(String city,String address){
                             if (dataDispose.size()>0){
                                 ToastUtil.showToast(MainActivity.this,R.string.nodata_sucess);
                                 // TODO地址遍历 加载再地图上  放在子线程里面去做  防止数据太多 阻塞主线程
-                                new Thread(new Runnable() {
+                            new Thread(new Runnable() {
                                     @Override
                                     public void run() {
-                         /*           new Thread(new Runnable() {
-                                        @Override
-                                        public void run() {*/
-                                        final Iterator<visitItemBean.DataBean> iterator = dataDispose.iterator();
+                                         Iterator<visitItemBean.DataBean> iterator = dataDispose.iterator();
 
                                         while (iterator.hasNext()){
                                             if (!isLoadFirstFlag){
@@ -1765,7 +1657,6 @@ public void getSearch(String city,String address){
                                                     e.printStackTrace();
                                                 }
                                             }
-
                                             visitItemBean.DataBean next = iterator.next();
                                             visitData.add(next);
                                             String name = next.getName();
@@ -1774,7 +1665,6 @@ public void getSearch(String city,String address){
                                             if (!TextUtils.isEmpty(address)){
                                                 //   if (!addressData.contains(address)){  //过滤掉相同的地址信息
                                                 addressData.add(address);
-
                                                 //  搜索的功能
                                                 mapInfoData.add(new mapInfoBean(name,next.getVisitStatusText(),next.getCustomerName(),next.getAddress(),next.getCaseCode(),next.getVisitGuid()));
 
@@ -1782,17 +1672,11 @@ public void getSearch(String city,String address){
                                                         .city("")
                                                         .address(address));
                                                 logUtils.d("地址反编码"+":"+address+"》》》》》债务人"+name);
-                                                //  }
+
                                             }
-
-
-
                                                 }
                                     }
                                 }).start();
-
-                         /*               }
-                                    }).start();*/
 
                             }else {
                                 logUtils.d("占无外访单");
@@ -1802,7 +1686,7 @@ public void getSearch(String city,String address){
                             }
                     } catch (JsonSyntaxException e) {
                         e.printStackTrace();
-                        ToastUtil.showToast(MainActivity.this,"网络超时请重试..."+e.toString());
+                        ToastUtil.showToast(MainActivity.this,"服务器异常..."+e.toString());
 
                     }
 

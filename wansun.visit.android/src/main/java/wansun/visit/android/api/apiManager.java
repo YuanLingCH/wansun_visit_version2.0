@@ -26,7 +26,7 @@ public interface apiManager {
    // http://192.168.166.45:8080
    // String baseUrl="http://192.168.166.45:8082";  //陈江新的地址
 //  visit-api.cnwansun.com        ws-api.cnwansun.com/visit         http://visit-api.cnwansun.com/visit/"  上一次的url  测试通过的
-//ssString baseUrl="http://ws-api.cnwansun.com/visit/";   // 7月1号上线环境
+//String baseUrl="http://ws-api.cnwansun.com/visit/";   // 7月1号上线环境
 String baseUrl= "https://visit-api.cnwansun.com"; // 测试环境 https
 //String baseUrl="http://visit-api.cnwansun.com/visit/";   //测试环境
     //登陆接口

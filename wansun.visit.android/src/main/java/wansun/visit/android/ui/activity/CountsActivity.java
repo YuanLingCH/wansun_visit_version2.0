@@ -270,7 +270,7 @@ public class CountsActivity extends BaseActivity {
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
-                try {
+               try {
                     String body = response.body();
                     logUtils.d("数据查询"+ body);
                     Gson gson=new Gson();
@@ -299,31 +299,22 @@ public class CountsActivity extends BaseActivity {
                                 }
                             }
 
-             /*               for (String temp : userNameData) {
-
-                                Integer count = (Integer) map.get(temp);
-
-                                map.put(temp, (count == null) ? 1 : count + 1);
-
-                            }*/
                             logUtils.d("外访员"+ map);
                             tv_counts_people.setText("人员统计："+map);
-                 /*           Iterator<String> iter = map.keySet().iterator();
-                            while(iter.hasNext()) {
-                                String key = iter.next();
-                                System.out.println(key+"有"+map.get(key)+"个");
-                                map.remove(key);
-                            }*/
+
 
                         }else {
                             ToastUtil.showToast(CountsActivity.this,"暂无数据...");
                             tv_counts.setText("完成外访总数量："+0);
                         }
+                    }else {
+                        ToastUtil.showToast(CountsActivity.this,"服务器问题代码..."+statusID);
                     }
-                } catch (JsonSyntaxException e) {
+                }catch (JsonSyntaxException e) {
+                    ToastUtil.showToast(CountsActivity.this,"服务器异常"+e.toString());
                     e.printStackTrace();
                 }
-            }
+           }
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {

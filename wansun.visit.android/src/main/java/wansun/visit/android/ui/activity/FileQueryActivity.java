@@ -7,6 +7,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import wansun.visit.android.api.apiManager;
 import wansun.visit.android.bean.caseFileQueryBean;
 import wansun.visit.android.net.requestBodyUtils;
 import wansun.visit.android.utils.SharedUtils;
+import wansun.visit.android.utils.ToastUtil;
 import wansun.visit.android.utils.logUtils;
 import wansun.visit.android.utils.netUtils;
 
@@ -83,24 +85,29 @@ public class FileQueryActivity extends BaseActivity {
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
-                String body = response.body();
-                logUtils.d("文件下载数据"+body);
-                if (!TextUtils.isEmpty(body)){
-                        Gson gson=new Gson();
-                        caseFileQueryBean data = gson.fromJson(body, new TypeToken<caseFileQueryBean>() {}.getType());
-                        String statusID = data.getStatusID();
-                        if (statusID.equals("200")){
-                            if (data.getData()!=null){
-                            List<caseFileQueryBean.DataBean> data1 = data.getData();
+                try {
+                    String body = response.body();
+                    logUtils.d("文件下载数据"+body);
+                    if (!TextUtils.isEmpty(body)){
+                            Gson gson=new Gson();
+                            caseFileQueryBean data = gson.fromJson(body, new TypeToken<caseFileQueryBean>() {}.getType());
+                            String statusID = data.getStatusID();
+                            if (statusID.equals("200")){
+                                if (data.getData()!=null){
+                                List<caseFileQueryBean.DataBean> data1 = data.getData();
 
-                            Iterator<caseFileQueryBean.DataBean> iterator = data1.iterator();
-                            while (iterator.hasNext()){
-                                caseFileQueryBean.DataBean next = iterator.next();
-                                fileData.add(next);
-                        }
-                        updataUI();
-                        }
-                        }
+                                Iterator<caseFileQueryBean.DataBean> iterator = data1.iterator();
+                                while (iterator.hasNext()){
+                                    caseFileQueryBean.DataBean next = iterator.next();
+                                    fileData.add(next);
+                            }
+                            updataUI();
+                            }
+                            }
+                    }
+                } catch (JsonSyntaxException e) {
+                    e.printStackTrace();
+                    ToastUtil.showToast(FileQueryActivity.this,"服务器异常"+e.toString());
                 }
             }
 

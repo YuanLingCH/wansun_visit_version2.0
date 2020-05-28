@@ -77,7 +77,7 @@ public class RecordActivity extends BaseActivity {
     otherFileReAdapter bottomAdapter;
     List dataDaoId;
     int cont = 0;
-
+    List currentCont=new ArrayList();
     Handler mHandler=new Handler(){
         @Override
         public void handleMessage(Message msg) {
@@ -106,13 +106,19 @@ public class RecordActivity extends BaseActivity {
     /**
      * 删除上传成功的文件
      */
-    private void delectFile() {
+    private void delectFile(String filePath) {
         Iterator<fileInfo> iterator = recordData.iterator();
         while (iterator.hasNext()){
+
             fileInfo next = iterator.next();
             String path = next.getPath();
-            boolean b = CommonUtil.deleteFile(path);
-            logUtils.d("删除文件"+b);
+
+                boolean b = CommonUtil.deleteFile(path);
+                logUtils.d("删除文件"+b);
+
+
+
+
 
         }
     }
@@ -141,13 +147,14 @@ public class RecordActivity extends BaseActivity {
         btn_record_upload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                currentCont.clear();
                 NetWorkTesting net=new NetWorkTesting(RecordActivity.this);
                 WindowManager manager = getWindowManager();
                 View view = LayoutInflater.from(waifangApplication.getContext()).inflate(R.layout.loading_layout, null);
                 utils = new dialogUtils(RecordActivity.this, manager, view);
 
                 if (net.isNetWorkAvailable()) {
-                cont=0;
+
                 List<fileInfo> fileInfos = dao.loadAll();
                 try {
                     if (fileInfos.size()>0&&fileInfos!=null){
@@ -347,7 +354,7 @@ public class RecordActivity extends BaseActivity {
      * 上传录音文件
      * @param filePath
      */
-    private void doUpLoad(String filePath, final long daoId) {
+    private void doUpLoad(final String filePath, final long daoId) {
         try {
             Thread.sleep(50);
         } catch (InterruptedException e) {
@@ -394,11 +401,12 @@ public class RecordActivity extends BaseActivity {
                             String statusID = bean.getStatusID();
                             if (statusID.equals("200")){
                                 logUtils.d("上传录音"+body);
-                                cont++;
+
+                                currentCont.add(1);
                                 logUtils.d("上传录音"+"recordData.size()"+recordData.size()+">>>"+cont);
                                 dao.deleteByKey(daoId);  //删除数据库
-                                if (cont==recordData.size()){
-                                    delectFile(); //  删除文件夹里面的文件
+                                if (currentCont.size()==recordData.size()){
+                                    delectFile(filePath); //  删除文件夹里面的文件
                                     mHandler.sendEmptyMessage(1);
 
                                 }

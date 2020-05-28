@@ -2,6 +2,7 @@ package wansun.visit.android.ui.activity;
 
 import android.content.Intent;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
@@ -10,6 +11,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import retrofit2.Call;
@@ -105,35 +107,41 @@ public class LoginActiovity extends BaseActivity {
                 call.enqueue(new Callback<String>() {
                     @Override
                     public void onResponse(Call<String> call, Response<String> response) {
-                        utils.cancleDialog();
-                        String body = response.body();
-                        if (!TextUtils.isEmpty(body)){
-                        logUtils.d("登陆" + body);
-                        Gson gson=new Gson();
-                        loginBean bean = gson.fromJson(body, new TypeToken<loginBean>() {}.getType());
-                        String statusID = bean.getStatusID();
-                        String message = bean.getMessage();
-                        if (statusID.equals(AppConfig.SUCCESS)){// 200成功
-                            Intent i = new Intent(LoginActiovity.this, autoUpdataService.class);
-                            startService(i);
-                            Intent intent = new Intent(LoginActiovity.this, MainActivity.class);
-                            startActivity(intent);
-                            finish();
-                            overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left); // 由右向左滑入的效果
-                            SharedUtils.putString("account",acount);
-                            loginBean.DataBean data = bean.getData();
-                            String id = data.getId()+"";
-                            SharedUtils.putString("id",id);
-                            SharedUtils.putString("password",pasword);
-                            SharedUtils.putString("userName",data.getName()+"");
-                        }else {
-                            ToastUtil.showToast(LoginActiovity.this,message);
-                        }
+                        try {
+                            utils.cancleDialog();
+                            String body = response.body();
+                            if (!TextUtils.isEmpty(body)){
+                            logUtils.d("登陆" + body);
+                                logUtils.d("account" + acount);
+                            Gson gson=new Gson();
+                            loginBean bean = gson.fromJson(body, new TypeToken<loginBean>() {}.getType());
+                            String statusID = bean.getStatusID();
+                            String message = bean.getMessage();
+                            if (statusID.equals(AppConfig.SUCCESS)){// 200成功
+                                Intent i = new Intent(LoginActiovity.this, autoUpdataService.class);
+                                startService(i);
+                                Intent intent = new Intent(LoginActiovity.this, MainActivity.class);
+                                startActivity(intent);
+                                finish();
+                                overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left); // 由右向左滑入的效果
+                                SharedUtils.putString("account",acount);
+                                loginBean.DataBean data = bean.getData();
+                                String id = data.getId()+"";
+                                SharedUtils.putString("id",id);
+                                SharedUtils.putString("password",pasword);
+                                SharedUtils.putString("userName",data.getName()+"");
+                            }else {
+                                ToastUtil.showToast(LoginActiovity.this,message);
+                            }
+                            }
+                        } catch (JsonSyntaxException e) {
+                            e.printStackTrace();
+                            ToastUtil.showToast(LoginActiovity.this,"服务器异常"+e.toString());
                         }
                     }
                     @Override
                     public void onFailure(Call<String> call, Throwable t) {
-                        logUtils.d("登陆onFailure" + t.toString());
+                        logUtils.d("登陆onFailure++++++++++" + t.toString());
                         utils.cancleDialog();
                         ToastUtil.showToast(LoginActiovity.this,R.string.login_faile);
 

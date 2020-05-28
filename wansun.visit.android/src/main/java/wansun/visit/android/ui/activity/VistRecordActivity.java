@@ -21,6 +21,7 @@ import com.baidu.mapapi.search.geocode.GeoCoder;
 import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import org.greenrobot.eventbus.EventBus;
@@ -242,56 +243,62 @@ public class VistRecordActivity extends BaseActivity implements loadMoreListView
             public void onResponse(Call<String> call, Response<String> response) {
                 String body = response.body();
                 logUtils.d("body"+body);
-                if (!TextUtils.isEmpty(body)){
-                    Gson gson=new Gson();
-                    visitItemBean bean = gson.fromJson(body, new TypeToken<visitItemBean>() {}.getType());
-                    String statusID = bean.getStatusID();
-                    if (statusID.equals("200")){
-                        utils.cancleDialog();
-                        List<visitItemBean.DataBean> data = bean.getData();
-                        visitItemBean.PageBean page = bean.getPage();
-                        counts = page.getCounts();
-                        total.setText("总条数："+ counts);
-                       // visitData.clear();
-                        if (data.size()>0){
-                            Iterator<visitItemBean.DataBean> iterator = data.iterator();
-                            while (iterator.hasNext()) {
-                                visitItemBean.DataBean next = iterator.next();
-                                String visitStatusText = next.getVisitStatusText();
+                try {
+                    if (!TextUtils.isEmpty(body)){
+                        Gson gson=new Gson();
+                        visitItemBean bean = gson.fromJson(body, new TypeToken<visitItemBean>() {}.getType());
+                        String statusID = bean.getStatusID();
+                        if (statusID.equals("200")){
+                            utils.cancleDialog();
+                            List<visitItemBean.DataBean> data = bean.getData();
+                            visitItemBean.PageBean page = bean.getPage();
+                            counts = page.getCounts();
+                            total.setText("总条数："+ counts);
+                           // visitData.clear();
+                            if (data.size()>0){
+                                Iterator<visitItemBean.DataBean> iterator = data.iterator();
+                                while (iterator.hasNext()) {
+                                    visitItemBean.DataBean next = iterator.next();
+                                    String visitStatusText = next.getVisitStatusText();
 
-                                if (!visitStatusText.equals("外访完成")) {  //外访完成了就不加载数据
-                                if (isFirst) {
-                                    visitData.add(next);
-                                    ++currentNumblerFirst;
-                                    logUtils.d("正常情况" + currentNumbler);
-                                } else {
-                                  adapter.addItem(next);
-                                    ++currentNumbler;
-                                    logUtils.d("加载当前条数：" + currentNumbler);
-                                    lv_visit_order.loadFinsh();
+                                    if (!visitStatusText.equals("外访完成")) {  //外访完成了就不加载数据
+                                    if (isFirst) {
+                                        visitData.add(next);
+                                        ++currentNumblerFirst;
+                                        logUtils.d("正常情况" + currentNumbler);
+                                    } else {
+                                      adapter.addItem(next);
+                                        ++currentNumbler;
+                                        logUtils.d("加载当前条数：" + currentNumbler);
+                                        lv_visit_order.loadFinsh();
+                                    }
+                                    String name = next.getName();
+                                    logUtils.d("债务人名字：" + name);
                                 }
-                                String name = next.getName();
-                                logUtils.d("债务人名字：" + name);
-                            }
-                            }
+                                }
 
-                        //    srf.setRefreshing(false);
-                            isFirst=false;
-                          //  onLine_qury.setVisibility(View.VISIBLE);
-                           // tv_explain.setVisibility(View.VISIBLE);
-                            empty_layout.setVisibility(View.GONE);
-                            updataUI();
-                        }else {
-                            ToastUtil.showToast(VistRecordActivity.this,"没有数据...");
-                            logUtils.d("没有数据activity");
-                            empty_layout.setVisibility(View.VISIBLE);
-                            empty_layout.setErrorType(EmptyLayout.NODATA);
-                            onLine_qury.setVisibility(View.GONE);
-                            tv_explain.setVisibility(View.GONE);
+                            //    srf.setRefreshing(false);
+                                isFirst=false;
+                              //  onLine_qury.setVisibility(View.VISIBLE);
+                               // tv_explain.setVisibility(View.VISIBLE);
+                                empty_layout.setVisibility(View.GONE);
+                                updataUI();
+                            }else {
+                                ToastUtil.showToast(VistRecordActivity.this,"没有数据...");
+                                logUtils.d("没有数据activity");
+                                empty_layout.setVisibility(View.VISIBLE);
+                                empty_layout.setErrorType(EmptyLayout.NODATA);
+                                onLine_qury.setVisibility(View.GONE);
+                                tv_explain.setVisibility(View.GONE);
+                            }
+                        //  srf.setRefreshing(false);
+
                         }
-                    //  srf.setRefreshing(false);
-
                     }
+                } catch (JsonSyntaxException e) {
+                    e.printStackTrace();
+                    ToastUtil.showToast(VistRecordActivity.this,"服务器异常..."+e.toString());
+                    utils.cancleDialog();
                 }
 
             }

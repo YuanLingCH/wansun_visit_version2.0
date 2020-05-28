@@ -1,1 +1,1 @@
-include ':wansun.visit.android', ':NaviTts', ':onsdk_all', ':pictureselector', ':silicompressor', ':ArcfaceLibary'
+include ':wansun.visit.android', ':NaviTts', ':onsdk_all', ':pictureselector', ':silicompressor','AirApp'

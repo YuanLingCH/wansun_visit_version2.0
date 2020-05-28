@@ -174,18 +174,19 @@ public class AddUrgeFragment extends BaseFragment {
                         caseAddPhoneUrgeBean data = gson.fromJson(body, new TypeToken<caseAddPhoneUrgeBean>() {}.getType());
                         String statusID = data.getStatusID();
                         if (AppConfig.SUCCESS.equals(statusID)){
-                            ToastUtil.showToast(getActivity(), "添加电话催记成功");
+                            ToastUtil.showToast(getActivity(), "添加外访催记成功");
                             ed_people.setText("");
                             et_phone_numbler.setText("");
                             ed_content.setText("");
                             ed_remark.setText("");
                         }else {
-                            ToastUtil.showToast(getActivity(), "添加地电话催记失败");
+                            ToastUtil.showToast(getActivity(), "添加外访催记失败");
                         }
                     }else {
-                        ToastUtil.showToast(getActivity(), "添加地电话催记失败");
+                        ToastUtil.showToast(getActivity(), "添加外访催记失败");
                     }
                 } catch (JsonSyntaxException e) {
+                    ToastUtil.showToast(getActivity(), "添加外访催记失败");
                     e.printStackTrace();
                 } finally {
                     bt_ugre_submit.setFocusable(true);
@@ -195,7 +196,7 @@ public class AddUrgeFragment extends BaseFragment {
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-                ToastUtil.showToast(getActivity(), "添加地电话催记失败"+t.toString());
+                ToastUtil.showToast(getActivity(), "添加电话催记失败"+t.toString());
                 bt_ugre_submit.setFocusable(true);
                 bt_ugre_submit.setText(R.string.submit_data_complete);
             }

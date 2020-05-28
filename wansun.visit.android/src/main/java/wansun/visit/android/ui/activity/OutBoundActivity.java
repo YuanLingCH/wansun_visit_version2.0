@@ -15,6 +15,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.Serializable;
@@ -46,6 +47,7 @@ import wansun.visit.android.utils.ToastUtil;
 import wansun.visit.android.utils.dialogUtils;
 import wansun.visit.android.utils.logUtils;
 import wansun.visit.android.utils.netUtils;
+import wansun.visit.android.utils.starUtils;
 import wansun.visit.android.utils.unixTime;
 import wansun.visit.android.widget.ListViewForScrollView;
 
@@ -428,14 +430,19 @@ public class OutBoundActivity extends BaseActivity {
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
-                String body = response.body();
-                logUtils.d("下载数据"+body);
-                if (!TextUtils.isEmpty(body)){
-                    Gson gson=new Gson();
-                    caseDetailBean data = gson.fromJson(body, new TypeToken<caseDetailBean>() {}.getType());
-                    caseDetailBean.DataBean bean = data.getData();
-                    updataUi(bean);
+                try {
+                    String body = response.body();
+                    logUtils.d("下载数据"+body);
+                    if (!TextUtils.isEmpty(body)){
+                        Gson gson=new Gson();
+                        caseDetailBean data = gson.fromJson(body, new TypeToken<caseDetailBean>() {}.getType());
+                        caseDetailBean.DataBean bean = data.getData();
+                        updataUi(bean);
 
+                    }
+                } catch (JsonSyntaxException e) {
+                    e.printStackTrace();
+                    ToastUtil.showToast(OutBoundActivity.this,"服务器异常"+e.toString());
                 }
 
             }
@@ -743,6 +750,7 @@ public class OutBoundActivity extends BaseActivity {
     double caseTotalAppointAmount;
     double caseTotalUrgeAmount;
     double caseTotalReceiptAmount;
+    String remark;
     private void updataUi(caseDetailBean.DataBean bean) {
      ugrerName = bean.getName();
         tv_debtor_name.setText("欠款人："+ ugrerName);
@@ -756,11 +764,16 @@ public class OutBoundActivity extends BaseActivity {
         tv_base_last_arrears.setText("回款金额："+ caseTotalReceiptAmount +"元");
         tv_visit_area.setText("外访区域："+bean.getVisitArea());
         tv_visit_goal.setText("外访目标："+bean.getVisitGoal());
+        tv_visit_remark.setVisibility(View.GONE);
+        remark=bean.getRemark()+"";
       //  tv_visit_remark.setText("外访备注："+bean.getRemark());
         tv_customer_name.setText("甲方："+bean.getCustomerName());
+        String clerkName = bean.getClerkName();   //bean.getClerkName()
         tv_gender.setText("性别："+bean.getGenderText());
-        tv_clerk.setText("管理员："+bean.getClerkName());
-        tv_visitors.setText("外访员："+bean.getVisitors());
+        if (!TextUtils.isEmpty(clerkName)){
+            tv_clerk.setText("管理员："+ starUtils.getStarStringOne(clerkName,0,1));
+        }
+            tv_visitors.setText("外访员："+bean.getVisitors());
         tv_collect_status.setText("催收状态："+bean.getCaseUrgeStatusText());
         logUtils.d("案件编号："+caseCode);
         tv_visit_caseid.setText("案件编号："+caseCode);
@@ -857,6 +870,7 @@ public class OutBoundActivity extends BaseActivity {
 
                         Intent intent=new Intent(OutBoundActivity.this,CaseCardMessageActivity .class);
                         intent.putExtra("caseCode",caseCode);
+                        intent.putExtra("remark",remark);
                         intent.putExtra("caseTotalAppointAmount",caseTotalAppointAmount+"");
                         intent.putExtra("caseTotalUrgeAmount",caseTotalUrgeAmount+"");
                         intent.putExtra("caseTotalReceiptAmount",caseTotalReceiptAmount+"");

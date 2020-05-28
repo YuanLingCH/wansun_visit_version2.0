@@ -90,15 +90,17 @@ public class TakePhotosActivity extends BaseActivity {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            utils.cancleDialog();
             switch (msg.what){
                 case SUCCESS:
+                    utils.cancleDialog();
                     ToastUtil.showToast(TakePhotosActivity.this,"图片上传完成");
                     iv_photos.setImageDrawable(null);  //清空图片数据
                     fullPath="";
+                    deletePicture();
                     break;
                 case fAIL:
-                    ToastUtil.showToast(TakePhotosActivity.this,"图片上传失败");
+                    ToastUtil.showToast(TakePhotosActivity.this,"图片上传失败,请再试一下...");
+                    utils.cancleDialog();
                     break;
             }
 
@@ -161,8 +163,7 @@ public class TakePhotosActivity extends BaseActivity {
         if (TextUtils.isEmpty(fullPath)){
             ToastUtil.showToast(TakePhotosActivity.this,"请拍照片在上传");
             return;
-        }
-        {
+        }else {
             NetWorkTesting net = new NetWorkTesting(TakePhotosActivity.this);
             if (net.isNetWorkAvailable()) {
                 WindowManager manager = getWindowManager();
@@ -176,9 +177,9 @@ public class TakePhotosActivity extends BaseActivity {
                 final String account = SharedUtils.getString("account");
                 logUtils.d("account"+account);
                 String id = SharedUtils.getString("id");
-                File file = new File(fullPath);
-                final OkHttpClient okHttpClient = new OkHttpClient();
-                    MultipartBody.Builder builder = new MultipartBody.Builder()
+               File file = new File(fullPath);
+                final   OkHttpClient okHttpClient = waifangApplication.getInstence().getClient();
+                MultipartBody.Builder builder = new MultipartBody.Builder()
                             .setType(MultipartBody.FORM)
                             .addFormDataPart("caseCode", caseCode)
                             .addFormDataPart("visitGuid", visitGuid)
@@ -199,24 +200,24 @@ public class TakePhotosActivity extends BaseActivity {
                                     logUtils.d("图片上传错误" + e.toString());
                                     mHandler.sendEmptyMessage(fAIL);
                                 }
-
                                 @Override
                                 public void onResponse(Call call, Response response) throws IOException {
+                                    try {
                                     ResponseBody body = response.body();
                                     String s = body.string();   //数据类型
                                         Gson gson=new Gson();
-                                    try {
                                         uploadFileBean bean= gson.fromJson(s, new TypeToken<uploadFileBean>() {}.getType());
-                                        String statusID = bean.getStatusID();
-                                        if (statusID.equals("200")){
-                                            logUtils.d("图片上传" + s);
+                                        if (bean!=null){
+                                            String statusID = bean.getStatusID();
+                                            if (!TextUtils.isEmpty(statusID)&&statusID.equals("200")){
+                                                logUtils.d("图片上传" + s);
+                                                mHandler.sendEmptyMessage(SUCCESS);
 
-                                            mHandler.sendEmptyMessage(SUCCESS);
-
-                                            deletePicture();
-                                        }else {
-                                            mHandler.sendEmptyMessage(fAIL);
+                                            }else {
+                                                mHandler.sendEmptyMessage(fAIL);
+                                            }
                                         }
+
                                     } catch (JsonSyntaxException e) {
                                         e.printStackTrace();
                                         mHandler.sendEmptyMessage(fAIL);
@@ -247,6 +248,7 @@ public class TakePhotosActivity extends BaseActivity {
                     String path = next.getPath();
                     boolean b = CommonUtil.deleteFile(path);  //删除文件夹里面的
                     logUtils.d("删除文件"+b);
+                    //BitmapUtils.deleteCacheFile();
 
                 }
             }
@@ -312,6 +314,9 @@ public class TakePhotosActivity extends BaseActivity {
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
+
+
+
     // 调用系统相机
     public void takePhoto() {
         fullPath="";
@@ -326,7 +331,6 @@ public class TakePhotosActivity extends BaseActivity {
         if (!dir.exists()){
             dir.mkdir();
         }
-
         File dirone=new File(dir+"/"+"picture");
         if (!dirone.exists()){
             dirone.mkdir();
@@ -334,24 +338,21 @@ public class TakePhotosActivity extends BaseActivity {
         String caseCode = SharedUtils.getString("caseCode");
 
         fullPath=dirone+"/" +caseCode+"_" +new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".jpg";
-/*        File file = new File(fullPath);
-      File folder = new File(file.getParent());
-        Log.v(AppConfig.TAG, "takePhoto - getPath = " + file.getParent());
-        if (!folder.exists()) {
-            folder.mkdirs();
-        }*/
-      //  logUtils.d("生产地址"+imageUri);
-        if (Build.VERSION.SDK_INT>=24){  //sdk大于24
+
+        if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.N){  //sdk大于24
+            Log.d("TAG","拍照24以上");
             imageUri = FileProvider.getUriForFile(TakePhotosActivity.this, "wansun.visit.android.fileprovider", new File(fullPath));
         }else {
             imageUri = Uri.fromFile(new File(fullPath));
-
+            Log.d("TAG","拍照24以下");
         }
-      //  imageUri = Uri.fromFile(file);
-       // imageUri = Uri.fromFile(fullPath);
         intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-     //   intent.addCategory(Intent.CATEGORY_DEFAULT);
+
         startActivityForResult(intent, VISIT_DETAIL_CAMERA);
+
+
+
+
 
     }
 
@@ -374,7 +375,7 @@ public class TakePhotosActivity extends BaseActivity {
               final Bitmap destMap = CommonUtil.CreateBitmapWithWatermark(bitmap, waterMap);
               logUtils.d("拍照图片显示");
               if (destMap!=null){
-              final Bitmap bitmap1 = CommonUtil.getBitmap(destMap,6);     //图片压缩   6为采样率
+              final Bitmap bitmap1 = CommonUtil.getBitmap(destMap,2);     //图片压缩   6为采样率
               iv_photos.setImageBitmap(bitmap1);//显示到ImageView上
           new Thread(){
                   @Override
@@ -395,12 +396,7 @@ public class TakePhotosActivity extends BaseActivity {
           } catch (FileNotFoundException e) {
               e.printStackTrace();
           }
-     /*     String visitGuid = SharedUtils.getString("visitGuid");
-          String realFilePath = getRealFilePath(TakePhotosActivity.this, imageUri);
-          logUtils.d("图片realFilePath"+realFilePath);
-          logUtils.d("图片"+fullPath);
-          fileInfo info=new fileInfo(null,fullPath,"0",System.currentTimeMillis(),visitGuid );  //0为拍照
-          dao.insert(info);*/
+
       }
     }
 
@@ -445,4 +441,11 @@ public class TakePhotosActivity extends BaseActivity {
         return data;
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (utils!=null){
+            utils.cancleDialog();
+        }
+    }
 }

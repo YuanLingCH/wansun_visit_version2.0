@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -95,23 +96,28 @@ public class VersionsActivity extends BaseActivity {
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
-                String body = response.body();
-                logUtils.d("版本升级"+body );
-                if (!TextUtils.isEmpty(body)) {
-                    Gson gson = new Gson();
-                    appUpdataBean data = gson.fromJson(body, new TypeToken<appUpdataBean>() {}.getType());
-                    String statusID = data.getStatusID();
-                    if (statusID.equals("200")) {
-                        appUpdataBean.DataBean data1 = data.getData();
-                        versionFileUrl = data1.getVersionFileUrl();
-                        newVersionNum = data1.getVersionName();
-                        int version = data1.getVersionCode();   //服务器的版本
-                        if (version>versionCode){   // 服务器版本要高于本地的版本就升级
-                            bt_version.setVisibility(View.VISIBLE);
-                            bt_version.setText("检查新版本："+newVersionNum);
-                        }
+                try {
+                    String body = response.body();
+                    logUtils.d("版本升级"+body );
+                    if (!TextUtils.isEmpty(body)) {
+                        Gson gson = new Gson();
+                        appUpdataBean data = gson.fromJson(body, new TypeToken<appUpdataBean>() {}.getType());
+                        String statusID = data.getStatusID();
+                        if (statusID.equals("200")) {
+                            appUpdataBean.DataBean data1 = data.getData();
+                            versionFileUrl = data1.getVersionFileUrl();
+                            newVersionNum = data1.getVersionName();
+                            int version = data1.getVersionCode();   //服务器的版本
+                            if (version>versionCode){   // 服务器版本要高于本地的版本就升级
+                                bt_version.setVisibility(View.VISIBLE);
+                                bt_version.setText("检查新版本："+newVersionNum);
+                            }
 
+                        }
                     }
+                } catch (JsonSyntaxException e) {
+                    e.printStackTrace();
+                    ToastUtil.showToast(VersionsActivity.this,"无服务异常"+e.toString());
                 }
             }
 

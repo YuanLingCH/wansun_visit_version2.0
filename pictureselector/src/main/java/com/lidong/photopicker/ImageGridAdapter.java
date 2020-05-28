@@ -1,6 +1,7 @@
 package com.lidong.photopicker;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -230,9 +231,10 @@ public class ImageGridAdapter extends BaseAdapter {
                 indicator.setVisibility(View.GONE);
             }
             File imageFile = new File(data.path);
-
+            Log.d("TAG","路径"+data.path);
             if(mItemSize > 0) {
-                // 显示图片
+              // 显示图片
+
                 Glide.with(mContext)
                         .load(imageFile)
                         .placeholder(R.mipmap.default_error)

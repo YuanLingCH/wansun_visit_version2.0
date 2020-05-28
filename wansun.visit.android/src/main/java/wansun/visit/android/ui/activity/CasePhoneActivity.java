@@ -18,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
@@ -78,22 +79,27 @@ public class CasePhoneActivity extends BaseActivity {
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
-                String body = response.body();
-                logUtils.d("案件电话下载数据" + body);
-                if (!TextUtils.isEmpty(body)) {
-                    Gson gson = new Gson();
-                    casePhoneBean data = gson.fromJson(body, new TypeToken<casePhoneBean>() {
-                    }.getType());
-                    String statusID = data.getStatusID();
-                    if (statusID.equals("200")) {
-                        List<casePhoneBean.DataBean> data1 = data.getData();
-                        Iterator<casePhoneBean.DataBean> iterator = data1.iterator();
-                        while (iterator.hasNext()) {
-                            casePhoneBean.DataBean next = iterator.next();
-                            caseData.add(next);
+                try {
+                    String body = response.body();
+                    logUtils.d("案件电话下载数据" + body);
+                    if (!TextUtils.isEmpty(body)) {
+                        Gson gson = new Gson();
+                        casePhoneBean data = gson.fromJson(body, new TypeToken<casePhoneBean>() {
+                        }.getType());
+                        String statusID = data.getStatusID();
+                        if (statusID.equals("200")) {
+                            List<casePhoneBean.DataBean> data1 = data.getData();
+                            Iterator<casePhoneBean.DataBean> iterator = data1.iterator();
+                            while (iterator.hasNext()) {
+                                casePhoneBean.DataBean next = iterator.next();
+                                caseData.add(next);
+                            }
                         }
+                        updataUI();
                     }
-                    updataUI();
+                } catch (JsonSyntaxException e) {
+                    e.printStackTrace();
+                    ToastUtil.showToast(CasePhoneActivity.this,"服务器异常"+e.toString());
                 }
 
 

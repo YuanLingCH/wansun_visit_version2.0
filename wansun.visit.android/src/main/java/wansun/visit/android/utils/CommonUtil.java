@@ -206,7 +206,7 @@ public class CommonUtil {
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inSampleSize = sampleSize;
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 70, baos);
             byte[] bytes = baos.toByteArray();
             Bitmap bit = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
             Log.i("info", "图片大小：" + bit.getByteCount());//2665296  10661184

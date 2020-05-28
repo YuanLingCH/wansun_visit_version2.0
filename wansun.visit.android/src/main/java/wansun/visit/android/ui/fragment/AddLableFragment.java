@@ -89,6 +89,7 @@ public class AddLableFragment extends BaseFragment {
                     }
                 } catch (JsonSyntaxException e) {
                     e.printStackTrace();
+                    ToastUtil.showToast(getActivity(), "添加标记失败");
                 } finally {
                     but_lab_visit.setFocusable(true);
                     but_lab_visit.setText(R.string.submit_data_complete);

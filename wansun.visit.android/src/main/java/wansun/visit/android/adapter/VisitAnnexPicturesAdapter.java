@@ -22,7 +22,6 @@ import wansun.visit.android.ui.activity.playPictureAndVideoActivity;
 import wansun.visit.android.utils.logUtils;
 
 import static wansun.visit.android.R.id.ll_annex_audio;
-import static wansun.visit.android.R.id.visit_annex_img;
 
 /**
  * Created by User on 2019/1/11.
@@ -63,7 +62,7 @@ public class VisitAnnexPicturesAdapter extends BaseAdapter {
         if (convertView==null){
             holder=new ViewHolder();
             convertView= inflater.inflate(R.layout.visit_annex_picture,parent,false);
-            holder.visit_annex_img= (ImageView) convertView.findViewById(visit_annex_img);
+            holder.visit_annex_img= (ImageView) convertView.findViewById(R.id.visit_annex_img);
             holder.iv_audio_icon=(ImageView) convertView.findViewById(R.id.iv_audio_icon);
             holder.tv_url=(TextView) convertView.findViewById(R.id.tv_url);
             holder.ll_annex_audio=(LinearLayout) convertView.findViewById(ll_annex_audio);
@@ -79,7 +78,10 @@ public class VisitAnnexPicturesAdapter extends BaseAdapter {
             if (typeAnnex.equals(AppConfig.VISIT_ANNEX_PICTURE)){
                 holder.visit_annex_img.setVisibility(View.VISIBLE);
                 holder.ll_annex_audio.setVisibility(View.INVISIBLE);
-                Glide.with(mconext).load(apiManager.baseUrl+"/files/"+url).into(holder.visit_annex_img);
+                final ViewHolder finalHolder = holder;
+                Glide.with(mconext).load(apiManager.baseUrl+"/files/"+url).into(finalHolder.visit_annex_img);
+
+
             }
         } else if (type.equals("录音文件")){
             if (typeAnnex.equals(AppConfig.VISIT_ANNEX_AUDIO))

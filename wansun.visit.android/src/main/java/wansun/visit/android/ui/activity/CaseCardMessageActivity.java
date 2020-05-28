@@ -7,6 +7,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import wansun.visit.android.api.apiManager;
 import wansun.visit.android.bean.caseCardMessageBean;
 import wansun.visit.android.global.AppConfig;
 import wansun.visit.android.net.requestBodyUtils;
+import wansun.visit.android.utils.ToastUtil;
 import wansun.visit.android.utils.logUtils;
 import wansun.visit.android.utils.netUtils;
 
@@ -33,7 +35,7 @@ import wansun.visit.android.utils.netUtils;
 
 public class CaseCardMessageActivity extends BaseActivity {
     ImageView iv_visit_back;
-    TextView tv_visit_tobar,tv_appoint,tv_urge,tv_receipt;
+    TextView tv_visit_tobar,tv_appoint,tv_urge,tv_receipt,tv_remark_;
     List cardData;
     caseCardMessageAdapter adapter;
     ListView lv_card_message;
@@ -51,6 +53,7 @@ public class CaseCardMessageActivity extends BaseActivity {
         tv_appoint= (TextView) findViewById(R.id.tv_appoint);
         tv_urge= (TextView) findViewById(R.id.tv_urge);
         tv_receipt= (TextView) findViewById(R.id.tv_receipt);
+        tv_remark_=(TextView) findViewById(R.id.tv_remark_);
         getIntentData();
 
 
@@ -62,9 +65,11 @@ public class CaseCardMessageActivity extends BaseActivity {
         String caseTotalAppointAmount = getIntent().getStringExtra("caseTotalAppointAmount");
         String caseTotalUrgeAmount = getIntent().getStringExtra("caseTotalUrgeAmount");
         String caseTotalReceiptAmount = getIntent().getStringExtra("caseTotalReceiptAmount");
+        String remark = getIntent().getStringExtra("remark");
         tv_appoint.setText("委案金额："+caseTotalAppointAmount+"元");
         tv_urge.setText("催收金额："+caseTotalUrgeAmount+"元");
         tv_receipt.setText("回款金额："+caseTotalReceiptAmount+"元");
+        tv_remark_.setText("备注："+remark);
         Retrofit retrofit = netUtils.getRetrofit();
         apiManager manager= retrofit.create(apiManager.class);
         final RequestBody requestBody = requestBodyUtils.visitCaseDetailsCardFromeService(caseCode);
@@ -73,21 +78,26 @@ public class CaseCardMessageActivity extends BaseActivity {
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
-                String body = response.body();
-                if (!TextUtils.isEmpty(body)){
-                    logUtils.d("案件卡信息下载数据"+body);
-                    Gson gson=new Gson();
-                    caseCardMessageBean data = gson.fromJson(body, new TypeToken<caseCardMessageBean>() {}.getType());
-                    String statusID = data.getStatusID();
-                    if (AppConfig.SUCCESS.equals(statusID)){
-                        List<caseCardMessageBean.DataBean> data1 = data.getData();
-                        Iterator<caseCardMessageBean.DataBean> iterator = data1.iterator();
-                        while (iterator.hasNext()){
-                            caseCardMessageBean.DataBean next = iterator.next();
-                            cardData.add(next);
+                try {
+                    String body = response.body();
+                    if (!TextUtils.isEmpty(body)){
+                        logUtils.d("案件卡信息下载数据"+body);
+                        Gson gson=new Gson();
+                        caseCardMessageBean data = gson.fromJson(body, new TypeToken<caseCardMessageBean>() {}.getType());
+                        String statusID = data.getStatusID();
+                        if (AppConfig.SUCCESS.equals(statusID)){
+                            List<caseCardMessageBean.DataBean> data1 = data.getData();
+                            Iterator<caseCardMessageBean.DataBean> iterator = data1.iterator();
+                            while (iterator.hasNext()){
+                                caseCardMessageBean.DataBean next = iterator.next();
+                                cardData.add(next);
+                            }
+                            updataUI();
                         }
-                        updataUI();
                     }
+                } catch (JsonSyntaxException e) {
+                    e.printStackTrace();
+                    ToastUtil.showToast(CaseCardMessageActivity.this,"服务器异常"+e.toString());
                 }
             }
 

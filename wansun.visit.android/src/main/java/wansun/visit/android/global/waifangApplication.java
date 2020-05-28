@@ -6,6 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.media.AudioManager;
+import android.os.Build;
+import android.os.StrictMode;
+import android.support.annotation.RequiresApi;
 
 import com.baidu.mapapi.CoordType;
 import com.baidu.mapapi.SDKInitializer;
@@ -40,6 +43,8 @@ public class waifangApplication extends Application {
     private DaoMaster mDaoMaster;
     private DaoSession mDaoSession;
     Intent intLiveService;
+
+    @RequiresApi(api = 26)
     @Override
     public void onCreate() {
         super.onCreate();
@@ -62,8 +67,21 @@ public class waifangApplication extends Application {
         *
         * */
         CrashReport.initCrashReport(getApplicationContext(), "18ca237fe3", true);
-        intLiveService=new Intent(this, LiveService.class);
-        startService(intLiveService);
+
+        try {
+            intLiveService=new Intent(this, LiveService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                mcontext.startForegroundService(intLiveService);
+            } else {
+                mcontext.startService(intLiveService);
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+        StrictMode.setVmPolicy(builder.build());
+        builder.detectFileUriExposure();
     }
     private void initDatabass() {
         //这里之后会修改，关于升级数据库

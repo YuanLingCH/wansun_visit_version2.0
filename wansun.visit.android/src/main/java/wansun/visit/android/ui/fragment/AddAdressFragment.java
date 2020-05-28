@@ -210,6 +210,7 @@ public class AddAdressFragment extends BaseFragment{
                         }
                     } catch (JsonSyntaxException e) {
                         e.printStackTrace();
+                        ToastUtil.showToast(getActivity(), "添加地址联失败");
                     } finally {
                         bt_submit.setFocusable(true);
                         bt_submit.setText(R.string.submit_data_complete);

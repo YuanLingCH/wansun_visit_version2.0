@@ -49,7 +49,7 @@ public class VisitOrderActivity extends BaseActivity {
     ImageView iv_visit_back;
     ListView lv_visit_order;
     visitOrderAdapter adapter;
-    List  data;
+    List data=new ArrayList();;
     EmptyLayout empty_layout;
     Button but_all_message;
     EditText et_qury_name;
@@ -81,11 +81,7 @@ public class VisitOrderActivity extends BaseActivity {
     }
 
     private void getIntentData() {
-        data=new ArrayList();
-
- /*       Bundle bundle=getIntent().getExtras();
-        List <visitItemBean.DataBean> applyData = (List<visitItemBean.DataBean>) bundle.getSerializable("visitData");*/
-       // List <visitItemBean.DataBean> applyData = (List<visitItemBean.DataBean>) getIntent().getSerializableExtra("visitData");
+        logUtils.d("搜索走了");
         if (receiveData.size()>0){
             Iterator<visitItemBean.DataBean> iterator = receiveData.iterator();
             data.clear();
@@ -100,7 +96,7 @@ public class VisitOrderActivity extends BaseActivity {
                     logUtils.d("正常逻辑");
                 }else {
                     if (debtorName.contains(quaryDebrotName)||address.contains(quaryDebrotName)||customerName.contains(quaryDebrotName)){   //搜索按钮逻辑
-
+                     // quaryDebrotName=null;
                         logUtils.d("搜索逻辑");
                         data.add(next);
                     }
@@ -117,14 +113,9 @@ public class VisitOrderActivity extends BaseActivity {
     }
 
     private void updataUI() {
-
             adapter=new visitOrderAdapter(this,data,false);
             lv_visit_order.setAdapter(adapter);
-
-
-
-
-        tv_case_number.setText("当前案件数量："+data.size());
+            tv_case_number.setText("当前案件数量："+data.size());
     }
 
     @Override
@@ -162,8 +153,11 @@ public class VisitOrderActivity extends BaseActivity {
         but_all_message.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                data.clear();
-                quaryDebrotName=null;
+                if (receiveData!=null&&receiveData.size()!=0){
+                    data.clear();
+                    quaryDebrotName=null;
+                }
+
                 getIntentData();
             }
         });
@@ -174,9 +168,10 @@ public class VisitOrderActivity extends BaseActivity {
                  quaryDebrotName = et_qury_name.getText().toString().trim();
                 logUtils.d("quaryDebrotName"+quaryDebrotName);
                 if (!TextUtils.isEmpty(quaryDebrotName)){
-                    data.clear();
-                    getIntentData();
-                    quaryDebrotName=null;
+                    if (receiveData!=null&&receiveData.size()!=0){
+                        data.clear();
+                        getIntentData();
+                    }
                 }else {
                     ToastUtil.showToast(VisitOrderActivity.this,"请输入债务人名字或者地址或者客户名称");
                 }

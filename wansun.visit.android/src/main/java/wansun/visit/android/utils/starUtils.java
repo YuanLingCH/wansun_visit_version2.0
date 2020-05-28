@@ -9,5 +9,7 @@ public class starUtils {
     public static  String getStarString(String text,int start,int end){
         return text.substring(0,start)+"******"+text.substring(end);
     }
-
+    public static  String getStarStringOne(String text,int start,int end){
+        return text.substring(0,start)+"**"+text.substring(end);
+    }
 }

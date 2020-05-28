@@ -4,26 +4,27 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.arcsoft.arcfacedemo.common.Constants;
+import com.arcsoft.face.ActiveFileInfo;
 import com.arcsoft.face.ErrorInfo;
 import com.arcsoft.face.FaceEngine;
+import com.arcsoft.face.enums.RuntimeABI;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,8 +52,6 @@ import wansun.visit.android.utils.ToastUtil;
 import wansun.visit.android.utils.logUtils;
 import wansun.visit.android.utils.netUtils;
 
-import static com.baidu.platform.comjni.engine.NAEngine.unInitEngine;
-
 /**
  * 首页
  * Created by User on 2019/3/26.
@@ -64,13 +63,33 @@ public class WelocmeActivity extends BaseActivity {
     Button but_imei;
     private Toast toast = null;
     String imei=null;
+    private static final int ACTION_REQUEST_PERMISSIONS = 0x001;
+    /**
+     * 所需的所有权限信息
+     */
+    private static final String[] NEEDED_PERMISSIONS = new String[]{
+            Manifest.permission.CAMERA,
+            Manifest.permission.READ_PHONE_STATE
+
+    };
+
+    boolean libraryExists = true;
+    // Demo 所需的动态库文件
+    private static final String[] LIBRARIES = new String[]{
+            // 人脸相关
+            "libarcsoft_face_engine.so",
+            "libarcsoft_face.so",
+            // 图像库相关
+            "libarcsoft_image_util.so",
+    };
+
     @Override
     protected int getLayoutId() {
         return R.layout.activity_welcome;
     }
     @Override
     protected void initView() {
-
+        libraryExists = checkSoFile(LIBRARIES);
         tv_imie= (TextView) findViewById(R.id.tv_imie);
         tv_link_devices= (TextView) findViewById(R.id.tv_link_devices);
         tv_check_state= (TextView) findViewById(R.id.tv_check_state);
@@ -86,10 +105,6 @@ public class WelocmeActivity extends BaseActivity {
                 }
             }
         }
-
-
-
-
 
     }
 
@@ -125,33 +140,15 @@ public class WelocmeActivity extends BaseActivity {
                 try {
                     String body = response.body();
                     logUtils.d("手机串号下载" + body);
+
                     if (!TextUtils.isEmpty(body)) {
                         Gson gson = new Gson();
                         stateMessageBean data = gson.fromJson(body, new TypeToken<stateMessageBean>() {}.getType());
                         String statusID = data.getStatusID();
                         if (statusID.equals(AppConfig.SUCCESS)) {
-
-                            if (Build.VERSION.SDK_INT <= 28) {
-                                Intent intent = new Intent(WelocmeActivity.this, RegisterAndRecognizeActivity.class);
+                                Intent intent = new Intent(WelocmeActivity.this,RegisterAndRecognizeActivity.class);
                                 startActivity(intent);
-                            } else if (Build.VERSION.SDK_INT==29){
-                                String account = SharedUtils.getString("account");
-                                if (!TextUtils.isEmpty(account)) {
-                                    // new Intent(RegisterAndRecognizeActivity.this,MainActivity.class);
-                                    startActivity(new Intent(WelocmeActivity.this, MainActivity.class));
-                                    finish();
-                                    unInitEngine();
-                                } else {
-
-                                    startActivity(new Intent(WelocmeActivity.this, LoginActiovity.class));
-                                    finish();
-                                    unInitEngine();     //销毁引擎
-                                    // overridePendingTransition(R.anim.in_from_right,R.anim.out_to_left);
-                                }
-
-
-                            }
-
+                                finish();
 
                         } else {
                             tv_check_state.setText(R.string.check_imei_state);
@@ -191,7 +188,9 @@ public class WelocmeActivity extends BaseActivity {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
             permissionLists.add(Manifest.permission.READ_PHONE_STATE);
         }
-
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            permissionLists.add(Manifest.permission.CAMERA);
+        }
         if (!permissionLists.isEmpty()) {//说明肯定有拒绝的权限
 
             ActivityCompat.requestPermissions(this, permissionLists.toArray(new String[permissionLists.size()]), REQUEST_TAKE_PHOTO_PERMISSION);
@@ -200,6 +199,7 @@ public class WelocmeActivity extends BaseActivity {
             //  Toast.makeText(this, "权限都授权了",Toast.LENGTH_SHORT).show();
             getData();
             activeEngine();
+
         }
     }
 
@@ -228,19 +228,32 @@ public class WelocmeActivity extends BaseActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
+
+
     /**
      * 激活引擎
      *
      *
      */
     public void activeEngine() {
-        Log.d("TAG","点击了激活");
+        if (!libraryExists) {
+            showToast("没发现动态库");
+            return;
+        }
+        if (!checkPermissions(NEEDED_PERMISSIONS)) {
+            ActivityCompat.requestPermissions(this, NEEDED_PERMISSIONS, ACTION_REQUEST_PERMISSIONS);
+            return;
+        }
 
         Observable.create(new ObservableOnSubscribe<Integer>() {
             @Override
-            public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
-                FaceEngine faceEngine = new FaceEngine();
-                int activeCode = faceEngine.active(WelocmeActivity.this, Constants.APP_ID, Constants.SDK_KEY);
+            public void subscribe(ObservableEmitter<Integer> emitter) {
+                RuntimeABI runtimeABI = FaceEngine.getRuntimeABI();
+
+
+                long start = System.currentTimeMillis();
+                int activeCode = FaceEngine.activeOnline(WelocmeActivity.this, Constants.APP_ID, Constants.SDK_KEY);
+                logUtils.d("激活代码"+activeCode );
                 emitter.onNext(activeCode);
             }
         })
@@ -258,37 +271,55 @@ public class WelocmeActivity extends BaseActivity {
                             showToast(getString(R.string.active_success));
                         } else if (activeCode == ErrorInfo.MERR_ASF_ALREADY_ACTIVATED) {
                             showToast(getString(R.string.already_activated));
+                            logUtils.d("激活代码"+activeCode );
                         } else {
                             showToast(getString(R.string.active_failed, activeCode));
                         }
 
 
+                        ActiveFileInfo activeFileInfo = new ActiveFileInfo();
+                        int res = FaceEngine.getActiveFileInfo(WelocmeActivity.this, activeFileInfo);
+                        if (res == ErrorInfo.MOK) {
+                            String startTime = activeFileInfo.getStartTime();
+                            logUtils.d("开始时间"+startTime);
+                        }
+
                     }
 
                     @Override
                     public void onError(Throwable e) {
-                        Log.d("TAG","点击失败");
+                        showToast(e.getMessage());
+
                     }
 
                     @Override
                     public void onComplete() {
-                        Log.d("TAG","点击了成功");
+
                     }
                 });
-
     }
 
-
-
-
-    private void showToast(String s) {
-        if (toast == null) {
-            toast = Toast.makeText(this, s, Toast.LENGTH_SHORT);
-            toast.show();
-        } else {
-            toast.setText(s);
-            toast.show();
+    /**
+     * 检查能否找到动态链接库，如果找不到，请修改工程配置
+     *
+     * @param libraries 需要的动态链接库
+     * @return 动态库是否存在
+     */
+    private boolean checkSoFile(String[] libraries) {
+        File dir = new File(getApplicationInfo().nativeLibraryDir);
+        File[] files = dir.listFiles();
+        if (files == null || files.length == 0) {
+            return false;
         }
+        List<String> libraryNameList = new ArrayList<>();
+        for (File file : files) {
+            libraryNameList.add(file.getName());
+        }
+        boolean exists = true;
+        for (String library : libraries) {
+            exists &= libraryNameList.contains(library);
+        }
+        return exists;
     }
 
 }

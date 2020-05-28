@@ -56,7 +56,7 @@ public class PhotoPagerAdapter extends PagerAdapter {
             .load(uri)
 //            .placeholder(R.mipmap.default_error)
             .error(R.mipmap.default_error)
-            .crossFade()
+           // .crossFade()
             .into(imageView);
 
     imageView.setOnPhotoTapListener(new PhotoViewAttacher.OnPhotoTapListener() {

@@ -18,6 +18,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.lidong.photopicker.PhotoPickerActivity;
 import com.lidong.photopicker.PhotoPreviewActivity;
 import com.lidong.photopicker.SelectModel;
@@ -38,10 +40,10 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
 import wansun.visit.android.R;
 import wansun.visit.android.adapter.GridAdapter;
 import wansun.visit.android.api.apiManager;
+import wansun.visit.android.bean.fileUploadBean;
 import wansun.visit.android.db.fileInfo;
 import wansun.visit.android.global.waifangApplication;
 import wansun.visit.android.greendao.gen.fileInfoDao;
@@ -71,6 +73,7 @@ public class PictureSelectActivity extends  BaseActivity {
     TextView tv_visit_tobar;
     dialogUtils utils;
     int cont = 0;
+    List currentCont=new ArrayList();
     Handler mHandler=new Handler(){
         @Override
         public void handleMessage(Message msg) {
@@ -121,7 +124,7 @@ public class PictureSelectActivity extends  BaseActivity {
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
+                logUtils.d("点击选择图片"+position);
                 selectPicture(parent, position);
             }
         });
@@ -144,7 +147,7 @@ public class PictureSelectActivity extends  BaseActivity {
         tv_click.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cont=0;
+                currentCont.clear();
                 NetWorkTesting net=new NetWorkTesting(PictureSelectActivity.this);
                 if (net.isNetWorkAvailable()) {
 
@@ -198,13 +201,24 @@ public class PictureSelectActivity extends  BaseActivity {
 
                                 @Override
                                 public void onResponse(Call call, Response response) throws IOException {
-                                    ResponseBody body = response.body();
-                                    cont++;
-                                    logUtils.d("图片上传"+body.string()+"..."+cont);
-                                    if (cont==imagePaths.size()-1||cont==imagePaths.size()){
-                                        mHandler.sendEmptyMessage(0);
-                                        //  图片上传成功后就删掉数据库的图片
-                                        deletePicture();
+                                    try {
+                                        String body = response.body().string();
+                                        Gson gson=new Gson();
+                                        fileUploadBean bean = gson.fromJson(body, new TypeToken<fileUploadBean>() {}.getType());
+                                        String statusID = bean.getStatusID();
+                                        if (statusID.equals("200")){
+
+                                            currentCont.add(1);
+                                            logUtils.d("图片上传" + body + "..." + cont);
+                                            if (currentCont.size() == imagePaths.size() - 1 || currentCont.size() == imagePaths.size()) {
+                                                mHandler.sendEmptyMessage(0);
+                                                //  图片上传成功后就删掉数据库的图片
+                                                deletePicture();
+                                            }
+                                        }
+
+                                    } catch (Exception e) {
+                                        mHandler.sendEmptyMessage(1);   //图片上传错误
                                     }
                                 }
                             });

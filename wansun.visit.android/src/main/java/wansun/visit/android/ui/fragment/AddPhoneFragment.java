@@ -213,6 +213,7 @@ public class AddPhoneFragment extends BaseFragment {
                     }
                 } catch (JsonSyntaxException e) {
                     e.printStackTrace();
+                    ToastUtil.showToast(getActivity(), "添加电话失败");
                 } finally {
                     bt_submit.setFocusable(true);
                     bt_submit.setText(R.string.submit_data_complete);

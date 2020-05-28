@@ -55,7 +55,7 @@
         android:icon="@mipmap/ws"
         android:label="@string/app_name"
         android:largeHeap="true"
-
+        android:usesCleartextTraffic="true"
         android:hardwareAccelerated="true"
         android:roundIcon="@mipmap/ws"
         android:supportsRtl="true"
@@ -82,8 +82,7 @@
         <activity android:name=".ui.activity.LoginActiovity"/>
         <activity android:name=".ui.activity.MainActivity"
             android:launchMode="singleTask" />
-        <activity android:name="bikenavi_demo.BNaviGuideActivity"/>
-        <activity android:name="bikenavi_demo.WNaviGuideActivity"/>
+
         <activity android:name="baidu.navi.sdkdemo.newif.DemoGuideActivity"/>
         <activity android:name=".ui.activity.OutBoundActivity"/>
         <activity android:name=".ui.activity.VisitOrderActivity"/>
@@ -111,9 +110,6 @@
         <activity android:name="com.lidong.photopicker.PhotoPreviewActivity"
             android:theme="@style/PhotoPickerTheme"/>
 
-        <activity
-            android:name=".ui.activity.RegisterAndRecognizeActivity"
-            android:launchMode="singleTop" />
         <activity android:name=".ui.activity.FollowMessageActivity"/>
         <activity android:name=".ui.activity.ReturnMessageActivity"/>
         <activity android:name=".ui.activity.CaseAddressActivity"/>
@@ -121,6 +117,7 @@
         <activity android:name=".ui.activity.VisitDetailRecordActivity"/>
         <activity android:name=".ui.activity.CountsActivity"/>
         <activity android:name=".ui.activity.VisitAnnexActivity"/>
+        <activity android:name=".ui.activity.RegisterAndRecognizeActivity"/>
 
         <provider
             android:name="android.support.v4.content.FileProvider"
