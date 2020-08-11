@@ -134,8 +134,6 @@ String path="";     //生产
     @POST (baseUrl+path+"/case/position/addPoints")
     Call <String>uploadCommonLocationMessage(@Body RequestBody  body);
 
-
-
     //根据案件编号查询案件详情    以后界面卡顿  服务端要优化
     @FormUrlEncoded
     @POST(baseUrl+path+"/case/getByCaseCode")
