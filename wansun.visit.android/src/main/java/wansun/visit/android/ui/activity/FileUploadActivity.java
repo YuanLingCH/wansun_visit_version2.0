@@ -27,8 +27,10 @@ import com.leon.lfilepickerlibrary.utils.Constant;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -45,6 +47,7 @@ import wansun.visit.android.config.MessageCode;
 import wansun.visit.android.db.fileInfo;
 import wansun.visit.android.global.waifangApplication;
 import wansun.visit.android.greendao.gen.fileInfoDao;
+import wansun.visit.android.net.requestBodyUtils;
 import wansun.visit.android.service.batchuploadFileService;
 import wansun.visit.android.utils.CommonUtil;
 import wansun.visit.android.utils.NetWorkTesting;
@@ -52,6 +55,8 @@ import wansun.visit.android.utils.SharedUtils;
 import wansun.visit.android.utils.ToastUtil;
 import wansun.visit.android.utils.dialogUtils;
 import wansun.visit.android.utils.logUtils;
+
+import static wansun.visit.android.utils.unixTime.getCurrentTime;
 
 /**
  * 文件上传
@@ -61,7 +66,7 @@ import wansun.visit.android.utils.logUtils;
 public class FileUploadActivity extends BaseActivity {
     private fileInfoDao dao;
    ImageView  iv_visit_back;
-    TextView tv_visit_tobar,tv_path,tvAttachmentInfoDesc;
+    TextView tv_visit_tobar,tv_path,tvAttachmentInfoDesc,tv_file_record;
     Button but_file,but_upload,but_upload_batch;
     dialogUtils utils;
     List<String> list;
@@ -117,6 +122,7 @@ public class FileUploadActivity extends BaseActivity {
         tvAttachmentInfoDesc= (TextView) findViewById(R.id.tvAttachmentInfoDesc);
         caseCode = SharedUtils.getString("caseCode");
         visitGuid = SharedUtils.getString("visitGuid");
+        tv_file_record=(TextView) findViewById(R.id.tv_file_record);
     }
 
     @Override
@@ -201,21 +207,32 @@ public class FileUploadActivity extends BaseActivity {
                     Iterator<fileInfo> iterator = bottomData.iterator();
                     while (iterator.hasNext()){
                         fileInfo next = iterator.next();
-                        if (filePathName.equals(next.getPath())){
+                     //   if (filePathName.equals(next.getPath())){
                             Long id = next.getId();
-                            dao.deleteByKey(id);
-                            boolean b = CommonUtil.deleteFile(next.getPath());  //删除文件夹里面的
+                        String path = next.getPath();
+                        if (!next.getType().equals("2")){
+                            boolean b = CommonUtil.deleteFile(path);  //删除文件夹里面的,不删自选择的文件
                             logUtils.d("删除文件"+b);
-                            iterator.remove();
                         }
+                          dao.deleteByKey(id);
+                          //  if (filePathName.equals(path)){
+
+
+                                iterator.remove();
+                          //  }
+
+                     //   }
 
                     }
-                    logUtils.d("集合打下"+bottomData.size());
+                    logUtils.d("集合大小"+bottomData.size());
                    // bottomData.clear();
                     bottomAdapter.notifyDataSetChanged();
                     tvAttachmentInfoDesc.setVisibility(View.VISIBLE);
                     but_upload_batch.setText("文件上传完成...");
                     but_upload_batch.setFocusable(false);
+                    tv_file_record.setVisibility(View.VISIBLE);
+                     batchuploadFileService service=new batchuploadFileService();
+                     service.stopSelf();
                              }
                 but_upload_batch.setVisibility(View.GONE);
                        }
@@ -252,65 +269,74 @@ public class FileUploadActivity extends BaseActivity {
             final String account = SharedUtils.getString("account");
             logUtils.d("account"+account);
             String id = SharedUtils.getString("id");
-            for (int i = 0; i <list.size(); i++) {
+            Map<String,Object> map=new HashMap<>();
+            map.put("caseCode",caseCode);
+            map.put("visitGuid", visitGuid);
+            map.put("uploaderName", account);
+            map.put("uploaderId", id);
+            String sign = requestBodyUtils.getSign(map, getCurrentTime + "");
+            MultipartBody.Builder builder = new MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+                    .addFormDataPart("sign",sign)
+                    .addFormDataPart("timestamp",getCurrentTime+"");
+                for (int i = 0; i <list.size(); i++) {
                 File file = new File(list.get(i));
-                MultipartBody.Builder builder = new MultipartBody.Builder()
-                        .setType(MultipartBody.FORM)
-                        .addFormDataPart("caseCode",caseCode)
-                        .addFormDataPart("visitGuid",visitGuid)
-                        .addFormDataPart("uploaderName",account)
-                        .addFormDataPart("uploaderId" ,id )
-                        .addFormDataPart("uploadFile", file.getName(), RequestBody.create(MediaType.parse("image/jpg"), file));
-
-                RequestBody requestBody = builder.build();
-                final Request request = new Request.Builder()
-                .url(apiManager.FielsUploadToService).post(requestBody).build();
-                new Thread(){
-                    @Override
-                    public void run() {
-                        super.run();
-                       // OkHttpClient client = waifangApplication.getInstence().getClient();
-                        Call call = waifangApplication.getInstence().getClient().newCall(request);
-                        call.enqueue(new Callback() {
-                            @Override
-                            public void onFailure(Call call, IOException e) {
-                                logUtils.d("图片上传错误"+e.toString());
-                                mHandler.sendEmptyMessage(1);
-                            }
-                            @Override
-                            public void onResponse(Call call, Response response) throws IOException {
-                                try {
-                                    String body = response.body().string();
-                                    cont++;
-                                    currentCont.add(1);
-                                    logUtils.d("文件上传"+body+"cont"+cont+"list.size"+list.size());
-                                    Gson gson=new Gson();
-                                    if (body!=null){
-                                   fileUploadBean bean = gson.fromJson(body, new TypeToken<fileUploadBean>() {}.getType());
-                                        String message = bean.getMessage();
-                                        if (message.equals("ok")){
-                                            logUtils.d("cont"+cont+"list.size"+list.size());
-                                            if (currentCont.size()==list.size()){
-                                                mHandler.sendEmptyMessage(0);
-                                                bottomData.clear();
-                                            }
-                                        }else {
-                                            mHandler.sendEmptyMessage(1);
-                                        }
-                                    }
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                    ToastUtil.showToast(FileUploadActivity.this,"服务器异常"+e.toString());
-                                    mHandler.sendEmptyMessage(1);
-                                }
-
-
-                            }
-                        });
-                    }
-                }.start();
+                for (Map.Entry entry:map.entrySet()){
+                    builder.addFormDataPart(String.valueOf(entry.getKey()),String.valueOf(entry.getValue()));
+                    logUtils.d("遍历key"+String.valueOf(entry.getKey()));
+                }
+                builder.addFormDataPart("uploadFile", file.getName(), RequestBody.create(MediaType.parse("image/jpg"), file));
 
             }
+
+            RequestBody requestBody = builder.build();
+            final Request request = new Request.Builder()
+                    .url(apiManager.FielsUploadToService).post(requestBody).build();
+            new Thread(){
+                @Override
+                public void run() {
+                    super.run();
+                    // OkHttpClient client = waifangApplication.getInstence().getClient();
+                    Call call = waifangApplication.getInstence().getClient().newCall(request);
+                    call.enqueue(new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+                            logUtils.d("图片上传错误"+e.toString());
+                            mHandler.sendEmptyMessage(1);
+                        }
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            try {
+                                String body = response.body().string();
+                            //    cont++;
+                             //   currentCont.add(1);
+                                logUtils.d("文件上传"+body+"cont"+cont+"list.size"+list.size());
+                                Gson gson=new Gson();
+                                if (body!=null){
+                                    fileUploadBean bean = gson.fromJson(body, new TypeToken<fileUploadBean>() {}.getType());
+                                    String message = bean.getMessage();
+                                    if (message.equals("ok")){
+                                        logUtils.d("cont"+cont+"list.size"+list.size());
+                                      //  if (currentCont.size()==list.size()){
+                                            mHandler.sendEmptyMessage(0);
+                                            bottomData.clear();
+                                      //  }
+                                    }else {
+                                        mHandler.sendEmptyMessage(1);
+                                    }
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                ToastUtil.showToast(FileUploadActivity.this,"服务器异常"+e.toString());
+                                mHandler.sendEmptyMessage(1);
+                            }
+
+
+                        }
+                    });
+                }
+            }.start();
+
         }else {
             ToastUtil.showToast(FileUploadActivity.this,R.string.network_unavailing);
         }

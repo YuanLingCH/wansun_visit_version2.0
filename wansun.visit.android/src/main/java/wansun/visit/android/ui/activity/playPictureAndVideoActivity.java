@@ -55,7 +55,7 @@ public class playPictureAndVideoActivity  extends  BaseActivity{
     @Override
     protected void initData() {
         if (!TextUtils.isEmpty(path)){
-            if (path.endsWith(".mp4")||path.endsWith(".mp3")){
+            if (path.endsWith(".mp4")||path.endsWith(".mp3")||path.contains("writerPicture")){
                 videoplayer.setVisibility(View.VISIBLE);
                 videoplayer.setUp(path, JCVideoPlayerStandard.SCREEN_LAYOUT_NORMAL, "");
             }else {

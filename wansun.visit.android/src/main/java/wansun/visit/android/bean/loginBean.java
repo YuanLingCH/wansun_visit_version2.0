@@ -96,7 +96,34 @@ public class loginBean {
         private Object authorizationCode;
         private Object del;
         private Object approved;
+        private String token;
 
+        public String getToken() {
+            return token;
+        }
+
+        public void setToken(String token) {
+            this.token = token;
+        }
+
+        public long getExpireTime() {
+            return expireTime;
+        }
+
+        public void setExpireTime(long expireTime) {
+            this.expireTime = expireTime;
+        }
+
+        public String getBindFace() {
+            return bindFace;
+        }
+
+        public void setBindFace(String bindFace) {
+            this.bindFace = bindFace;
+        }
+
+        private  long expireTime;
+        private String bindFace;
         public int getId() {
             return id;
         }

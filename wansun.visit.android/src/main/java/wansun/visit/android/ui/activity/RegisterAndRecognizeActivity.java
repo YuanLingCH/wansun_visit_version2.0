@@ -355,6 +355,8 @@ public  class RegisterAndRecognizeActivity extends AirBaseActivity implements Vi
             @Override
             public void onFaceFeatureInfoGet(@Nullable final FaceFeature faceFeature, final Integer requestId, final Integer errorCode) {
                 //FR成功
+
+
                 if (faceFeature != null) {
 //                    Log.i(TAG, "onPreview: fr end = " + System.currentTimeMillis() + " trackId = " + requestId);
                     Integer liveness = livenessMap.get(requestId);
@@ -365,6 +367,7 @@ public  class RegisterAndRecognizeActivity extends AirBaseActivity implements Vi
                     //活体检测通过，搜索特征
                     else if (liveness != null && liveness == LivenessInfo.ALIVE) {
                         searchFace(faceFeature, requestId);
+
                     }
                     //活体检测未出结果，或者非活体，延迟执行该函数
                     else {
@@ -426,6 +429,7 @@ public  class RegisterAndRecognizeActivity extends AirBaseActivity implements Vi
                     int liveness = livenessInfo.getLiveness();
                     livenessMap.put(requestId, liveness);
                     // 非活体，重试
+
                     if (liveness == LivenessInfo.NOT_ALIVE) {
                         faceHelper.setName(requestId, "未通过");
                         // 延迟 FAIL_RETRY_INTERVAL 后，将该人脸状态置为UNKNOWN，帧回调处理时会重新进行活体检测
@@ -586,7 +590,7 @@ public  class RegisterAndRecognizeActivity extends AirBaseActivity implements Vi
                         @Override
                         public void onError(Throwable e) {
                             e.printStackTrace();
-                            showToast("register failed!");
+                            showToast("注册失败");
                             registerStatus = REGISTER_STATUS_DONE;
                         }
 
@@ -727,9 +731,16 @@ public  class RegisterAndRecognizeActivity extends AirBaseActivity implements Vi
                                 adapter.notifyItemInserted(compareResultList.size() - 1);
                             }
                             requestFeatureStatusMap.put(requestId, RequestFeatureStatus.SUCCEED);
-                            faceHelper.setName(requestId, "通过"+compareResult.getUserName());
+                            faceHelper.setName(requestId, "通过"+compareResult.getUserName()+"frFace"+frFace);
+                            int trackId = compareResult.getTrackId();
+
+                            byte[] featureData = frFace.getFeatureData();
+                            String s = featureData.toString();
+                            // scom.arcsoft.face.FaceFeature@350bb11    scom.arcsoft.face.FaceFeature@672777b
+
+                            logUtils.d("人脸特征trackId"+trackId+":"+compareResult.getUserName()+"s"+frFace);
                             SharedUtils.putString("faceId","1");
-                                loginUser();
+                            loginUser();
 
 
                         } else {

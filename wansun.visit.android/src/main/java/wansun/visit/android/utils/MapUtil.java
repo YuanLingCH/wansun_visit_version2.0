@@ -350,48 +350,15 @@ public class MapUtil {
      */
 
     public static void openBaiDuNavi(Context context,double slat, double slon, String sname, double dlat, double dlon, String dname){
-
         String uriString = null;
-
-        //终点坐标转换
-
-//        此方法需要百度地图的BaiduLBS_Android.jar包
-
-//        LatLng destination = new LatLng(dlat,dlon);
-
-//        LatLng destinationLatLng = GCJ02ToBD09(destination);
-
-//        dlat = destinationLatLng.latitude;
-
-//        dlon = destinationLatLng.longitude;
-
-
-
         double destination[] = gaoDeToBaidu(dlat, dlon);
-
         dlat = destination[0];
-
         dlon = destination[1];
-
-
-
-        StringBuilder builder = new StringBuilder("baidumap://map/direction?mode=driving&");
-
-        if (slat != 0){
+       // StringBuilder builder = new StringBuilder("baidumap://map/direction?mode=driving&");
+        StringBuilder builder = new StringBuilder("baidumap://map/geocoder?src=andr.baidu.openAPIdemo&address=");
+  /*      if (slat != 0){
 
             //起点坐标转换
-
-
-
-//            LatLng origin = new LatLng(slat,slon);
-
-//            LatLng originLatLng = GCJ02ToBD09(origin);
-
-//            slat = originLatLng.latitude;
-
-//            slon = originLatLng.longitude;
-
-
 
             double[] origin = gaoDeToBaidu(slat, slon);
             slat = origin[0];
@@ -420,8 +387,8 @@ public class MapUtil {
 
                 .append("|name:")
 
-                .append(dname);
-
+                .append(dname);*/
+        builder.append(dname);
         uriString = builder.toString();
 
         Intent intent = new Intent(Intent.ACTION_VIEW);

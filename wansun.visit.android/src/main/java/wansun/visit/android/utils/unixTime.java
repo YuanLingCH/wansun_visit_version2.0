@@ -15,7 +15,7 @@ import java.util.Date;
 
 public class unixTime {
 
-
+public static long getCurrentTime=System.currentTimeMillis();
     /*
  * 将时间转换为时间戳
  */

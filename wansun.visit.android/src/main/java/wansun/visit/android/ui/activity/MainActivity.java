@@ -5,7 +5,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -33,7 +32,6 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
@@ -104,14 +102,12 @@ import wansun.visit.android.adapter.addressAdapter;
 import wansun.visit.android.adapter.geogCodeAdapter;
 import wansun.visit.android.adapter.searchAdapter;
 import wansun.visit.android.api.apiManager;
-import wansun.visit.android.bean.ImeiBean;
 import wansun.visit.android.bean.geogCodeBean;
 import wansun.visit.android.bean.mapInfoBean;
 import wansun.visit.android.bean.saveLocationMessageBean;
 import wansun.visit.android.bean.searchBean;
 import wansun.visit.android.bean.stateMessageBean;
 import wansun.visit.android.bean.visitItemBean;
-import wansun.visit.android.config.MessageCode;
 import wansun.visit.android.event.LatlngEvent;
 import wansun.visit.android.global.waifangApplication;
 import wansun.visit.android.net.requestBodyUtils;
@@ -774,7 +770,6 @@ public void getSearch(String city,String address){
                         }else {
                             mapInfoBean = mapInfoData.get(lv_mainItemPostion);
                         }
-
                                 BitmapDescriptor bitmap = BitmapDescriptorFactory.fromResource(R.mipmap.man);
                                 OverlayOptions option1 =  new MarkerOptions()
                                         .position(servicePoint)
@@ -1423,47 +1418,7 @@ public void getSearch(String city,String address){
     }
 
 
-    private void openBaidu(){
-        try {
-            if (isInstallByread("com.baidu.BaiduMap")) {
 
-                Intent intent = new Intent();
-
-                intent.setData(Uri.parse("baidumap://map/direction?origin=name:我的位置|latlng:"
-
-                        +curlongitude//起始点经度
-
-                        +","
-
-                        +curlatitude//起始点纬度
-
-                        +"&destination="
-
-                        +destinationLatitude//终点纬度
-
-                        +","
-
-                        +destinationLongitude//终点经度
-
-                        +"&mode=transit&sy=0&index=0&target=1"));
-
-                intent.setPackage("com.baidu.BaiduMap");
-
-                startActivity(intent); // 启动调用
-
-            } else {
-
-                Toast.makeText(MainActivity.this, "没有安装百度地图客户端，请先下载该地图应用", Toast.LENGTH_SHORT).show();
-
-            }
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-        }
-
-    }
 
 
 
@@ -1574,44 +1529,11 @@ public void getSearch(String city,String address){
     @Override
     protected void initData() {
         getData();
-          String imeiSucess = SharedUtils.getString("imeiSucess");
-          if (!imeiSucess.equals("imeiSucess")){   // 不等于说明已经提交了一次 ，就不在提交数据
-            String imei = SharedUtils.getString("imei");
-            String id = SharedUtils.getString("id");
-                sendBindUseridAndImei(imei,id);
-        }
+
 
     }
 
-    /**
-     * 绑定userID和Imei好号码
-     *
-     */
-    public void   sendBindUseridAndImei(String imei,String id){
-        logUtils.d("imei" +imei);
-        logUtils.d("id" +id);
-        Retrofit retrofit = netUtils.getRetrofit();
-        apiManager manager = retrofit.create(apiManager.class);
-        Call<String> call = manager.bindUserAndImei(Integer.parseInt(id), imei);
-        call.enqueue(new Callback<String>() {
-            @Override
-            public void onResponse(Call<String> call, Response<String> response) {
-                String body = response.body();
-                logUtils.d("登陆imei" + body);
-                Gson gson=new Gson();
-                ImeiBean bean = gson.fromJson(body, new TypeToken<ImeiBean>() {}.getType());
-                String statusID = bean.getStatusID();
-                if (statusID.equals(MessageCode.IMEI_SUCESS)){
-                    // 成功后保存
-                    SharedUtils.putString("imeiSucess","imeiSucess");
-                }
-            }
-            @Override
-            public void onFailure(Call<String> call, Throwable t) {
 
-            }
-        });
-    }
      List<visitItemBean.DataBean> dataDispose;
     private void getData() {
 

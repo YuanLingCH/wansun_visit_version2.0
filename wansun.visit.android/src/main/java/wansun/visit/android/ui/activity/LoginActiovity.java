@@ -2,7 +2,6 @@ package wansun.visit.android.ui.activity;
 
 import android.content.Intent;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
@@ -23,14 +22,15 @@ import wansun.visit.android.api.apiManager;
 import wansun.visit.android.bean.loginBean;
 import wansun.visit.android.global.AppConfig;
 import wansun.visit.android.global.waifangApplication;
+import wansun.visit.android.net.requestBodyUtils;
 import wansun.visit.android.service.autoUpdataService;
 import wansun.visit.android.utils.NetWorkTesting;
-import wansun.visit.android.utils.RSAUtils;
 import wansun.visit.android.utils.SharedUtils;
 import wansun.visit.android.utils.ToastUtil;
 import wansun.visit.android.utils.dialogUtils;
 import wansun.visit.android.utils.logUtils;
 import wansun.visit.android.utils.netUtils;
+
 /**
  *
  * 登陆界面
@@ -67,7 +67,12 @@ public class LoginActiovity extends BaseActivity {
                 login();
             }
         });
+
+
     }
+
+
+
 
     /**
      * 点击登陆按钮
@@ -94,16 +99,48 @@ public class LoginActiovity extends BaseActivity {
                 utils.getDialog();
                 Retrofit retrofit = netUtils.getRetrofit();
                 apiManager manager1 = retrofit.create(apiManager.class);
-                String  bytes=null;
+/*                String  bytes=null;
                 try {
-               bytes = RSAUtils.encryptByPublicKey(pasword,RSAUtils.encrykey);
+               bytes = RSAUtils.encryptByPublicKey(MD5Utils.stringToMD5(pasword + unixTime.getCurrentTime),RSAUtils.encrykey);
                     logUtils.d("加密数据"+bytes.replaceAll("\r\n|\r|\n", ""));
                 } catch (Exception e) {
                     e.printStackTrace();
                     logUtils.d("加密数据e"+e.toString());
                 }
+                String accountencry=null;
+                try {
+                    accountencry = RSAUtils.encryptByPublicKey(MD5Utils.stringToMD5(acount + unixTime.getCurrentTime), RSAUtils.encrykey).replace("\r\n|\r|\n", "");
+                } catch (GeneralSecurityException e) {
+                    e.printStackTrace();
+                }
+                long getCurrentTime = unixTime.getCurrentTime;
+                Map map=new HashMap();
+                map.put("userName",acount);
+                map.put("passWord",pasword);
+                Set set = map.keySet();
+                List list=new ArrayList(set);
+                Collections.sort(list);
+                StringBuffer buf=new StringBuffer();
+                Iterator iterator = list.iterator();
+                while (iterator.hasNext()){
+                    buf.append(map.get(iterator.next()));
+                }
+                buf.append(getCurrentTime);
+                String sign = MD5Utils.stringToMD5(buf.toString());
+                map.put("timestamp",getCurrentTime);
+                map.put("sign",sign);
+                String encry =null;
+                try {
+                    Gson gson=new Gson();
+                    encry=   RSAUtils.encryptByPublicKey(gson.toJson(map),RSAUtils.encrykey).replace("\r\n|\r|\n", "");
+                } catch (GeneralSecurityException e) {
+                    e.printStackTrace();
+                };
 
-           Call<String> call = manager1.login(acount,  bytes.replaceAll("\r\n|\r|\n", ""));
+                logUtils.d("加密数据"+encry.replaceAll("\\s*//*\t|\r|\n", "")+"......."+map.toString());
+                    //  bytes.replaceAll("\r\n|\r|\n", "")*/
+                String imeiSucess = SharedUtils.getString("imei");
+                Call<String> call = manager1.login(requestBodyUtils.getLoginMessage(acount,pasword,imeiSucess));
                 call.enqueue(new Callback<String>() {
                     @Override
                     public void onResponse(Call<String> call, Response<String> response) {
@@ -120,16 +157,18 @@ public class LoginActiovity extends BaseActivity {
                             if (statusID.equals(AppConfig.SUCCESS)){// 200成功
                                 Intent i = new Intent(LoginActiovity.this, autoUpdataService.class);
                                 startService(i);
-                                Intent intent = new Intent(LoginActiovity.this, MainActivity.class);
-                                startActivity(intent);
-                                finish();
                                 overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left); // 由右向左滑入的效果
                                 SharedUtils.putString("account",acount);
                                 loginBean.DataBean data = bean.getData();
                                 String id = data.getId()+"";
                                 SharedUtils.putString("id",id);
                                 SharedUtils.putString("password",pasword);
+                                SharedUtils.putString("token",data.getToken());
                                 SharedUtils.putString("userName",data.getName()+"");
+                                logUtils.d("token"+data.getToken());
+                                Intent intent = new Intent(LoginActiovity.this, MainActivity.class);
+                                startActivity(intent);
+                                finish();
                             }else {
                                 ToastUtil.showToast(LoginActiovity.this,message);
                             }

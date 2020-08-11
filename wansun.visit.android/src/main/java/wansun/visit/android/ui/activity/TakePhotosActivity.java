@@ -24,6 +24,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,8 +39,10 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -51,18 +54,21 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import wansun.visit.android.R;
+import wansun.visit.android.adapter.GridAdapter;
 import wansun.visit.android.api.apiManager;
 import wansun.visit.android.bean.uploadFileBean;
 import wansun.visit.android.config.AppConfig;
 import wansun.visit.android.db.fileInfo;
 import wansun.visit.android.global.waifangApplication;
 import wansun.visit.android.greendao.gen.fileInfoDao;
+import wansun.visit.android.net.requestBodyUtils;
 import wansun.visit.android.utils.CommonUtil;
 import wansun.visit.android.utils.NetWorkTesting;
 import wansun.visit.android.utils.SharedUtils;
 import wansun.visit.android.utils.ToastUtil;
 import wansun.visit.android.utils.dialogUtils;
 import wansun.visit.android.utils.logUtils;
+import wansun.visit.android.utils.unixTime;
 
 import static wansun.visit.android.config.MessageCode.VISIT_DETAIL_CAMERA;
 
@@ -73,7 +79,8 @@ import static wansun.visit.android.config.MessageCode.VISIT_DETAIL_CAMERA;
 
 public class TakePhotosActivity extends BaseActivity {
     private fileInfoDao dao;
-
+     GridView  gridView;
+    GridAdapter adapter;
     ImageView iv_visit_back,iv_photos;
     TextView tv_visit_tobar;
     Button but_photos,but_upload_photos;
@@ -85,6 +92,7 @@ public class TakePhotosActivity extends BaseActivity {
     public  final static  int SUCCESS=0x01;
     public  final static  int fAIL=0x02;
     boolean isPictures=false;   //视频录制标记
+    ArrayList<String> datafile=new ArrayList<>();  // 图片地址
     private String outputDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
     Handler mHandler=new Handler(){
         @Override
@@ -94,9 +102,10 @@ public class TakePhotosActivity extends BaseActivity {
                 case SUCCESS:
                     utils.cancleDialog();
                     ToastUtil.showToast(TakePhotosActivity.this,"图片上传完成");
-                    iv_photos.setImageDrawable(null);  //清空图片数据
-                    fullPath="";
                     deletePicture();
+                    iv_photos.setImageDrawable(null);  //清空图片数据
+
+                    fullPath="";
                     break;
                 case fAIL:
                     ToastUtil.showToast(TakePhotosActivity.this,"图片上传失败,请再试一下...");
@@ -127,7 +136,7 @@ public class TakePhotosActivity extends BaseActivity {
         iv_photos= (ImageView) findViewById(R.id.iv_photos);
         but_photos= (Button) findViewById(R.id.but_photos);
         but_upload_photos= (Button) findViewById(R.id.but_upload_photos);
-
+      //  gridView=(GridView) findViewById(R.id.gridView);
 
     }
 
@@ -153,7 +162,8 @@ public class TakePhotosActivity extends BaseActivity {
                 upLoadToService();
             }
         });
-
+       // adapter=new GridAdapter(TakePhotosActivity.this,datafile);
+      //  gridView.setAdapter(adapter);
     }
 
     /**
@@ -177,18 +187,29 @@ public class TakePhotosActivity extends BaseActivity {
                 final String account = SharedUtils.getString("account");
                 logUtils.d("account"+account);
                 String id = SharedUtils.getString("id");
-               File file = new File(fullPath);
+                String token = SharedUtils.getString("token");
+                long getCurrentTime = unixTime.getCurrentTime;
+                File file = new File(fullPath);
                 final   OkHttpClient okHttpClient = waifangApplication.getInstence().getClient();
+                Map<String,Object> map=new HashMap<>();
+                map.put("caseCode",caseCode);
+                map.put("visitGuid", visitGuid);
+                map.put("uploaderName", account);
+                map.put("uploaderId", id);
+                String sign = requestBodyUtils.getSign(map, getCurrentTime + "");
                 MultipartBody.Builder builder = new MultipartBody.Builder()
                             .setType(MultipartBody.FORM)
-                            .addFormDataPart("caseCode", caseCode)
-                            .addFormDataPart("visitGuid", visitGuid)
-                            .addFormDataPart("uploaderName", account)
-                            .addFormDataPart("uploaderId", id)
+                            .addFormDataPart("sign",sign)
+                            .addFormDataPart("timestamp",getCurrentTime+"")
                             .addFormDataPart("uploadFile", file.getName(), RequestBody.create(MediaType.parse("image/jpeg"), file));
-                    RequestBody requestBody = builder.build();
-                    final Request request = new Request.Builder()
-                            .url(apiManager.upLoadPicturesToService).post(requestBody).build();
+                for (Map.Entry entry:map.entrySet()){
+                    builder.addFormDataPart(String.valueOf(entry.getKey()),String.valueOf(entry.getValue()));
+                    logUtils.d("遍历key"+String.valueOf(entry.getKey()));
+                }
+                    RequestBody sendRequestBody = builder.build();
+
+                final Request request = new Request.Builder()
+                            .url(apiManager.upLoadPicturesToService).post(sendRequestBody).build();
                     new Thread() {
                         @Override
                         public void run() {
@@ -203,7 +224,7 @@ public class TakePhotosActivity extends BaseActivity {
                                 @Override
                                 public void onResponse(Call call, Response response) throws IOException {
                                     try {
-                                    ResponseBody body = response.body();
+                                        ResponseBody body = response.body();
                                     String s = body.string();   //数据类型
                                         Gson gson=new Gson();
                                         uploadFileBean bean= gson.fromJson(s, new TypeToken<uploadFileBean>() {}.getType());
@@ -220,6 +241,7 @@ public class TakePhotosActivity extends BaseActivity {
 
                                     } catch (JsonSyntaxException e) {
                                         e.printStackTrace();
+                                        logUtils.d("图片上传错误" + e.toString());
                                         mHandler.sendEmptyMessage(fAIL);
                                     }
 
@@ -244,10 +266,15 @@ public class TakePhotosActivity extends BaseActivity {
                 String batch = next.getBatch();
                 if (batch.equals(visitGuid) && next.getType().equals("0")) {  //2为选择图片
                     Long id = next.getId();
-                    dao.deleteByKey(id);
                     String path = next.getPath();
-                    boolean b = CommonUtil.deleteFile(path);  //删除文件夹里面的
-                    logUtils.d("删除文件"+b);
+                    logUtils.d("fullPath》》》》》"+fullPath);
+                    if (fullPath.equals(path)){
+                        dao.deleteByKey(id);
+                        logUtils.d("删除文件路径》》》》》"+path);
+                        boolean b = CommonUtil.deleteFile(path);  //删除文件夹里面的
+                    }
+
+
                     //BitmapUtils.deleteCacheFile();
 
                 }
@@ -375,8 +402,10 @@ public class TakePhotosActivity extends BaseActivity {
               final Bitmap destMap = CommonUtil.CreateBitmapWithWatermark(bitmap, waterMap);
               logUtils.d("拍照图片显示");
               if (destMap!=null){
-              final Bitmap bitmap1 = CommonUtil.getBitmap(destMap,2);     //图片压缩   6为采样率
-              iv_photos.setImageBitmap(bitmap1);//显示到ImageView上
+              final Bitmap bitmap1 = CommonUtil.getBitmap(destMap,3);     //图片压缩   6为采样率
+             iv_photos.setImageBitmap(bitmap1);//显示到ImageView上
+                 // datafile.add(fullPath);
+           //  adapter.notifyDataSetChanged();
           new Thread(){
                   @Override
                   public void run() {

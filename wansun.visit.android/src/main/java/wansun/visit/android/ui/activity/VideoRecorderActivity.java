@@ -47,9 +47,11 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import fm.jiecao.jcvideoplayer_lib.JCVideoPlayerStandard;
 import okhttp3.Call;
@@ -66,6 +68,8 @@ import wansun.visit.android.bean.uploadFileBean;
 import wansun.visit.android.db.fileInfo;
 import wansun.visit.android.global.waifangApplication;
 import wansun.visit.android.greendao.gen.fileInfoDao;
+import wansun.visit.android.net.requestBodyUtils;
+import wansun.visit.android.utils.CommonUtil;
 import wansun.visit.android.utils.NetWorkTesting;
 import wansun.visit.android.utils.SharedUtils;
 import wansun.visit.android.utils.SystemAppUtils;
@@ -75,6 +79,7 @@ import wansun.visit.android.utils.logUtils;
 import wansun.visit.android.utils.vedioWindowsUtils;
 
 import static wansun.visit.android.utils.floatWindownUtils.isFloatWindowOpAllowed;
+import static wansun.visit.android.utils.unixTime.getCurrentTime;
 
 /**
  *
@@ -120,7 +125,7 @@ public class VideoRecorderActivity extends BaseActivity {
             }else if (what==1){
                 utils.cancleDialog();
                 ToastUtil.showToast(VideoRecorderActivity.this,"上传视频成功");
-                deleteVideoFiles();
+
             }else if (what==2){
                 utils.cancleDialog();
                 getFileSize(destPath);
@@ -155,7 +160,12 @@ public class VideoRecorderActivity extends BaseActivity {
                 String batch = next.getBatch();
                 if (batch.equals(visitGuid) && next.getType().equals("1")) {  //1为录制视频文件
                     Long id = next.getId();
-                    dao.deleteByKey(id);
+                    String path = next.getPath();
+                    if (destPath.equals(path)){
+                        dao.deleteByKey(id);
+                        CommonUtil.deleteFile(path);  //删除文件
+                    }
+
 
                 }
             }
@@ -369,15 +379,23 @@ public class VideoRecorderActivity extends BaseActivity {
                 logUtils.d("account"+account);
                 String id = SharedUtils.getString("id");
                 File file = new File(destPath);
-                final OkHttpClient okHttpClient = new OkHttpClient();
+                final   OkHttpClient okHttpClient = waifangApplication.getInstence().getClient();
+
+                Map<String,Object> map=new HashMap<>();
+                map.put("caseCode",caseCode);
+                map.put("visitGuid", visitGuid);
+                map.put("uploaderName", account);
+                map.put("uploaderId", id);
+                String sign = requestBodyUtils.getSign(map, getCurrentTime + "");
                     MultipartBody.Builder builder = new MultipartBody.Builder()
                             .setType(MultipartBody.FORM)
-                            .addFormDataPart("caseCode",caseCode)
-                            .addFormDataPart("visitGuid",visitGuid)
-                            .addFormDataPart("uploaderName",account)
-                            .addFormDataPart("uploaderId" ,id )
+                            .addFormDataPart("sign",sign)
+                            .addFormDataPart("timestamp",getCurrentTime+"")
                             .addFormDataPart("uploadFile", file.getName(), RequestBody.create(MediaType.parse("application/octet-stream"), file));
-
+                for (Map.Entry entry:map.entrySet()){
+                    builder.addFormDataPart(String.valueOf(entry.getKey()),String.valueOf(entry.getValue()));
+                    logUtils.d("遍历key"+String.valueOf(entry.getKey()));
+                }
                     RequestBody requestBody = builder.build();
                     final Request request = new Request.Builder()
                             .url(apiManager.videoUploadToService).post(requestBody).build();
@@ -403,6 +421,7 @@ public class VideoRecorderActivity extends BaseActivity {
                                         String statusID = bean.getStatusID();
                                         if (statusID.equals("200")){
                                             logUtils.d("视频上传" + body );
+                                            deleteVideoFiles();
                                             mHandler.sendEmptyMessage(1);
                                         }else {
                                             mHandler.sendEmptyMessage(0);

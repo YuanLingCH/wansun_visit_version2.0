@@ -5,12 +5,22 @@
     android:layout_height="match_parent">
     <include layout="@layout/tobar_layout"/>
     <ImageView
+
         android:scaleType="fitXY"
         android:layout_margin="@dimen/dimen_3"
         android:id="@+id/iv_photos"
         android:layout_width="match_parent"
         android:layout_weight="9"
         android:layout_height="0dp" />
+
+    <GridView
+        android:visibility="gone"
+        android:id="@+id/gridView"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:horizontalSpacing="@dimen/space_size"
+        android:numColumns="3"
+        android:verticalSpacing="@dimen/space_size" />
 
     <LinearLayout
         android:layout_marginTop="@dimen/dimen_5"

@@ -1,15 +1,22 @@
 package wansun.visit.android.ui.fragment;
 
 import android.text.TextUtils;
+import android.widget.Button;
 import android.widget.ListView;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -21,8 +28,11 @@ import wansun.visit.android.api.apiManager;
 import wansun.visit.android.bean.VisitAnnexPicturesBean;
 import wansun.visit.android.global.AppConfig;
 import wansun.visit.android.global.waifangApplication;
+import wansun.visit.android.utils.MD5Utils;
+import wansun.visit.android.utils.SharedUtils;
 import wansun.visit.android.utils.logUtils;
 import wansun.visit.android.utils.netUtils;
+import wansun.visit.android.utils.unixTime;
 
 /**
  * 外访录音附件列表
@@ -34,6 +44,8 @@ public class VisitAnnexLisitAudioFragment extends BaseFragment {
     VisitAnnexPicturesAdapter adapter;
     List<VisitAnnexPicturesBean.DataBean>data;
     List  dataAudio;
+    Button but_onclick;
+
     @Override
     protected int getLayoutId() {
         return R.layout.fragment_annex_audio;
@@ -42,6 +54,9 @@ public class VisitAnnexLisitAudioFragment extends BaseFragment {
     @Override
     protected void initViews() {
         lv_visit_annex_audio=(ListView) root.findViewById(R.id.lv_visit_annex_audio);
+
+
+
     }
 
     @Override
@@ -49,11 +64,27 @@ public class VisitAnnexLisitAudioFragment extends BaseFragment {
 
     }
 
+
+
+    public static byte[] redInputStream(InputStream inputStream) throws IOException{
+        logUtils.d("读取数据走了");
+        byte[] buffer=new byte[1024];
+        int len=0;
+        ByteArrayOutputStream bos=new ByteArrayOutputStream();
+        while ((len=inputStream.read(buffer))!=-1){
+            bos.write(buffer,0,len);
+
+        }
+        logUtils.d("读取数据"+len);
+        bos.close();
+        return  bos.toByteArray();
+    }
+
     @Override
     protected void initData() {
         data=new ArrayList();
         dataAudio=new ArrayList();
-        String caseCode = getActivity().getIntent().getStringExtra("caseCodeAnnex");
+        final String caseCode = getActivity().getIntent().getStringExtra("caseCodeAnnex");
         logUtils.d("获取案件编号Fragment=======>"+caseCode);
         Retrofit retrofit = netUtils.getRetrofit();
         apiManager manager= retrofit.create(apiManager.class);
@@ -79,7 +110,7 @@ public class VisitAnnexLisitAudioFragment extends BaseFragment {
                             while (iterator.hasNext()){
                                 VisitAnnexPicturesBean.DataBean next = iterator.next();
                                 if (next.getType().equals("录音文件")){
-                                    dataAudio.add(next.getUrl());
+                                    dataAudio.add(getPictureUrl(next.getAnnexId(),caseCode));
                                     data.add(next);
                                 }
 
@@ -105,5 +136,45 @@ public class VisitAnnexLisitAudioFragment extends BaseFragment {
         adapter=new VisitAnnexPicturesAdapter(waifangApplication.getContext(),data, AppConfig.VISIT_ANNEX_AUDIO,dataAudio);
         lv_visit_annex_audio.setAdapter(adapter);
         adapter.notifyDataSetChanged();
+        //  发送请求
+
+
+
     }
+
+
+    public String getPictureUrl(String annexId,String caseCode){
+        if (!TextUtils.isEmpty(annexId)&&!TextUtils.isEmpty(caseCode)){
+
+
+            String url=apiManager.getPicturePath+"?"+"timestamp="+ unixTime.getCurrentTime+"&"+"caseCode="+caseCode+"&"+"annexId="+annexId+"&"+"sign="+getSign(annexId,caseCode)+"&"+"token="+ SharedUtils.getString("token");
+            //logUtils.d("图片地址拼接"+url);
+            return url;
+        }
+        return null;
+    }
+
+
+
+
+    public String getSign(String annexId,String caseCode){
+        if (!TextUtils.isEmpty(annexId)){
+            Map<String,String> map=new HashMap<>();
+            map.put("caseCode",caseCode);
+            map.put("annexId",annexId);
+            Set set = map.keySet();
+            List list = new ArrayList(set);
+            Iterator iterator = list.iterator();
+            StringBuffer buf = new StringBuffer();
+            while (iterator.hasNext()) {
+                buf.append(map.get(iterator.next()));
+            }
+            buf.append(unixTime.getCurrentTime);
+            return MD5Utils.stringToMD5(buf.toString());  // 签名
+        }
+        return  null;
+    }
+
+
+
 }

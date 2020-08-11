@@ -1,8 +1,8 @@
 package wansun.visit.android.ui.activity;
 
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -28,7 +28,9 @@ public abstract class BaseActivity extends AppCompatActivity {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initLise();
-        this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);  //设置防止用截屏
+       // this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);  //设置防止用截屏
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);  //防止录屏，截屏
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);  //禁止横屏
         setContentView(getLayoutId());
         String userName = SharedUtils.getString("account");
         long  currentTime=System.currentTimeMillis();
@@ -83,7 +85,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode,  String[] permissions,  int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         boolean isAllGranted = true;
         for (int grantResult : grantResults) {

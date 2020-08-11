@@ -3,6 +3,7 @@ package wansun.visit.android.api;
 import java.util.Map;
 
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.Field;
@@ -18,147 +19,155 @@ import retrofit2.http.Query;
  */
 
 public interface apiManager {
-//String baseUrl="http://192.168.166.133:8082";  //测试环境  http://visit-api.cnwansun.com/visit       datahouse-api
-  //  String baseUrl_datahouse_api="http://192.168.166.133:8080";
-//String baseUrl="http://192.168.166.38:8082";
-    //  19.168.166.133：8082
+//String baseUrl="http://192.168.66.52:8082";  //测试环境  http://visit-api.cnwansun.com/visit       datahouse-api
 
-   // http://192.168.166.45:8080
-   // String baseUrl="http://192.168.166.45:8082";  //陈江新的地址
-//  visit-api.cnwansun.com        ws-api.cnwansun.com/visit         http://visit-api.cnwansun.com/visit/"  上一次的url  测试通过的
-//String baseUrl="http://ws-api.cnwansun.com/visit/";   // 7月1号上线环境
-String baseUrl= "https://visit-api.cnwansun.com"; // 测试环境 https
-//String baseUrl="http://visit-api.cnwansun.com/visit/";   //测试环境
+String baseUrl="https://ws-api.cnwansun.com";   // 7月1号上线环境   http://ws-api.cnwansun.com/auth/checkIMEI
+String path="";     //生产
+
+//String baseUrl="https://ws.test.cnwansun.com";   //测试环境  https://ws.test.cnwansun.com/visit
+//String path="/visit";  //测试
+    //内网用这个  https://ws.test.cnwansun.com/api/visit
+   // 外网用https://ws.test.cnwansun.com/visit
     //登陆接口
-    @FormUrlEncoded
-    @POST(baseUrl+"/user/login?")
-    Call<String> login(@Field("userName") String username,@Field("passWord") String password);
+   //@FormUrlEncoded
+   @Headers({"Content-Type: application/json","Accept: application/json"})
+    @POST(baseUrl+path+"/user/login?")
+    Call<String> login(@Body RequestBody body);
+  //  Call<String> login(@Field("userName") String username,@Field("passWord") String password);
     //外访列表
       @Headers({"Content-Type: application/json","Accept: application/json"})
-      @POST(baseUrl+"/case/findVisit")
+      @POST(baseUrl+path+"/case/findVisit")
       Call<String> visitListFormeService(@Body RequestBody  body);
 
     //外访案件详情
     @Headers({"Content-Type: application/json","Accept: application/json"})
-    @POST(baseUrl+"/case/visitDetail")
+    @POST(baseUrl+path+"/case/visitDetail")
     Call<String> visitCaseDetailsFormeService(@Body RequestBody  body);
 
     //外访案件详情联系人
     @Headers({"Content-Type: application/json","Accept: application/json"})
-    @POST(baseUrl+"/case/contacts")
+    @POST(baseUrl+path+"/case/contacts")
     Call<String> visitCaseDetailsContactsFormeService(@Body RequestBody  body);
 
     //外访案件详情催收记录
     @Headers({"Content-Type: application/json","Accept: application/json"})
-    @POST(baseUrl+"/case/phoneUrgeRecord")
+    @POST(baseUrl+path+"/case/phoneUrgeRecord")
     Call<String> visitCaseDetailsUrgeRecordFormeService(@Body RequestBody  body);
 
     // 外访案件详情外访记录
     @Headers({"Content-Type: application/json","Accept: application/json"})
-    @POST(baseUrl+"/case/visitRecord")
+    @POST(baseUrl+path+"/case/visitRecord")
     Call<String> visitCaseDetailsRecordFormeService(@Body RequestBody  body);
     // 外访案件详情卡信息
     @Headers({"Content-Type: application/json","Accept: application/json"})
-    @POST(baseUrl+"/case/cards")
+    @POST(baseUrl+path+"/case/cards")
     Call<String> visitCaseDetailsCardFormeService(@Body RequestBody  body);
     //外方单添加标记visit
     @Headers({"Content-Type: application/json","Accept: application/json"})
-    @POST(baseUrl+"/case/markAsCurrentVisit")
+    @POST(baseUrl+path+"/case/markAsCurrentVisit")
     Call<String> visitLabCurrentVisit(@Body RequestBody  body);
     //外方单添加标记为完成状态
     @Headers({"Content-Type: application/json","Accept: application/json"})
-    @POST(baseUrl+"/case/markAsCompleted")
+    @POST(baseUrl+path+"/case/markAsCompleted")
     Call<String> visitLabCompleterState(@Body RequestBody  body);
     //添加电话datahouse_api
     @Headers({"Content-Type: application/json","Accept: application/json"})
-    @POST(baseUrl+"/case/addDebtorPhone")
+    @POST(baseUrl+path+"/case/addDebtorPhone")
     Call<String> visitCaseAddPhone(@Body RequestBody  body);
     //添加上门催记
     @Headers({"Content-Type: application/json","Accept: application/json"})
-    @POST(baseUrl+"/case/visitRecord/addRecord")
+    @POST(baseUrl+path+"/case/visitRecord/addRecord")
     Call<String> visitCaseAddVisitUrge(@Body RequestBody  body);
     //添加案件地址信息  datahouse_api
     @Headers({"Content-Type: application/json","Accept: application/json"})
-    @POST(baseUrl+"/case/increaseAddress")
+    @POST(baseUrl+path+"/case/increaseAddress")
     Call<String> visitCaseAddAddddressMessage(@Body RequestBody  body);
    //添加案件联系人
    @Headers({"Content-Type: application/json","Accept: application/json"})
-   @POST(baseUrl+"/case/saveContacts")
+   @POST(baseUrl+path+"/case/saveContacts")
    Call<String> visitCaseAddAddcontacts(@Body RequestBody  body);
     //添加案件电话催收
     @Headers({"Content-Type: application/json","Accept: application/json"})
-    @POST(baseUrl+"/case/addUrgePhone")
+    @POST(baseUrl+path+"/case/addUrgePhone")
     Call<String> visitCaseAddPhoneUrge(@Body RequestBody  body);
    //图片上传
      @Multipart
-    @POST(baseUrl+"/case/uploadPhoto")
+    @POST(baseUrl+path+"/case/uploadPhoto")
     Call <String>upLoadImage(@Query("caseCode") String caseCode, @Query("visitGuid") String visitGuid,
     @Query("uploaderId") String uploaderId, @Query("uploaderName") String uploaderName, @PartMap Map<String,RequestBody> map);
     //  录音文件上传
-    String recordFileUpToService=baseUrl+"/case/uploadRecord";
+    String recordFileUpToService=baseUrl+path+"/case/uploadRecord";
     //上传附件
-    String FielsUploadToService=baseUrl+"/case/uploadAttachment";
+    String FielsUploadToService=baseUrl+path+"/case/uploadAttachment";
     //上传视频
-    String videoUploadToService=baseUrl+"/case/uploadVideo";
+    String videoUploadToService=baseUrl+path+"/case/uploadVideo";
     // 上传图片
-    String upLoadPicturesToService=baseUrl+"/case/uploadPhoto";
+    String upLoadPicturesToService=baseUrl+path+"/case/uploadPhoto";
      // 查询文件
      @Headers({"Content-Type: application/json","Accept: application/json"})
-    @POST(baseUrl+"/case/findDebtorVisitData")
+    @POST(baseUrl+path+"/case/findDebtorVisitData")
     Call <String>queryFileFromeService(@Body RequestBody  body);
     // app升级
     @FormUrlEncoded
-    @POST (baseUrl+"/version/checkUpdate")
+    @POST (baseUrl+path+"/version/checkUpdate")
     Call <String>appUpdata(@Field("versionName") String versionName,@Field("versionCode") String versionCode);
 
     // 修改外访路径
     @Headers({"Content-Type: application/json","Accept: application/json"})
-    @POST(baseUrl+"/case/updateVisitAddress")
+    @POST(baseUrl+path+"/case/updateVisitAddress")
     Call <String>modifyAddressToService(@Body RequestBody  body);
     //保存定位信息
     @Headers({"Content-Type: application/json","Accept: application/json"})
-    @POST (baseUrl+"/case/position/savePositionInfo")
+    @POST (baseUrl+path+"/case/position/savePositionInfo")
     Call <String>saveLocationMessage(@Body RequestBody  body);
     //上传定位信息
     @Headers({"Content-Type: application/json","Accept: application/json"})
-    @POST (baseUrl+"/case/position/addPoints")
+    @POST (baseUrl+path+"/case/position/addPoints")
     Call <String>uploadLocationMessage(@Body RequestBody  body);
     // 验证手机串号
     @Headers({"Content-Type: application/json","Accept: application/json"})
-    @POST (baseUrl+"/auth/checkIMEI")
+    @POST (baseUrl+path+"/auth/checkIMEI")
     Call <String>checkImie(@Body RequestBody  body);
     // 上传普通定位的信息
+
     @Headers({"Content-Type: application/json","Accept: application/json"})
-    @POST (baseUrl+"/case/position/addPoints")
+    @POST (baseUrl+path+"/case/position/addPoints")
     Call <String>uploadCommonLocationMessage(@Body RequestBody  body);
 
-    //绑定userID和IMEI
-    @FormUrlEncoded
-    @POST(baseUrl+"/auth/bindUser")
-    Call<String> bindUserAndImei(@Field("userId") int userId,@Field("imei") String imei);
+
 
     //根据案件编号查询案件详情    以后界面卡顿  服务端要优化
     @FormUrlEncoded
-    @POST(baseUrl+"/case/getByCaseCode")
+    @POST(baseUrl+path+"/case/getByCaseCode")
     Call<String> getByCaseCodeFromService(@Field("caseCode") String caseCode);
     //根据案件编号查询案件详情    以后界面卡顿  服务端要优化
 
     // 业绩统计
     @Headers({"Content-Type: application/json","Accept: application/json"})
-    @POST (baseUrl+"/case/visitRecord/findVisitRecordList")
+    @POST (baseUrl+path+"/case/visitRecord/findVisitRecordList")
     Call <String>findVisitRecordList(@Body RequestBody  body);
 
  //查询案件外访记录 图片
- @POST (baseUrl+"/case/visitRecord/findAnnex")
- Call <String>findAnnex(@Query("caseCode") String caseCode);
+@FormUrlEncoded
+ @POST (baseUrl+path+"/case/visitRecord/findAnnex")
+ Call <String>findAnnex(@Field("caseCode") String caseCode);
 
  //查询案件外访记录 图片
- @POST (baseUrl+"/case/visitRecord/findAudio")
- Call <String>findAnnexAudio(@Query("caseCode") String caseCode);
+ @FormUrlEncoded
+ @POST (baseUrl+path+"/case/visitRecord/findAudio")
+ Call <String>findAnnexAudio(@Field("caseCode") String caseCode);
 
  //  /case/visitRecord/findVisitRecord
  //查询案件外访全部数据
- @POST (baseUrl+"/case/visitRecord/findVisitRecord")
- Call <String>findVisitRecord(@Query("caseCode") String caseCode);
+    @FormUrlEncoded
+ @POST (baseUrl+path+"/case/visitRecord/findVisitRecord")
+ Call <String>findVisitRecord(@Field("caseCode") String caseCode);
+
+    //查询图片
+    @Headers({"Content-Type: application/json","Accept: application/json"})
+    @POST (baseUrl+path+"/case/writerPicture")
+    Call <ResponseBody>findWriterPicture(@Body RequestBody body);       //@Field("caseCode") String caseCode,@Field("annexId")String annexId
+
+    String getPicturePath=baseUrl+path+"/case/writerPicture";
 }
 

@@ -37,6 +37,7 @@ public class visitOrderAdapter extends BaseAdapter {
         inflater=LayoutInflater.from(mconext);
         this.flag=flag;
 
+       // Collections.sort(this.data,  new visitItemBean.DataBean());
     }
 
     @Override
@@ -92,6 +93,7 @@ public class visitOrderAdapter extends BaseAdapter {
 
         }
         final visitItemBean.DataBean dataBean = data.get(position);
+
         holder= (ViewHolder) convertView.getTag();
         holder.tv_visit_apply_debtor_name.setText("债务人："+dataBean.getName());
         holder.tv_visit_apply_gender_text.setText("性别："+dataBean.getGenderText());

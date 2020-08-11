@@ -18,6 +18,9 @@ import com.franmontiel.persistentcookiejar.ClearableCookieJar;
 import com.franmontiel.persistentcookiejar.PersistentCookieJar;
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache;
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor;
+import com.taobao.sophix.PatchStatus;
+import com.taobao.sophix.SophixManager;
+import com.taobao.sophix.listener.PatchLoadStatusListener;
 import com.tencent.bugly.crashreport.CrashReport;
 
 import java.util.ArrayList;
@@ -28,6 +31,7 @@ import okhttp3.OkHttpClient;
 import soundrecorderutils.LiveService;
 import wansun.visit.android.greendao.gen.DaoMaster;
 import wansun.visit.android.greendao.gen.DaoSession;
+import wansun.visit.android.utils.logUtils;
 
 
 /**
@@ -44,10 +48,13 @@ public class waifangApplication extends Application {
     private DaoSession mDaoSession;
     Intent intLiveService;
 
+
+
     @RequiresApi(api = 26)
     @Override
     public void onCreate() {
         super.onCreate();
+        init();
         mcontext=getApplicationContext();
         SDKInitializer.initialize(this);
         //自4.3.0起，百度地图SDK所有接口均支持百度坐标和国测局坐标，用此方法设置您使用的坐标类型.
@@ -57,6 +64,7 @@ public class waifangApplication extends Application {
         app=this;
         oList = new ArrayList<Activity>();
         initDatabass();
+
         /*
 
         * 第三个参数为SDK调试模式开关，调试模式的行为特性如下：
@@ -137,10 +145,14 @@ public class waifangApplication extends Application {
             okHttpClient = new OkHttpClient.Builder()
                     .cookieJar(cookieJar)
                     .retryOnConnectionFailure(true)
-                    . connectTimeout(10, TimeUnit.SECONDS)
-                    .readTimeout(60, TimeUnit.SECONDS)
-                    . writeTimeout(60, TimeUnit.SECONDS)
+                    . connectTimeout(30, TimeUnit.SECONDS)
+                    .readTimeout(30, TimeUnit.SECONDS)
+                    . writeTimeout(30, TimeUnit.SECONDS)
+                    .sslSocketFactory(HttpsTrustManager.createSSLSocketFactory())
+                    .hostnameVerifier(new HttpsTrustManager.TrustAllHostnameVerifier())
+                .addInterceptor(new RequestEncrypIntercepter())
                     .build();
+
         }
         return okHttpClient;
     }
@@ -174,6 +186,41 @@ public class waifangApplication extends Application {
             activity.finish();
         }
     }
-
-
+    private void init() {
+        // initialize最好放在attachBaseContext最前面
+        String appVersion;
+        try {
+            appVersion = this.getPackageManager().getPackageInfo(this.getPackageName(), 0).versionName;
+        } catch (Exception e) {
+            appVersion = "1.0.0";
+        }
+        SophixManager.getInstance().setContext(this)
+                .setAppVersion(appVersion)
+                .setAesKey(null)
+                .setEnableDebug(true)
+                .setPatchLoadStatusStub(new PatchLoadStatusListener() {
+                    @Override
+                    public void onLoad(final int mode, final int code, final String info, final int handlePatchVersion) {
+                        // 补丁加载回调通知
+                        logUtils.d("补丁代码"+code+"====="+info);
+                        if (code == PatchStatus.CODE_LOAD_SUCCESS) {
+                            // 表明补丁加载成功
+                            logUtils.d("表明补丁加载成功");
+                        } else if (code == PatchStatus.CODE_LOAD_RELAUNCH) {
+                            // 表明新补丁生效需要重启. 开发者可提示用户或者强制重启;
+                            // 建议: 用户可以监听进入后台事件, 然后应用自杀
+                            logUtils.d("表明新补丁生效需要重启. 开发者可提示用户或者强制重启");
+                        } else if (code == PatchStatus.CODE_LOAD_FAIL) {
+                            // 内部引擎异常, 推荐此时清空本地补丁, 防止失败补丁重复加载
+                            // SophixManager.getInstance().cleanPatches();
+                            logUtils.d("内部引擎异常, 推荐此时清空本地补丁, 防止失败补丁重复加载");
+                        } else {
+                            // 其它错误信息, 查看PatchStatus类说明
+                            logUtils.d("其它错误信息, 查看PatchStatus类说明");
+                        }
+                    }
+                }).initialize();
+        // queryAndLoadNewPatch不可放在attachBaseContext 中，否则无网络权限，建议放在后面任意时刻，如onCreate中
+        SophixManager.getInstance().queryAndLoadNewPatch();
+    }
 }

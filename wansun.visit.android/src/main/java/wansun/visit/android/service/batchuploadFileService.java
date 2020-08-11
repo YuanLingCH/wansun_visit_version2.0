@@ -11,7 +11,8 @@ import com.google.gson.reflect.TypeToken;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
+import java.util.HashMap;
+import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -25,8 +26,12 @@ import okhttp3.ResponseBody;
 import wansun.visit.android.api.apiManager;
 import wansun.visit.android.bean.fileUploadBean;
 import wansun.visit.android.config.MessageCode;
+import wansun.visit.android.global.waifangApplication;
+import wansun.visit.android.net.requestBodyUtils;
 import wansun.visit.android.utils.SharedUtils;
 import wansun.visit.android.utils.logUtils;
+
+import static wansun.visit.android.utils.unixTime.getCurrentTime;
 
 /**
  * 多文件批量上传
@@ -54,14 +59,18 @@ public class batchuploadFileService extends Service {
         for (String path:listpath){
             logUtils.d("测试路劲"+path);
         }
-
-
+        Map<String,Object> map=new HashMap<>();
+        map.put("caseCode",caseCode);
+        map.put("visitGuid", visitGuid);
+        map.put("uploaderName", account);
+        map.put("uploaderId", id);
+        String sign = requestBodyUtils.getSign(map, getCurrentTime + "");
+        MultipartBody.Builder builder = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("sign",sign)
+                .addFormDataPart("timestamp",getCurrentTime+"");
+         OkHttpClient okHttpClient = waifangApplication.getInstence().getClient();
         for (int i = 0; i <listpath.size(); i++) {
-            final OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                    .connectTimeout(60, TimeUnit.SECONDS)
-                    .readTimeout(60, TimeUnit.SECONDS)
-                    .writeTimeout(60,TimeUnit.SECONDS)
-                    .build();
             final String filePathName = listpath.get(i);
             File file = new File(listpath.get(i));
             String myparse=null;
@@ -71,7 +80,7 @@ public class batchuploadFileService extends Service {
                 myparse="application/octet-stream";
             }else if (listpath.get(i).endsWith(".mp3")){
                 filePath=apiManager.recordFileUpToService;
-                myparse="image/jpeg";
+                myparse="application/octet-stream";
             }else if (listpath.get(i).endsWith(".jpg")||listpath.get(i).endsWith(".png")){
                 filePath=apiManager.upLoadPicturesToService;
                 myparse="image/jpeg";
@@ -80,59 +89,49 @@ public class batchuploadFileService extends Service {
                 myparse="image/jpeg";
             }
 
-            MultipartBody.Builder builder = new MultipartBody.Builder()
-                    .setType(MultipartBody.FORM)
-                    .addFormDataPart("caseCode",caseCode)
-                    .addFormDataPart("visitGuid",visitGuid)
-                    .addFormDataPart("uploaderName",account)
-                    .addFormDataPart("uploaderId" ,id )
-                    .addFormDataPart("uploadFile", file.getName(), RequestBody.create(MediaType.parse(myparse), file));
 
-            RequestBody requestBody = builder.build();
-            final Request request = new Request.Builder()
-                    .url(filePath).post(requestBody).build();
-                Call call = okHttpClient.newCall(request);
+            builder.addFormDataPart("uploadFile", file.getName(), RequestBody.create(MediaType.parse(myparse), file));
 
-                call.enqueue(new Callback() {
-                    @Override
-                    public void onFailure(Call call, IOException e) {
-                        logUtils.d("图片上传错误"+e.toString());
-                        Intent intent1=new Intent();
-                        intent1.putExtra("message",MessageCode.BROADCAST_FAIL);
-                        intent1.setAction("com.example.timejob.service");
-                        sendBroadcast(intent1);
-                        stopSelf();//停止服务
-                    }
+        }
+        for (Map.Entry entry:map.entrySet()){
+            builder.addFormDataPart(String.valueOf(entry.getKey()),String.valueOf(entry.getValue()));
+            logUtils.d("遍历key"+String.valueOf(entry.getKey()));
+        }
+      String  filePath=apiManager.FielsUploadToService;
+        RequestBody requestBody = builder.build();
+        final Request request = new Request.Builder()
+                .url(filePath).post(requestBody).build();
+        Call call = okHttpClient.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                logUtils.d("图片上传错误"+e.toString());
+                Intent intent1=new Intent();
+                intent1.putExtra("message",MessageCode.BROADCAST_FAIL);
+                intent1.setAction("com.example.timejob.service");
+                sendBroadcast(intent1);
+                stopSelf();//停止服务
+            }
 
-                    @Override
-                    public void onResponse(Call call, Response response) throws IOException {
-                        ResponseBody body = response.body();
-                        String s = body.string();
-                        logUtils.d("文件上传" + s);
-                        try {
-                            if (body != null&&response.isSuccessful()) {
-                                Gson gson=new Gson();
-                                fileUploadBean bean = gson.fromJson(s, new TypeToken<fileUploadBean>() {}.getType());
-                                String statusID = bean.getStatusID();
-                                if (statusID.equals("200")){
-                                    Intent intent1 = new Intent();
-                                    intent1.setAction("com.example.timejob.service");
-                                    intent1.putExtra("message", MessageCode.BROADCAST_SUCCESS);
-                                    intent1.putExtra("filePathName", filePathName);
-                                    sendBroadcast(intent1);
-                                    logUtils.d("服务停止>>>>>>>>>>>");
-                                    stopSelf();//停止服务
-                                }else {
-                                    Intent intent1=new Intent();
-                                    intent1.putExtra("message",MessageCode.BROADCAST_FAIL);
-                                    intent1.setAction("com.example.timejob.service");
-                                    sendBroadcast(intent1);
-                                    stopSelf();//停止服务
-                                }
-                            }
-                        } catch (Exception e) {
-                            logUtils.d("上传异常>>>>>>>>>>>"+e.toString());
-                            e.printStackTrace();
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                ResponseBody body = response.body();
+                String s = body.string();
+                logUtils.d("文件上传" + s);
+                try {
+                    if (body != null&&response.isSuccessful()) {
+                        Gson gson=new Gson();
+                        fileUploadBean bean = gson.fromJson(s, new TypeToken<fileUploadBean>() {}.getType());
+                        String statusID = bean.getStatusID();
+                        if (statusID.equals("200")){
+                            Intent intent1 = new Intent();
+                            intent1.setAction("com.example.timejob.service");
+                            intent1.putExtra("message", MessageCode.BROADCAST_SUCCESS);
+                          // intent1.putExtra("filePathName", filePathName);
+                            sendBroadcast(intent1);
+                            logUtils.d("服务停止>>>>>>>>>>>");
+                            // stopSelf();//停止服务
+                        }else {
                             Intent intent1=new Intent();
                             intent1.putExtra("message",MessageCode.BROADCAST_FAIL);
                             intent1.setAction("com.example.timejob.service");
@@ -140,10 +139,19 @@ public class batchuploadFileService extends Service {
                             stopSelf();//停止服务
                         }
                     }
-                });
+                } catch (Exception e) {
+                    logUtils.d("上传异常>>>>>>>>>>>"+e.toString());
+                    e.printStackTrace();
+                    Intent intent1=new Intent();
+                    intent1.putExtra("message",MessageCode.BROADCAST_FAIL);
+                    intent1.setAction("com.example.timejob.service");
+                    sendBroadcast(intent1);
+                    stopSelf();//停止服务
+                }
+            }
+        });
 
 
-        }
         return super.onStartCommand(intent, flags, startId);
     }
 

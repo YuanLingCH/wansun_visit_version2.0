@@ -32,8 +32,10 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -51,6 +53,7 @@ import wansun.visit.android.db.fileInfo;
 import wansun.visit.android.event.MessageEvent;
 import wansun.visit.android.global.waifangApplication;
 import wansun.visit.android.greendao.gen.fileInfoDao;
+import wansun.visit.android.net.requestBodyUtils;
 import wansun.visit.android.ui.activity.BaseActivity;
 import wansun.visit.android.utils.CommonUtil;
 import wansun.visit.android.utils.NetWorkTesting;
@@ -59,6 +62,7 @@ import wansun.visit.android.utils.ToastUtil;
 import wansun.visit.android.utils.WindowsRecordUitlity;
 import wansun.visit.android.utils.dialogUtils;
 import wansun.visit.android.utils.logUtils;
+import wansun.visit.android.utils.unixTime;
 
 import static wansun.visit.android.R.id.lv_other_file;
 import static wansun.visit.android.utils.floatWindownUtils.isFloatWindowOpAllowed;
@@ -94,6 +98,7 @@ public class RecordActivity extends BaseActivity {
                     tv_record_flag.setText("暂无录音文件");
                     utils.cancleDialog();
 
+
                     break;
             }
 
@@ -106,20 +111,20 @@ public class RecordActivity extends BaseActivity {
     /**
      * 删除上传成功的文件
      */
-    private void delectFile(String filePath) {
-        Iterator<fileInfo> iterator = recordData.iterator();
-        while (iterator.hasNext()){
+    private void delectFile() {
+        try {
+            Iterator<fileInfo> iterator = recordData.iterator();
+            while (iterator.hasNext()){
+                fileInfo next = iterator.next();
 
-            fileInfo next = iterator.next();
-            String path = next.getPath();
+                String path = next.getPath();
+                    boolean b = CommonUtil.deleteFile(path);
+                   dao.deleteByKey(next.getId());
+                    logUtils.d("删除文件"+b);
 
-                boolean b = CommonUtil.deleteFile(path);
-                logUtils.d("删除文件"+b);
-
-
-
-
-
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -154,7 +159,22 @@ public class RecordActivity extends BaseActivity {
                 utils = new dialogUtils(RecordActivity.this, manager, view);
 
                 if (net.isNetWorkAvailable()) {
-
+                    String caseCode = SharedUtils.getString("caseCode");
+                    long getCurrentTime = unixTime.getCurrentTime;
+                    final String account = SharedUtils.getString("account");
+                    logUtils.d("account"+account);
+                    String id1 = SharedUtils.getString("id");
+                    Map<String,Object> map=new HashMap<>();
+                    map.put("caseCode",caseCode);
+                    map.put("visitGuid", visitGuid);
+                    map.put("uploaderName", account);
+                    map.put("uploaderId", id1);
+                    logUtils.d("测试数据"+caseCode+":"+visitGuid+":"+ account+":"+id1);
+                    String sign = requestBodyUtils.getSign(map, getCurrentTime + "");
+                    MultipartBody.Builder builder = new MultipartBody.Builder()
+                            .setType(MultipartBody.FORM)
+                            .addFormDataPart("sign",sign)
+                            .addFormDataPart("timestamp",getCurrentTime+"");
                 List<fileInfo> fileInfos = dao.loadAll();
                 try {
                     if (fileInfos.size()>0&&fileInfos!=null){
@@ -162,26 +182,77 @@ public class RecordActivity extends BaseActivity {
                     TextView tv= (TextView) view.findViewById(R.id.tv_load);
                     tv.setText(R.string.upload_record);
                     //TODO 上传到服务器
-                        if (fileInfos.size()>0){
-                            Iterator<fileInfo> iterator = fileInfos.iterator();
+                        if (recordData.size()>0){
+                            Iterator<fileInfo> iterator = recordData.iterator();
                             try {
                                 while (iterator.hasNext()){    //  遍历数据
                                     fileInfo next = iterator.next();
                                     Long id = next.getId();
-                                    logUtils.d("测试数据"+next.path+"ID:"+ id);
                                     String batch = next.getBatch();
                                     String  path = next.getPath();
                                     if (batch.equals(visitGuid)&&path.endsWith("recording.mp3")||path.endsWith(".mp3")){
                                         logUtils.d("录音地址"+path);
-
                                         dataDaoId.add(id);
-                                        doUpLoad(path,id);    //上传成功后才散掉数据库
+                                      //  doUpLoad(path,id);    //上传成功后才散掉数据库
+                                        File file = new File(path);
+                                        builder.addFormDataPart("uploadFile", file.getName(), RequestBody.create(MediaType.parse("image/jpeg"), file));
 
 
                                     }else {
                                         ToastUtil.showToast(RecordActivity.this,"请关闭录音...");
                                     }
                                 }
+                                for (Map.Entry entry:map.entrySet()){
+                                    builder.addFormDataPart(String.valueOf(entry.getKey()),String.valueOf(entry.getValue()));
+                                    logUtils.d("遍历key"+String.valueOf(entry.getKey()));
+                                }
+                                RequestBody requestBody = builder.build();
+                                final   OkHttpClient okHttpClient = waifangApplication.getInstence().getClient();
+                                final Request request = new Request.Builder()
+                                        .url(apiManager.recordFileUpToService).post(requestBody).build();
+                                new Thread(){
+                                    @Override
+                                    public void run() {
+                                        super.run();
+                                        Call call = okHttpClient.newCall(request);
+                                        call.enqueue(new Callback() {
+                                            @Override
+                                            public void onFailure(Call call, IOException e) {
+                                                logUtils.d("上传录音"+e.toString());
+                                                mHandler.sendEmptyMessage(0);
+
+                                            }
+
+                                            @Override
+                                            public void onResponse(Call call, Response response) throws IOException {
+                                                String body = response.body().string();
+                                                Gson gson=new Gson();
+                                                try {
+                                                    uploadFileBean bean= gson.fromJson(body , new TypeToken<uploadFileBean>() {}.getType());
+                                                    String statusID = bean.getStatusID();
+                                                    if (statusID.equals("200")){
+                                                        delectFile();
+                                                        logUtils.d("上传录音"+body);
+                                                        logUtils.d("上传录音"+"recordData.size()"+recordData.size()+">>>"+cont);
+                                                            mHandler.sendEmptyMessage(1);
+
+                                                       // }
+
+                                                    }else {
+                                                        mHandler.sendEmptyMessage(0);
+                                                    }
+                                                } catch (JsonSyntaxException e) {
+                                                    e.printStackTrace();
+                                                    mHandler.sendEmptyMessage(0);
+                                                }
+                                            }
+                                        });
+                                    }
+                                }.start();
+
+
+
+
 
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -350,80 +421,7 @@ public class RecordActivity extends BaseActivity {
     }
 
 
-    /**
-     * 上传录音文件
-     * @param filePath
-     */
-    private void doUpLoad(final String filePath, final long daoId) {
-        try {
-            Thread.sleep(50);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        logUtils.d("上传录音》》》》》》》》》");
-        File file = new File(filePath);
-        String caseCode = SharedUtils.getString("caseCode");
 
-        final String account = SharedUtils.getString("account");
-        logUtils.d("account"+account);
-        String id = SharedUtils.getString("id");
-        MultipartBody.Builder builder = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("caseCode",caseCode)
-                .addFormDataPart("visitGuid",visitGuid)
-                .addFormDataPart("uploaderName",account)
-                .addFormDataPart("uploaderId" ,id )
-                .addFormDataPart("uploadFile", file.getName(), RequestBody.create(MediaType.parse("image/jpeg"), file));
-
-        RequestBody requestBody = builder.build();
-        final OkHttpClient okHttpClient = new OkHttpClient();
-        final Request request = new Request.Builder()
-                .url(apiManager.recordFileUpToService).post(requestBody).build();
-        new Thread(){
-            @Override
-            public void run() {
-                super.run();
-                Call call = okHttpClient.newCall(request);
-                call.enqueue(new Callback() {
-                    @Override
-                    public void onFailure(Call call, IOException e) {
-                        logUtils.d("上传录音"+e.toString());
-                        mHandler.sendEmptyMessage(0);
-
-                    }
-
-                    @Override
-                    public void onResponse(Call call, Response response) throws IOException {
-                        String body = response.body().string();
-                        Gson gson=new Gson();
-                        try {
-                            uploadFileBean bean= gson.fromJson(body , new TypeToken<uploadFileBean>() {}.getType());
-                            String statusID = bean.getStatusID();
-                            if (statusID.equals("200")){
-                                logUtils.d("上传录音"+body);
-
-                                currentCont.add(1);
-                                logUtils.d("上传录音"+"recordData.size()"+recordData.size()+">>>"+cont);
-                                dao.deleteByKey(daoId);  //删除数据库
-                                if (currentCont.size()==recordData.size()){
-                                    delectFile(filePath); //  删除文件夹里面的文件
-                                    mHandler.sendEmptyMessage(1);
-
-                                }
-
-                            }else {
-                                mHandler.sendEmptyMessage(0);
-                            }
-                        } catch (JsonSyntaxException e) {
-                            e.printStackTrace();
-                            mHandler.sendEmptyMessage(0);
-                        }
-                    }
-                });
-            }
-        }.start();
-
-    }
 
     @Override
     protected void initData() {

@@ -25,6 +25,7 @@ import wansun.visit.android.api.apiManager;
 import wansun.visit.android.bean.caseCardMessageBean;
 import wansun.visit.android.global.AppConfig;
 import wansun.visit.android.net.requestBodyUtils;
+import wansun.visit.android.utils.SharedUtils;
 import wansun.visit.android.utils.ToastUtil;
 import wansun.visit.android.utils.logUtils;
 import wansun.visit.android.utils.netUtils;
@@ -35,10 +36,11 @@ import wansun.visit.android.utils.netUtils;
 
 public class CaseCardMessageActivity extends BaseActivity {
     ImageView iv_visit_back;
-    TextView tv_visit_tobar,tv_appoint,tv_urge,tv_receipt,tv_remark_;
+    TextView tv_visit_tobar,tv_appoint,tv_urge,tv_receipt,tv_remark_,tv_card;
     List cardData;
     caseCardMessageAdapter adapter;
     ListView lv_card_message;
+
     @Override
     protected int getLayoutId() {
         return R.layout.activity_case_card_message;
@@ -54,6 +56,7 @@ public class CaseCardMessageActivity extends BaseActivity {
         tv_urge= (TextView) findViewById(R.id.tv_urge);
         tv_receipt= (TextView) findViewById(R.id.tv_receipt);
         tv_remark_=(TextView) findViewById(R.id.tv_remark_);
+        tv_card=(TextView) findViewById(R.id.tv_card);
         getIntentData();
 
 
@@ -65,11 +68,12 @@ public class CaseCardMessageActivity extends BaseActivity {
         String caseTotalAppointAmount = getIntent().getStringExtra("caseTotalAppointAmount");
         String caseTotalUrgeAmount = getIntent().getStringExtra("caseTotalUrgeAmount");
         String caseTotalReceiptAmount = getIntent().getStringExtra("caseTotalReceiptAmount");
-        String remark = getIntent().getStringExtra("remark");
+        String cidNo = getIntent().getStringExtra("cidNo");
         tv_appoint.setText("委案金额："+caseTotalAppointAmount+"元");
         tv_urge.setText("催收金额："+caseTotalUrgeAmount+"元");
         tv_receipt.setText("回款金额："+caseTotalReceiptAmount+"元");
-        tv_remark_.setText("备注："+remark);
+        tv_remark_.setText("备注："+ SharedUtils.getString("remark"));
+        tv_card.setText("证件号码："+cidNo);
         Retrofit retrofit = netUtils.getRetrofit();
         apiManager manager= retrofit.create(apiManager.class);
         final RequestBody requestBody = requestBodyUtils.visitCaseDetailsCardFromeService(caseCode);
@@ -126,6 +130,10 @@ public class CaseCardMessageActivity extends BaseActivity {
 
     }
 
+
+
+
+
     @Override
     protected void initData() {
 
@@ -135,4 +143,6 @@ public class CaseCardMessageActivity extends BaseActivity {
     protected void initLise() {
 
     }
+
+
 }

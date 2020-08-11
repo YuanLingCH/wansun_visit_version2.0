@@ -1,13 +1,16 @@
 package wansun.visit.android.bean;
 
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.List;
+
+import wansun.visit.android.utils.logUtils;
 
 /**
  * Created by User on 2019/2/19.
  */
 
-public class visitItemBean implements Serializable{
+public class visitItemBean implements Serializable {
 
 
     /**
@@ -64,6 +67,8 @@ public class visitItemBean implements Serializable{
         this.data = data;
     }
 
+
+
     public static class PageBean {
         /**
          * counts : 4
@@ -100,7 +105,7 @@ public class visitItemBean implements Serializable{
         }
     }
 
-    public static class DataBean implements Serializable {
+    public static class DataBean implements Serializable, Comparator<DataBean> {
         /**
          * visitGuid : aaa5
          * applyOrgName : qzws136
@@ -311,6 +316,13 @@ public class visitItemBean implements Serializable{
 
         public void setDebtorName(String debtorName) {
             this.debtorName = debtorName;
+        }
+
+
+        @Override
+        public int compare(DataBean o1, DataBean o2) {
+            logUtils.d("排序走了"+(int) (o1.getApplyTime()-o2.getApplyTime()));
+            return (int) (o1.getApplyTime()-o2.getApplyTime());
         }
     }
 }

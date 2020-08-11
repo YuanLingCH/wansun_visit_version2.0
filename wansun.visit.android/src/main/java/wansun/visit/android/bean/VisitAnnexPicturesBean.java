@@ -62,6 +62,15 @@ public class VisitAnnexPicturesBean {
         private String name;
         private String url;
         private String type;
+        private String annexId;
+
+        public String getAnnexId() {
+            return annexId;
+        }
+
+        public void setAnnexId(String annexId) {
+            this.annexId = annexId;
+        }
 
         public String getName() {
             return name;

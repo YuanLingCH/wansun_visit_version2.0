@@ -15,7 +15,6 @@ import com.bumptech.glide.Glide;
 import java.util.List;
 
 import wansun.visit.android.R;
-import wansun.visit.android.api.apiManager;
 import wansun.visit.android.bean.VisitAnnexPicturesBean;
 import wansun.visit.android.global.AppConfig;
 import wansun.visit.android.ui.activity.playPictureAndVideoActivity;
@@ -71,16 +70,20 @@ public class VisitAnnexPicturesAdapter extends BaseAdapter {
         }
             holder= (ViewHolder) convertView.getTag();
         VisitAnnexPicturesBean.DataBean dataBean = data.get(position);
-        final String url = dataBean.getUrl();
-        logUtils.d("url=======>"+apiManager.baseUrl+"/files/"+url);
+        final String newUrl = (String) dataPicture.get(position);
         String type = dataBean.getType();
         if (type.equals("照片")){
             if (typeAnnex.equals(AppConfig.VISIT_ANNEX_PICTURE)){
                 holder.visit_annex_img.setVisibility(View.VISIBLE);
                 holder.ll_annex_audio.setVisibility(View.INVISIBLE);
-                final ViewHolder finalHolder = holder;
-                Glide.with(mconext).load(apiManager.baseUrl+"/files/"+url).into(finalHolder.visit_annex_img);
 
+                final ViewHolder finalHolder = holder;
+             //   String urlone="http://192.168.66.52:8082/case/writerPicture?timestamp=1594276620951&caseCode=AFF-20191127-001-000008&annexId=81c2cc95-33bf-4c8e-8ceb-8109d3d54d40&sign=5b8e31fbe5f90daae34a2036450b263d&token=f2f507707dad47e88c80f0c3bd2de33e";
+
+                    Glide.with(mconext).load(newUrl).into(finalHolder.visit_annex_img);
+
+
+                logUtils.d("newUrl=======>"+newUrl);
 
             }
         } else if (type.equals("录音文件")){
@@ -88,11 +91,13 @@ public class VisitAnnexPicturesAdapter extends BaseAdapter {
             holder.ll_annex_audio.setVisibility(View.VISIBLE);
             holder.visit_annex_img.setVisibility(View.INVISIBLE);
             holder.tv_url.setText(dataBean.getName());
+            VisitAnnexPicturesBean.DataBean dataBean1 = data.get(position);
+
             holder.ll_annex_audio.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Intent intent=new Intent(mconext,playPictureAndVideoActivity.class);
-                    intent.putExtra("path",apiManager.baseUrl+"/files/"+url);
+                    intent.putExtra("path",newUrl);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     mconext.startActivity(intent);
                 }

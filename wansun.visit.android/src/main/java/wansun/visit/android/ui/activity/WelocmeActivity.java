@@ -4,12 +4,14 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Environment;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
@@ -19,12 +21,12 @@ import com.arcsoft.arcfacedemo.common.Constants;
 import com.arcsoft.face.ActiveFileInfo;
 import com.arcsoft.face.ErrorInfo;
 import com.arcsoft.face.FaceEngine;
-import com.arcsoft.face.enums.RuntimeABI;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,8 +71,9 @@ public class WelocmeActivity extends BaseActivity {
      */
     private static final String[] NEEDED_PERMISSIONS = new String[]{
             Manifest.permission.CAMERA,
-            Manifest.permission.READ_PHONE_STATE
-
+            Manifest.permission.READ_PHONE_STATE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE
     };
 
     boolean libraryExists = true;
@@ -108,6 +111,7 @@ public class WelocmeActivity extends BaseActivity {
 
     }
 
+
     @Override
     protected void initEvent() {
     }
@@ -116,9 +120,12 @@ public class WelocmeActivity extends BaseActivity {
     protected void initData() {
 
         permission();
+
+
     }
 
     private void getData() {
+
         NetWorkTesting net = new NetWorkTesting(WelocmeActivity.this);
         if (net.isNetWorkAvailable()) {
        TelephonyManager telephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
@@ -129,10 +136,11 @@ public class WelocmeActivity extends BaseActivity {
             }
         SharedUtils.putString("imei", imei);
         logUtils.d("手机串号" + imei);
-        tv_link_devices.setText(R.string.link_devices);
+
+            tv_link_devices.setText(R.string.link_devices);
         Retrofit retrofit = netUtils.getRetrofit();
         apiManager manager = retrofit.create(apiManager.class);
-        final RequestBody requestBody = requestBodyUtils.checkImie(imei);
+        final RequestBody requestBody = requestBodyUtils.checkImie(this.imei);
         Call<String> call = manager.checkImie(requestBody);
         call.enqueue(new Callback<String>() {
             @Override
@@ -146,13 +154,27 @@ public class WelocmeActivity extends BaseActivity {
                         stateMessageBean data = gson.fromJson(body, new TypeToken<stateMessageBean>() {}.getType());
                         String statusID = data.getStatusID();
                         if (statusID.equals(AppConfig.SUCCESS)) {
-                                Intent intent = new Intent(WelocmeActivity.this,RegisterAndRecognizeActivity.class);
+                           Intent intent = new Intent(WelocmeActivity.this,RegisterAndRecognizeActivity.class);
+                            //Intent intent = new Intent(WelocmeActivity.this,LoginActiovity.class);
                                 startActivity(intent);
                                 finish();
+               /*             String account = SharedUtils.getString("account");
+                            String password = SharedUtils.getString("password");
+                            if (!TextUtils.isEmpty(account)&&!TextUtils.isEmpty(password)){
+                                Intent intent = new Intent(WelocmeActivity.this,MainActivity.class);
+                                startActivity(intent);
+                                finish();
+                            }else {
+                                Intent intent = new Intent(WelocmeActivity.this,LoginActiovity.class);
+                                startActivity(intent);
+                                finish();
+                            }*/
+
+
 
                         } else {
                             tv_check_state.setText(R.string.check_imei_state);
-                            tv_imie.setText("设备IMEI:" + imei.toString().trim());
+                            tv_imie.setText("设备IMEI:" + WelocmeActivity.this.imei.toString().trim());
                             tv_imie.setTextSize(18);
                             tv_link_devices.setText("设备连接失败...");
                             String imeiSucess = SharedUtils.getString("imeiSucess");
@@ -170,7 +192,8 @@ public class WelocmeActivity extends BaseActivity {
             @Override
             public void onFailure(Call<String> call, Throwable t) {
                 logUtils.d("手机串号下载失败" + t.toString());
-                ToastUtil.showToast(WelocmeActivity.this, t.toString());
+                Toast.makeText(WelocmeActivity.this,"手机串号下载失败"+t.toString(),Toast.LENGTH_LONG).show();
+
             }
         });
     }else {
@@ -190,6 +213,12 @@ public class WelocmeActivity extends BaseActivity {
         }
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             permissionLists.add(Manifest.permission.CAMERA);
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            permissionLists.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            permissionLists.add(Manifest.permission.READ_EXTERNAL_STORAGE);
         }
         if (!permissionLists.isEmpty()) {//说明肯定有拒绝的权限
 
@@ -248,10 +277,6 @@ public class WelocmeActivity extends BaseActivity {
         Observable.create(new ObservableOnSubscribe<Integer>() {
             @Override
             public void subscribe(ObservableEmitter<Integer> emitter) {
-                RuntimeABI runtimeABI = FaceEngine.getRuntimeABI();
-
-
-                long start = System.currentTimeMillis();
                 int activeCode = FaceEngine.activeOnline(WelocmeActivity.this, Constants.APP_ID, Constants.SDK_KEY);
                 logUtils.d("激活代码"+activeCode );
                 emitter.onNext(activeCode);
@@ -264,19 +289,17 @@ public class WelocmeActivity extends BaseActivity {
                     public void onSubscribe(Disposable d) {
 
                     }
-
                     @Override
                     public void onNext(Integer activeCode) {
                         if (activeCode == ErrorInfo.MOK) {
                             showToast(getString(R.string.active_success));
                         } else if (activeCode == ErrorInfo.MERR_ASF_ALREADY_ACTIVATED) {
-                            showToast(getString(R.string.already_activated));
+                          //  showToast(getString(R.string.already_activated));
                             logUtils.d("激活代码"+activeCode );
                         } else {
                             showToast(getString(R.string.active_failed, activeCode));
+
                         }
-
-
                         ActiveFileInfo activeFileInfo = new ActiveFileInfo();
                         int res = FaceEngine.getActiveFileInfo(WelocmeActivity.this, activeFileInfo);
                         if (res == ErrorInfo.MOK) {
@@ -321,5 +344,72 @@ public class WelocmeActivity extends BaseActivity {
         }
         return exists;
     }
+
+
+    String filePath = Environment.getExternalStorageDirectory()+ "/"+"wansun.visit.android";;
+    private void writeData(String content) {
+
+        String fileName = "test.txt";
+
+        writeTxtToFile(content, filePath, fileName);
+    }
+
+    // 将字符串写入到文本文件中
+    private void writeTxtToFile(String strcontent, String filePath, String fileName) {
+        //生成文件夹之后，再生成文件，不然会出错
+        makeFilePath(filePath, fileName);
+
+        String strFilePath = filePath + fileName;
+        // 每次写入时，都换行写
+        String strContent = strcontent;
+        try {
+            File file = new File(strFilePath);
+            if (!file.exists()) {
+                Log.d("TestFile", "Create the file:" + strFilePath);
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+            }
+            RandomAccessFile raf = new RandomAccessFile(file, "rwd");
+            raf.seek(file.length());
+            raf.write(strContent.getBytes());
+            raf.close();
+            Toast.makeText(this,"数据保存成功",Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            Log.e("TestFile", "Error on write File:" + e);
+            Toast.makeText(this,"数据保存失败"+e.toString(),Toast.LENGTH_LONG).show();
+        }
+    }
+
+//生成文件
+
+    private File makeFilePath(String filePath, String fileName) {
+        File file = null;
+        makeRootDirectory(filePath);
+        try {
+            file = new File(filePath + fileName);
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return file;
+    }
+
+//生成文件夹
+
+    private static void makeRootDirectory(String filePath) {
+        File file = null;
+        try {
+            file = new File(filePath);
+            if (!file.exists()) {
+                file.mkdir();
+            }
+        } catch (Exception e) {
+            Log.i("error:", e + "");
+
+        }
+    }
+
 
 }

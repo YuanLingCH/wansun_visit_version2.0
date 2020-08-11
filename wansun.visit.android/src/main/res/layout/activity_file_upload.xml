@@ -59,6 +59,21 @@
         android:layout_marginRight="10dp"
         layout="@layout/detail_attachment" />
 
+
+
+    <TextView
+        android:visibility="gone"
+        android:textColor="#000"
+        android:textSize="18sp"
+       android:gravity="center"
+        android:layout_below="@+id/detail_attachment"
+        android:id="@+id/tv_file_record"
+        android:layout_marginRight="@dimen/dimen_10"
+        android:layout_marginLeft="@dimen/dimen_10"
+        android:layout_marginTop="@dimen/dimen_5"
+        android:text="文件全部上传完成...."
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 <Button
     android:id="@+id/but_upload_batch"
     android:visibility="gone"
@@ -71,4 +86,6 @@
     android:text="批量上传"
     android:layout_width="match_parent"
     android:layout_height="wrap_content" />
+
+
 </RelativeLayout>

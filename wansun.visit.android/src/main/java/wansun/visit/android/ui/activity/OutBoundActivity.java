@@ -4,10 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.view.Gravity;
 import android.view.View;
-import android.view.WindowManager;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -44,7 +41,6 @@ import wansun.visit.android.greendao.gen.fileInfoDao;
 import wansun.visit.android.net.requestBodyUtils;
 import wansun.visit.android.utils.SharedUtils;
 import wansun.visit.android.utils.ToastUtil;
-import wansun.visit.android.utils.dialogUtils;
 import wansun.visit.android.utils.logUtils;
 import wansun.visit.android.utils.netUtils;
 import wansun.visit.android.utils.starUtils;
@@ -136,9 +132,9 @@ public class OutBoundActivity extends BaseActivity {
     private void getIntentData() {
          caseCode = getIntent().getStringExtra("caseCode");
          visitGuid = getIntent().getStringExtra("visitGuid");
-        logUtils.d("案件编号"+caseCode+"visitGuid"+visitGuid);
-        SharedUtils.putString("caseCode",caseCode);
-        SharedUtils.putString("visitGuid",visitGuid );
+         logUtils.d("案件编号"+caseCode+"visitGuid"+visitGuid);
+          SharedUtils.putString("caseCode",caseCode);
+          SharedUtils.putString("visitGuid",visitGuid );
     }
 
     @Override
@@ -220,7 +216,7 @@ public class OutBoundActivity extends BaseActivity {
         rl_visit_cord_detail.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                lookCardID( "", "2");
+                lookCardID( cidNo, "2");
                 isFlag=true;
 
             }
@@ -241,7 +237,7 @@ public class OutBoundActivity extends BaseActivity {
         rl_follow_message.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (caseFollowMessageItems.size()>0&&caseFollowMessageItems!=null){
+                if (!caseFollowMessageItems.isEmpty()){
                     Intent intent=new Intent(OutBoundActivity.this,FollowMessageActivity.class);
                     intent.putExtra("followMessage", (Serializable) caseFollowMessageItems);
                     startActivity(intent);
@@ -422,37 +418,40 @@ public class OutBoundActivity extends BaseActivity {
         collectionData=new ArrayList<>();
         collectionData.clear();
         Retrofit retrofit = netUtils.getRetrofit();
-        apiManager manager= retrofit.create(apiManager.class);
+        final apiManager manager= retrofit.create(apiManager.class);
         //TODO注意换回数据 caseData
-        final RequestBody requestBody = requestBodyUtils.visitCaseDetailsFromeService(caseCode,visitGuid);
+      final RequestBody requestBody = requestBodyUtils.visitCaseDetailsFromeService(caseCode,visitGuid);
+        new Thread(new Runnable() {
+              @Override
+                   public void run() {
+            Call<String> call = manager.visitCaseDetailsFormeService(requestBody);
+            call.enqueue(new Callback<String>() {
+                @Override
+                public void onResponse(Call<String> call, Response<String> response) {
+                    try {
+                        String body = response.body();
+                        logUtils.d("下载数据"+body);
+                        if (!TextUtils.isEmpty(body)){
+                            Gson gson=new Gson();
+                            caseDetailBean data = gson.fromJson(body, new TypeToken<caseDetailBean>() {}.getType());
+                            caseDetailBean.DataBean bean = data.getData();
+                            updataUi(bean);
 
-        Call<String> call = manager.visitCaseDetailsFormeService(requestBody);
-        call.enqueue(new Callback<String>() {
-            @Override
-            public void onResponse(Call<String> call, Response<String> response) {
-                try {
-                    String body = response.body();
-                    logUtils.d("下载数据"+body);
-                    if (!TextUtils.isEmpty(body)){
-                        Gson gson=new Gson();
-                        caseDetailBean data = gson.fromJson(body, new TypeToken<caseDetailBean>() {}.getType());
-                        caseDetailBean.DataBean bean = data.getData();
-                        updataUi(bean);
-
+                        }
+                    } catch (JsonSyntaxException e) {
+                        e.printStackTrace();
+                        ToastUtil.showToast(OutBoundActivity.this,"服务器异常"+e.toString());
                     }
-                } catch (JsonSyntaxException e) {
-                    e.printStackTrace();
-                    ToastUtil.showToast(OutBoundActivity.this,"服务器异常"+e.toString());
+
                 }
 
-            }
+                @Override
+                public void onFailure(Call<String> call, Throwable t) {
 
-            @Override
-            public void onFailure(Call<String> call, Throwable t) {
-
-            }
-        });
-
+                }
+                });
+        }
+    }).start();
         data=new ArrayList();
         for (int i = 0; i < 5; i++) {
             data.add(i);
@@ -462,7 +461,11 @@ public class OutBoundActivity extends BaseActivity {
        //
 
 
-        Call<String> calldata = manager.getByCaseCodeFromService(caseCode);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+           Call<String> calldata = manager.getByCaseCodeFromService(caseCode);
         calldata.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
@@ -495,6 +498,7 @@ public class OutBoundActivity extends BaseActivity {
                                                 recordBean.setAddress(next1.getLetterAddress());
                                                 recordBean.setCreateDate(next1.getCreateDate());
                                                 recordBean.setUrgeTypeName("信函");
+
                                                 recordBean.setCreator(next1.getCreator());
                                                 collectionData.add(recordBean);
                                             }
@@ -738,7 +742,8 @@ public class OutBoundActivity extends BaseActivity {
                 logUtils.d("下载详细的数据失败："+throwable.toString());
             }
         });
-
+            }
+        }).start();
 
     }
 
@@ -751,6 +756,7 @@ public class OutBoundActivity extends BaseActivity {
     double caseTotalUrgeAmount;
     double caseTotalReceiptAmount;
     String remark;
+     String cidNo;
     private void updataUi(caseDetailBean.DataBean bean) {
      ugrerName = bean.getName();
         tv_debtor_name.setText("欠款人："+ ugrerName);
@@ -766,6 +772,7 @@ public class OutBoundActivity extends BaseActivity {
         tv_visit_goal.setText("外访目标："+bean.getVisitGoal());
         tv_visit_remark.setVisibility(View.GONE);
         remark=bean.getRemark()+"";
+        SharedUtils.putString("remark",remark);
       //  tv_visit_remark.setText("外访备注："+bean.getRemark());
         tv_customer_name.setText("甲方："+bean.getCustomerName());
         String clerkName = bean.getClerkName();   //bean.getClerkName()
@@ -790,27 +797,40 @@ public class OutBoundActivity extends BaseActivity {
         tvApplicant.setText("申请人："+bean.getApplicantName());
         tv_card_address.setText("开卡地址："+bean.getCardAddress());
         tvVisitStatus.setText("外访状态："+bean.getVisitStatusText());
-      final   String cidNo = bean.getCidNo();
+      cidNo = bean.getCidNo();
         logUtils.d("证件号码："+ cidNo);
-        tvIdno.setText("证件号码："+"点击查看详情");
+        tvIdno.setVisibility(View.GONE);
+       // tvIdno.setText("证件号码："+"点击查看详情");
 
         long lasttime = bean.getLatestFollowUpTime();
         if (lasttime!=0){
-            tvLastProcessDate.setText("最后催收时间："+unixTime.stampToTime(lasttime/1000));
+            tvLastProcessDate.setText("最后跟进日期："+unixTime.stampToTime(lasttime/1000));
         }
-        tvIdno.setOnClickListener(new View.OnClickListener() {
+  /*      tvIdno.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 logUtils.d("点击查看证件号码：");
                 lookCardID(cidNo,"1");
             }
-        });
+        });*/
 
     }
 
 
     private  boolean isFlag=true;
-    private void lookCardID(final String cidNo,final String type) {
+    private void lookCardID( String cidNo,final String type) {
+
+
+        Intent intent=new Intent(OutBoundActivity.this,CaseCardMessageActivity .class);
+        intent.putExtra("caseCode",caseCode);
+        intent.putExtra("cidNo",cidNo);
+        intent.putExtra("caseTotalAppointAmount",caseTotalAppointAmount+"");
+        intent.putExtra("caseTotalUrgeAmount",caseTotalUrgeAmount+"");
+        intent.putExtra("caseTotalReceiptAmount",caseTotalReceiptAmount+"");
+        startActivity(intent);
+
+/*
+
         View view = getLayoutInflater().inflate(R.layout.custom_diaglog_layut_exit_app, null);
         final TextView tv = (TextView) view.findViewById(R.id.tv);
         TextView tv_cancle= (TextView) view.findViewById(R.id.add_cancle);
@@ -863,18 +883,13 @@ public class OutBoundActivity extends BaseActivity {
                     }else if (type.equals("2")){
                         utils.cancleDialog();
 
-             /*           double caseTotalAppointAmount;
+             *//*           double caseTotalAppointAmount;
                         double caseTotalUrgeAmount;
                         double caseTotalReceiptAmount;
-                        */
+                        *//*
 
-                        Intent intent=new Intent(OutBoundActivity.this,CaseCardMessageActivity .class);
-                        intent.putExtra("caseCode",caseCode);
-                        intent.putExtra("remark",remark);
-                        intent.putExtra("caseTotalAppointAmount",caseTotalAppointAmount+"");
-                        intent.putExtra("caseTotalUrgeAmount",caseTotalUrgeAmount+"");
-                        intent.putExtra("caseTotalReceiptAmount",caseTotalReceiptAmount+"");
-                        startActivity(intent);
+
+
                         overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left); // 由右向左滑入的效果
                     }
 
@@ -888,7 +903,7 @@ public class OutBoundActivity extends BaseActivity {
                 }
 
             }
-        });
+        });*/
     }
 
     @Override

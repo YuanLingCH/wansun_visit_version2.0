@@ -2,11 +2,17 @@ package wansun.visit.android.net;
 
 import com.google.gson.Gson;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
+import wansun.visit.android.utils.MD5Utils;
 import wansun.visit.android.utils.logUtils;
 
 /**
@@ -15,6 +21,21 @@ import wansun.visit.android.utils.logUtils;
  */
 
 public class requestBodyUtils {
+
+    //登录
+    public  static  RequestBody getLoginMessage(String userName,String password,String IEMI){
+        Map map=new HashMap();
+        map.put("userName",userName);
+        map.put("passWord",password);
+        map.put("imei",IEMI);
+        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), new Gson().toJson(map));
+        logUtils.d("传参"+new Gson().toJson(map) );
+        return body;
+    }
+
+
+
+
     //外访item
     public  static RequestBody visitItemToService(String userName,boolean toDay,String pageNum,String pageSize,String debtorName,String customerName,String address){
         Map<String ,String> pageMap=new HashMap<>();
@@ -320,4 +341,36 @@ public class requestBodyUtils {
         logUtils.d("传参"+json );
         return RequestBody.create(MediaType.parse("application/json; charset=utf-8"),json);
     }
+    // 上传文件得到签名文件
+    public static String getSign(Map<String,Object> map,String getTime){
+        if (!map.isEmpty()){
+        Set<String> set = map.keySet();
+        StringBuffer buffer=new StringBuffer();
+        List list=new ArrayList(set);
+        Collections.sort(list);
+        Iterator iterator = list.iterator();
+        while (iterator.hasNext()){
+            buffer.append(map.get(iterator.next()));
+        }
+        buffer.append(getTime);
+        return  MD5Utils.stringToMD5(buffer.toString());  // 签名
+        }else {
+
+        }
+        return null;
+    }
+
+
+    //查询案件外访记录 催记 录音 图片
+    public static  RequestBody findWritePicture(String caseCode,String annexId){
+        Map<String ,Object> map=new HashMap<>();
+        map.put("caseCode",caseCode);
+        map.put("annexId",annexId);
+        Gson gson=new Gson();
+        String json = gson.toJson(map);
+        logUtils.d("传参"+json );
+        return RequestBody.create(MediaType.parse("application/json; charset=utf-8"),json);
+    }
+
+
 }

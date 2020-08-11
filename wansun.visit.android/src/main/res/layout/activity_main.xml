@@ -169,6 +169,7 @@ android:layout_marginTop="@dimen/dimen_10"
             android:layout_width="0dp"
             android:layout_height="wrap_content" />
         <Button
+            android:visibility="gone"
             android:textColor="@color/white"
             android:layout_marginRight="@dimen/dimen_10"
             android:id="@+id/but_gps_walk"

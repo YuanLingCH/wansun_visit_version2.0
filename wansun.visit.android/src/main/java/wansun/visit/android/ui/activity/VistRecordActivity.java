@@ -29,6 +29,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -123,6 +124,7 @@ public class VistRecordActivity extends BaseActivity implements loadMoreListView
     private void updataUI() {
                 logUtils.d("updataUI");
         if (adapter==null){
+
             adapter=new visitOrderAdapter(this,visitData,true); //true 为完成
             lv_visit_order.setAdapter(adapter);
         }else {

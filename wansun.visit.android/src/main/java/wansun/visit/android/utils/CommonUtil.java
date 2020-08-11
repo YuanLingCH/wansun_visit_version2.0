@@ -201,19 +201,20 @@ public class CommonUtil {
          * @param sampleSize 采样率为2的整数倍，非整数倍四舍五入，如4的话，就是原图的1/4
          * @return 尺寸变化
          */
-        public static Bitmap getBitmap(Bitmap bitmap, int sampleSize) {
+        public static Bitmap getBitmap(final Bitmap bitmap, final int sampleSize) {
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    options.inSampleSize = sampleSize;
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 70, baos);
+                    byte[] bytes = baos.toByteArray();
+                   Bitmap     bit = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+                   // Log.i("info", "图片大小：" + bit.getByteCount());//2665296  10661184
+                    return bit;
 
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inSampleSize = sampleSize;
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 70, baos);
-            byte[] bytes = baos.toByteArray();
-            Bitmap bit = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
-            Log.i("info", "图片大小：" + bit.getByteCount());//2665296  10661184
-            return bit;
 
 
-    }
+
+        }
 
     /**
      * 使用手机主板+系统定制商+cup指令集+设备参数+显示屏参数+修订版列表等数据生成IMEI号

@@ -29,8 +29,10 @@ import com.lidong.photopicker.intent.PhotoPreviewIntent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -47,11 +49,14 @@ import wansun.visit.android.bean.fileUploadBean;
 import wansun.visit.android.db.fileInfo;
 import wansun.visit.android.global.waifangApplication;
 import wansun.visit.android.greendao.gen.fileInfoDao;
+import wansun.visit.android.net.requestBodyUtils;
 import wansun.visit.android.utils.NetWorkTesting;
 import wansun.visit.android.utils.SharedUtils;
 import wansun.visit.android.utils.ToastUtil;
 import wansun.visit.android.utils.dialogUtils;
 import wansun.visit.android.utils.logUtils;
+
+import static wansun.visit.android.utils.unixTime.getCurrentTime;
 
 /**
  * 图片选择
@@ -167,65 +172,69 @@ public class PictureSelectActivity extends  BaseActivity {
                 final String account = SharedUtils.getString("account");
                 logUtils.d("account"+account);
                 String id = SharedUtils.getString("id");
-                final OkHttpClient okHttpClient = new OkHttpClient();
-
-
+                final OkHttpClient client = waifangApplication.getInstence().getClient();
+                Map<String,Object> map=new HashMap<>();
+                map.put("caseCode",caseCode);
+                map.put("visitGuid", visitGuid);
+                map.put("uploaderName", account);
+                map.put("uploaderId", id);
+                String sign = requestBodyUtils.getSign(map, getCurrentTime + "");
+                MultipartBody.Builder builder = new MultipartBody.Builder()
+                        .setType(MultipartBody.FORM)
+                        .addFormDataPart("sign",sign)
+                        .addFormDataPart("timestamp",getCurrentTime+"");
+                for (Map.Entry entry:map.entrySet()){
+                    builder.addFormDataPart(String.valueOf(entry.getKey()),String.valueOf(entry.getValue()));
+                    logUtils.d("遍历key"+String.valueOf(entry.getKey()));
+                }
                 for (int i = 0; i < imagePaths.size(); i++) {
                     if (imagePaths.contains("paizhao")){
                         imagePaths.remove("paizhao");
                     }
                     File file = new File(imagePaths.get(i));
-                    MultipartBody.Builder builder = new MultipartBody.Builder()
-                            .setType(MultipartBody.FORM)
-                            .addFormDataPart("caseCode",caseCode)
-                            .addFormDataPart("visitGuid",visitGuid)
-                            .addFormDataPart("uploaderName",account)
-                            .addFormDataPart("uploaderId" ,id )
-                            .addFormDataPart("uploadFile", file.getName(), RequestBody.create(MediaType.parse("image/jpeg"), file));
-
-                    RequestBody requestBody = builder.build();
-                    final Request request = new Request.Builder()
-                            .url(apiManager.upLoadPicturesToService).post(requestBody).build();
-                    new Thread(){
-                        @Override
-                        public void run() {
-                            super.run();
-                            Call call = okHttpClient.newCall(request);
-                            call.enqueue(new Callback() {
-                                @Override
-                                public void onFailure(Call call, IOException e) {
-                                    logUtils.d("图片上传错误"+e.toString());
-                                    mHandler.sendEmptyMessage(1);   //图片上传错误
-
-                                }
-
-                                @Override
-                                public void onResponse(Call call, Response response) throws IOException {
-                                    try {
-                                        String body = response.body().string();
-                                        Gson gson=new Gson();
-                                        fileUploadBean bean = gson.fromJson(body, new TypeToken<fileUploadBean>() {}.getType());
-                                        String statusID = bean.getStatusID();
-                                        if (statusID.equals("200")){
-
-                                            currentCont.add(1);
-                                            logUtils.d("图片上传" + body + "..." + cont);
-                                            if (currentCont.size() == imagePaths.size() - 1 || currentCont.size() == imagePaths.size()) {
-                                                mHandler.sendEmptyMessage(0);
-                                                //  图片上传成功后就删掉数据库的图片
-                                                deletePicture();
-                                            }
-                                        }
-
-                                    } catch (Exception e) {
-                                        mHandler.sendEmptyMessage(1);   //图片上传错误
-                                    }
-                                }
-                            });
-                        }
-                    }.start();
-
+                           builder .addFormDataPart("uploadFile", file.getName(), RequestBody.create(MediaType.parse("image/jpeg"), file));
                 }
+                RequestBody requestBody = builder.build();
+                final Request request = new Request.Builder()
+                        .url(apiManager.upLoadPicturesToService).post(requestBody).build();
+                new Thread(){
+                    @Override
+                    public void run() {
+                        super.run();
+                        Call call = client.newCall(request);
+                        call.enqueue(new Callback() {
+                            @Override
+                            public void onFailure(Call call, IOException e) {
+                                logUtils.d("图片上传错误"+e.toString());
+                                mHandler.sendEmptyMessage(1);   //图片上传错误
+
+                            }
+
+                            @Override
+                            public void onResponse(Call call, Response response) throws IOException {
+                                try {
+                                    String body = response.body().string();
+                                    Gson gson=new Gson();
+                                    fileUploadBean bean = gson.fromJson(body, new TypeToken<fileUploadBean>() {}.getType());
+                                    String statusID = bean.getStatusID();
+                                    if (statusID.equals("200")){
+
+                                       // currentCont.add(1);
+                                        logUtils.d("图片上传" + body + "..." + cont);
+                                     //   if (currentCont.size() == imagePaths.size() - 1 || currentCont.size() == imagePaths.size()) {
+                                            mHandler.sendEmptyMessage(0);
+                                            //  图片上传成功后就删掉数据库的图片
+                                            deletePicture();
+                                       // }
+                                    }
+
+                                } catch (Exception e) {
+                                    mHandler.sendEmptyMessage(1);   //图片上传错误
+                                }
+                            }
+                        });
+                    }
+                }.start();
             }
             }
             }

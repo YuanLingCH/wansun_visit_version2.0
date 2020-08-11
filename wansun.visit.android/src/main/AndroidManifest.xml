@@ -69,6 +69,21 @@
         <meta-data
             android:name="BUGLY_APPID"
             android:value="18ca237fe3" />
+
+        <meta-data
+            android:name="com.taobao.android.hotfix.IDSECRET"
+            android:value="30884685-1" />
+        <meta-data
+            android:name="com.taobao.android.hotfix.APPSECRET"
+            android:value="c724ae51203141c26382ec6b63cd45fd" />
+        <meta-data
+            android:name="com.taobao.android.hotfix.RSASECRET"
+            android:value="MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCjFxwLRqt4Ei1giheC4cmQ0CByJdGWmYH+1iR9Txr7QpDEnLXA77QYxLkKQsQkcePcfOatzlFG/bfm/OkwlaqMbNV3XQ6s++WpqDqfT3l6OFeG6SKgBK75dlXp+E/m169e06pcwou0YWsPZFrmrWC6UlRnS2pg1U/rAXg5JWp2vmSe4vQnb8qwkFlexUPRJpCE7dszMc4FZtzm4y/rBYaITGOVbitE8DLR1wcejgGbJpkZvvPzmwJUXDErYF81Aa5qII5eEUl99hGGzRe9mhYy1pGW8bTBRKk4Ih3YOQs5v6C5an55Oi+VA0sf20Xb7pyHmSUnjDeUzRI4e3yA3Tj7AgMBAAECggEAB2u3xPOUPcRl+CyQYU4ww7wUnd0GqlmVxqirxF/jFGe0+p0+z+aYRUA+Qy9CiX39Jj0wqdvnatmEkqgTXDiTKAyTsfi0AD799jhHYpRVLLB/mw3km29bHtK5mgnIaPKLcj8jU1Eu1ihQnMSuNizRZ+jzGjgeQQWzuze35rHDJF/2zGSQ8ooZpniewdt6KpA1d0CaUo9Scm+NVUVJZQaIBSWeczK+4t89fqvy48gzpjTSD2P/JnH1c05TKXDNIM3qWBCmDMDpY8Iwx9DI8yoedBrC0//upiTq0UlY4brLTVEdK29pmARUqoifD7/XnhYPhgiqwXS+VXpt7IqVbwQS0QKBgQDUQR7BQl+xA1qTwI5eo9gyJgAlB/rZC7eDTeaGMnJQpI4sK9Q6cexN8qBF1o1IeWEMKtOfJw3IS+m4Y9qFvAdhgCjwT4cuqF0ruzMRnPNRf5CKoiA3OWKh4d7BmNSxzkilYMo08QSyBLxKoPTtsXK3LGX7hCjmjuWzMiim9cz6BQKBgQDEtANEqAVEYUv8sRS5u/Q5rIeWpgIo2Tv9U2WDO+3yyKVa4jOaJnLzTVG/wlQ3dzyDeMl15goPLAH4Xsp6utHaZNElv6XoTEabyx+1xxsKN+QUdH7ZNdlceynvTKP103ozyY1742Lud0VR2SJ+HfpMXcJKQAS6xO/V7WJJ/PDW/wKBgFd0WXKxoXHy+tAkJ8UQ51SKWcboSdBCRqPAZjpm8LkPhFDo4jIOnJnlXWpJI79326fCwZ0y3zfnJ27FHdW6iqP+xV92tTFhR7psEHeyXoL295xXfsSiTWR8B2dnTEPSxhX2EnrLz+51iwuI1EJXufeFQKPoaV3OBRDXmu5oGsPtAoGBAJpqloY3QKtFlllwykxkeH0uK+Lfv6JBpw5fgblcOpf1W5nVKZ1BwcuuTxayf1priF3NXJnpVMxER+eqwllGf6dqraVspdmOx39WHjadb2S+K5bDPTFXTKOFLI5nI++/bJdrCl7PSsLZbtmqE6Hd9rgsgnG3f/7+yyitihN7NbYRAoGBALbCMwl/TUe+WBbduJu0B9p8HOsYPMEJgQxCFaU9ba9GGebJjXPMZNlgNceMXVf/oNatHVQbo8NaGa2qdJwkrITN1MQCluWbTGfaIY/3rOX2DQ0BagJe+jaOeeuFb/FPtLT0gs1L0Xw9sKps5jmNcJMpQOnFzYTy2Y3ljra/+Dli" />
+
+
+
+
+
         <activity
             android:name=".ui.activity.WelocmeActivity"
             android:theme="@style/SplashTheme"
@@ -99,7 +114,8 @@
         <activity android:name=".ui.activity.PictureSelectActivity"/>
         <activity android:name=".ui.activity.VideoRecorderActivity"/>
         <activity android:name=".ui.activity.FileUploadActivity"/>
-        <activity android:name=".ui.activity.TakePhotosActivity"/>
+        <activity android:name=".ui.activity.TakePhotosActivity"
+            android:screenOrientation="portrait" />
         <activity android:name=".ui.activity.FileQueryActivity"/>
         <activity android:name=".ui.activity.playPictureAndVideoActivity"/>
         <activity android:name=".ui.activity.myVideoInputActivity"/>
@@ -107,7 +123,7 @@
             android:name="com.lidong.photopicker.PhotoPickerActivity"
             android:theme="@style/PhotoPickerTheme"
             android:configChanges="orientation|screenSize"/>
-        <activity android:name="com.lidong.photopicker.PhotoPreviewActivity"
+            <activity android:name="com.lidong.photopicker.PhotoPreviewActivity"
             android:theme="@style/PhotoPickerTheme"/>
 
         <activity android:name=".ui.activity.FollowMessageActivity"/>
