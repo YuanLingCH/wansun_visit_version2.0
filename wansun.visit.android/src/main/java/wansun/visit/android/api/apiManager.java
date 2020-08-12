@@ -33,7 +33,6 @@ String path="";     //生产
    @Headers({"Content-Type: application/json","Accept: application/json"})
     @POST(baseUrl+path+"/user/login?")
     Call<String> login(@Body RequestBody body);
-  //  Call<String> login(@Field("userName") String username,@Field("passWord") String password);
     //外访列表
       @Headers({"Content-Type: application/json","Accept: application/json"})
       @POST(baseUrl+path+"/case/findVisit")

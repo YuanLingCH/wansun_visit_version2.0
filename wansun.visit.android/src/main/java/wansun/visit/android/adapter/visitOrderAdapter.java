@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.Comparator;
 import java.util.List;
 
 import wansun.visit.android.R;
@@ -36,7 +37,12 @@ public class visitOrderAdapter extends BaseAdapter {
         this.data = data;
         inflater=LayoutInflater.from(mconext);
         this.flag=flag;
-
+        data.sort(new Comparator<visitItemBean.DataBean>() {
+            @Override
+            public int compare(visitItemBean.DataBean o1, visitItemBean.DataBean o2) {
+                return (int) (o2.getApplyTime()-o1.getApplyTime());
+            }
+        });
        // Collections.sort(this.data,  new visitItemBean.DataBean());
     }
 

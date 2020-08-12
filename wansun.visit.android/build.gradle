@@ -15,12 +15,9 @@ android {
         ndk {
             abiFilters "armeabi"
         }
+
     }
 
-/*    compileOptions{
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }*/
     buildTypes {
 
         release {
@@ -112,6 +109,7 @@ dependencies {
     compile 'org.greenrobot:eventbus:3.0.0'
     compile 'com.github.zhaolewei:ZlwAudioRecorder:v1.07'
     compile 'com.aliyun.ams:alicloud-android-hotfix:3.2.14'
+
 }
 
 
