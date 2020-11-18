@@ -56,6 +56,7 @@ import okhttp3.ResponseBody;
 import wansun.visit.android.R;
 import wansun.visit.android.adapter.GridAdapter;
 import wansun.visit.android.api.apiManager;
+import wansun.visit.android.bean.DataString;
 import wansun.visit.android.bean.uploadFileBean;
 import wansun.visit.android.config.AppConfig;
 import wansun.visit.android.db.fileInfo;
@@ -394,10 +395,11 @@ public class TakePhotosActivity extends BaseActivity {
           try {
               bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(imageUri));
               // 获取水印文本 -- 日期
-              String date = CommonUtil.getCurrentDateTimeString();
+              String dateTime = CommonUtil.getCurrentDateTimeYearAndMonthAString();
               // 创建水印位图
-              String account = SharedUtils.getString("account");
-              Bitmap waterMap = CommonUtil.CreateWatermark(date+"拍摄账号:"+account);
+              String curentLcotion = SharedUtils.getString("curentLcotion");
+
+              Bitmap waterMap = CommonUtil.CreateWatermark(dateTime+ " "+DataString.StringData()+" "+curentLcotion);
               // 合并水印
               final Bitmap destMap = CommonUtil.CreateBitmapWithWatermark(bitmap, waterMap);
               logUtils.d("拍照图片显示");

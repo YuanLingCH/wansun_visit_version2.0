@@ -113,6 +113,7 @@ public class VisitOrderActivity extends BaseActivity {
     }
 
     private void updataUI() {
+        logUtils.d("正常逻辑================================================");
             adapter=new visitOrderAdapter(this,data,false);
             lv_visit_order.setAdapter(adapter);
             tv_case_number.setText("当前案件数量："+data.size());

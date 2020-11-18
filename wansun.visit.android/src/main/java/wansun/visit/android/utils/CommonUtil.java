@@ -112,6 +112,11 @@ public class CommonUtil {
         return (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(new Date(System.currentTimeMillis()));
     }
 
+    public static String getCurrentDateTimeYearAndMonthAString()
+    {
+        return (new SimpleDateFormat("yyyy-MM-dd")).format(new Date(System.currentTimeMillis()));
+    }
+
     public static Bitmap CreateWatermark(String mark)
     {
         int w = 2000, h = 150;
@@ -122,7 +127,7 @@ public class CommonUtil {
         Typeface font = Typeface.create(familyName, Typeface.BOLD);
         p.setColor(Color.YELLOW);
         p.setTypeface(font);
-        p.setTextSize(50);
+        p.setTextSize(60);
         canvasTemp.drawText(mark, 0, 100, p);
         return waterMark;
     }
@@ -152,8 +157,16 @@ public class CommonUtil {
         Canvas cv = new Canvas(destMap);
 
         cv.drawBitmap(src, 0, 0, null);// 在 0，0坐标开始画入src
+        Paint p = new Paint();
+        String familyName = "宋体";
+        Typeface font = Typeface.create(familyName, Typeface.BOLD);
+        p.setColor(Color.YELLOW);
+        p.setTypeface(font);
+        p.setTextSize(110);
 
-        cv.drawBitmap(watermark, w/2-5 , h/2-5 , null);// 在src的右下角画入水印
+        //cv.drawBitmap(watermark, (w*1)/10 ,(h*14)/15 , null);// 在src的右下角画入水印
+        cv.drawText(getTime(),(w*1)/10 ,(h*14)/15 , p);
+        cv.drawBitmap(watermark, (w*1)/10 ,(h*14)/15+70 , null);// 在src的右下角画入水印
 
         cv.save(Canvas.ALL_SAVE_FLAG);// 保存
 
@@ -161,6 +174,10 @@ public class CommonUtil {
 
         return destMap;
 
+    }
+
+    public static String getTime(){
+        return String.valueOf(new SimpleDateFormat("HH:MM:SS").format(new Date(System.currentTimeMillis())));
     }
 
     // 位图存为图片
